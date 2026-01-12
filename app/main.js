@@ -27,8 +27,7 @@ const pages = {
         <p><strong>Ull Hexa</strong></p>
         <p>
           Ull Hexa is a TV- and game-music composer and sound sculptor from Norway, obsessed with 
-          shaping sounds that flip your mind into deep rooted yet unexplored sonic 
-          landscapes. All sounds are made by hand and ear, using analog modular 
+          crafting sounds that fuses the tribal instictual with the futuristic unknown. All sounds are made by hand and ear, using analog modular 
           synthesizers, acoustic instruments, field recordings, and sounds taken from 
           real objects and environments, and blended together with some of the best 
           orchestral sample libraries available. The sonic experience draws the mind 
@@ -131,6 +130,12 @@ function render() {
   const route = routeFromHash();
   const page = pages[route] || pages.home;
   content.innerHTML = page();
+
+  document.querySelectorAll(".nav a").forEach(a => {
+    const href = a.getAttribute("href").slice(1);
+    a.classList.toggle("active", href === route);
+  });
+
 }
 
 window.addEventListener("hashchange", render);
