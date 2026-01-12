@@ -51,7 +51,7 @@ export function startBackground() {
 
   // Internal resolution scale: smaller = faster.
   // 0.5–0.7 is usually smooth. Start conservative.
-  const INTERNAL_SCALE = 0.6;
+  const INTERNAL_SCALE = 0.5;
 
   let w = 0, h = 0, img = null, data = null;
 
@@ -72,7 +72,7 @@ export function startBackground() {
 
   function render(t) {
     // slow time in seconds
-    const time = t * 0.00008;
+    const time = t * 0.0001;
 
     // Tune these for subtlety
     const baseScale = 0.012;     // larger = bigger blobs
