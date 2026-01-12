@@ -43,10 +43,17 @@ body {
 .nav a {
   color: inherit;
   text-decoration: none;
-  border: 1px solid #333;
-  padding: 8px 12px;
-  border-radius: 12px;
+  border: 1px solid #2a2a2a;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(6px);
 }
+
+.nav a:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
 
 .nav a:hover {
   background: #111;
@@ -58,4 +65,72 @@ body {
   padding: 16px;
   border: 1px solid #222;
   border-radius: 16px;
+}
+
+.pack {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid #222;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.02);
+}
+
+.pack-img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #222;
+}
+
+.pack-title { margin: 0 0 6px; }
+.pack-desc { margin: 0 0 10px; opacity: 0.8; }
+
+.pack-btn {
+  display: inline-block;
+  text-decoration: none;
+  color: #000;
+  background: #fff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  border: 1px solid #ddd;
+}
+.pack-btn:hover { filter: brightness(0.9); }
+
+@media (max-width: 640px) {
+  .pack { grid-template-columns: 1fr; }
+  .pack-img { height: 160px; }
+}
+
+.bio {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.bio-img {
+  width: 140px;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid #222;
+}
+
+.bio-text p {
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .bio {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .bio-img {
+    margin: 0 auto;
+  }
 }
