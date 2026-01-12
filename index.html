@@ -4,36 +4,22 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ullhexa</title>
-    <style>
-      body { font-family: system-ui, sans-serif; max-width: 900px; margin: 48px auto; padding: 0 16px; }
-      header { display:flex; justify-content:space-between; align-items:center; gap:12px; }
-      nav a { margin-left: 10px; text-decoration:none; border:1px solid #ddd; padding:6px 10px; border-radius:10px; color:inherit; }
-      nav a:hover { background:#f3f3f3; }
-      .card { border:1px solid #eee; border-radius:16px; padding:16px; margin-top:16px; }
-      button { padding:10px 14px; border-radius:12px; border:1px solid #ddd; background:#fff; cursor:pointer; }
-      button:hover { background:#f3f3f3; }
-      #log { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    </style>
+    <link rel="stylesheet" href="./styles.css" />
   </head>
+
   <body>
-    <header>
-      <div>
-        <h1 style="margin:0;">ullhexa</h1>
-        <div style="opacity:.7;">minimal site, modular later</div>
-      </div>
-      <nav>
-        <a href="#home" data-route="home">Home</a>
-        <a href="#projects" data-route="projects">Projects</a>
-        <a href="#contact" data-route="contact">Contact</a>
-      </nav>
+    <canvas id="bg"></canvas>
+    <header class="site-header">
+      <img src="./assets/logo.png" alt="ullhexa logo" class="logo" />
     </header>
 
-    <section class="card" id="content"></section>
+    <nav class="nav">
+      <a href="#home">Home</a>
+      <a href="#projects">Projects</a>
+      <a href="#contact">Contact</a>
+    </nav>
 
-    <section class="card">
-      <button id="btn">Test JS</button>
-      <div id="log"></div>
-    </section>
+    <main class="card" id="content"></main>
 
     <script type="module" src="./app/main.js"></script>
   </body>
