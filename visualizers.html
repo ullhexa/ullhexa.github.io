@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MIDI Visualizer</title>
+  <style>
+    body { background: black; margin: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+<div style="position:fixed;top:10px;left:10px;z-index:10;color:white;font-family:sans-serif;font-size:14px;">
+  <label for="modeSelect">Mode:</label>
+  <select id="modeSelect" onchange="setMode(this.value)">
+    <option value="default">Default</option>
+    <option value="plane">3D Plane</option>
+    <option value="plasma">Plasma Sphere</option>
+    <option value="rubik">Rubik's Cube</option>
+  </select>
+</div>
+<canvas id="canvas"></canvas>
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+let currentMode = 'default';
+let notes = {};
+let expansionZoom = 0; // 0 = normal, 1 = full explosion zoom
+let colorLerpSpeed = 0.1;
+const defaultRotation = { x: -Math.PI / 2.1, y: 0 };
+let rotation = { ...defaultRotation };
+let activeNotes = {};
+let noteDepthBias = {};
+let notePhaseOffset = {};
+const noteTendrilModes = {}; // Stores mode: 0 or 1 per note
+const explosionFactor = 1.0; // used for both offset and scaling
+const drawerColors = {
+  40: 'red',
+  41: 'orange',
+  42: 'green',
+  43: 'blue',
+  44: 'white',
+  45: 'yellow'
+};
+let invertColors = false;
+const activeLasers = {
+  x: false,
+  y: false,
+  z: false
+};
+
+const autoRotation = {
+  x: 0,
+  y: 0,
+  z: 0
+};
+
+
+
+
+function setMode(mode) {
+  if (currentMode === 'plasma' && PlasmaVisualizer.reset) {
+    PlasmaVisualizer.reset(); // Clear visual memory before switching
+  }
+  if (currentMode === 'rubik' && RubikVisualizer.reset) {
+    RubikVisualizer.reset();
+  }
+  if (currentMode === 'plane' && PlaneVisualizer.reset) {
+    PlaneVisualizer.reset();
+  }
+
+  currentMode = mode;
+}
+
+
+
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (currentMode === 'plane') PlaneVisualizer.draw();
+  else if (currentMode === 'plasma') PlasmaVisualizer.draw();
+  else drawDefault();
+  PlaneVisualizer.updateRotation();
+  requestAnimationFrame(animate);
+}
+
+function drawDefault() {
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "white";
+  ctx.font = "32px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("Welcome to the Visualizer", canvas.width / 2, canvas.height / 2);
+  ctx.font = "18px sans-serif";
+  ctx.fillText("Select a mode above to begin", canvas.width / 2, canvas.height / 2 + 40);
+}
+
+function invertHexColor(hex) {
+  // Handle named colors like 'red', 'white', etc.
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.fillStyle = hex;
+  const computed = ctx.fillStyle;
+
+  // Extract RGB components
+  const rgb = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(computed);
+  if (!rgb) return '#000'; // Fallback to black if parsing fails
+
+  const r = 255 - parseInt(rgb[1], 16);
+  const g = 255 - parseInt(rgb[2], 16);
+  const b = 255 - parseInt(rgb[3], 16);
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+
+
+
+const PlaneVisualizer = (() => {
+  const resolution = 6;
+  const spacing = 208;
+
+  function rotate([x, y, z], rx, ry) {
+    const cosX = Math.cos(rx), sinX = Math.sin(rx);
+    const cosY = Math.cos(ry), sinY = Math.sin(ry);
+    let dy = y * cosX - z * sinX;
+    let dz = y * sinX + z * cosX;
+    let dx = x * cosY - dz * sinY;
+        dz = x * sinY + dz * cosY;
+    return [dx, dy, dz];
+  }
+
+  function project3D([x, y, z]) {
+    const scale = 600 / (z + 1200);
+    return [
+      canvas.width / 2 + x * scale,
+      canvas.height / 2 + y * scale
+    ];
+  }
+
+  function warpZ(x, y) {
+    const id = `${x.toFixed(1)},${y.toFixed(1)}`;
+    if (!warpZ.cache) warpZ.cache = {};
+    if (!warpZ.cache[id]) warpZ.cache[id] = 0;
+
+    let targetZ = 0;
+    for (let note in notes) {
+      const v = Math.pow(notes[note].velocity / 127, 1.0);
+      const n = parseInt(note) % 12;
+      const intensity = v * 2400;
+      switch (n) {
+        case 0: {
+          const radius = 900;
+          const dist = Math.sqrt(x * x + y * y);
+          targetZ += (-Math.sqrt(Math.max(0, radius * radius - dist * dist)) + radius) * v * 4;
+          break;
+        }
+        case 1: {
+          const cornerX = -((resolution - 1) / 2) * spacing;
+          const cornerY = -((resolution - 1) / 2) * spacing;
+          const dx = x - cornerX;
+          const dy = y - cornerY;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          targetZ += (1 - Math.min(d / (spacing * resolution), 1)) * intensity * 2.0;
+          break;
+        }
+        case 2: targetZ += Math.sin((x + y) * 0.05) * intensity * 0.7; break;
+        case 3: targetZ += Math.sin((x * 0.07 + y * 0.13)) * Math.cos((x - y) * 0.05) * intensity * 1.4; break;
+        case 4: targetZ += Math.cos(y * 0.1) * intensity * 0.9; break;
+        case 5: targetZ += Math.exp(-Math.sqrt(x * x + y * y) * 0.005) * intensity * 2.5; break;
+        case 6: targetZ += Math.sin(x * 0.1) * Math.cos(y * 0.1) * intensity * 1.0; break;
+        case 7: targetZ += Math.sin(x * 0.1) * intensity * 0.6; break;
+        case 8: targetZ += Math.sin(y * 0.1) * intensity * 0.6; break;
+        case 9: targetZ += -Math.exp(-Math.sqrt(x * x + y * y) * 0.01) * intensity * 3.5; break;
+        case 10: targetZ += Math.sin(x * 0.05 + y * 0.05) * Math.cos(x * 0.05 - y * 0.05) * intensity * 0.75; break;
+        case 11: targetZ += Math.cos(Math.sqrt(x * x + y * y) * 0.01) * intensity * 0.65; break;
+      }
+    }
+    const easedZ = warpZ.cache[id] + (targetZ * 0.3 - warpZ.cache[id]) * 0.1;
+    warpZ.cache[id] = easedZ;
+    return easedZ;
+  }
+
+  function draw() {
+    let lastColor = window.lastNoteColor || [255, 255, 255];
+    let noteColor = [...lastColor];
+
+    if (Object.keys(notes).length > 0) {
+      const harmonyNotes = Object.keys(notes).map(n => parseInt(n) % 12);
+      let r = 0, g = 0, b = 0;
+      for (let n of harmonyNotes) {
+        r += (n * 21) % 256;
+        g += (255 - n * 15) % 256;
+        b += (n * 37) % 256;
+      }
+      r = Math.floor(r / harmonyNotes.length);
+      g = Math.floor(g / harmonyNotes.length);
+      b = Math.floor(b / harmonyNotes.length);
+      noteColor[0] += (r - noteColor[0]) * colorLerpSpeed;
+      noteColor[1] += (g - noteColor[1]) * colorLerpSpeed;
+      noteColor[2] += (b - noteColor[2]) * colorLerpSpeed;
+      window.lastNoteColor = noteColor.map(Math.round);
+    }
+
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    let totalVelocity = Object.values(notes).reduce((sum, n) => sum + n.velocity, 0);
+    let velocityRatio = totalVelocity / (127 * resolution);
+    let curved = Math.pow(velocityRatio, 2.2);
+
+    ctx.shadowColor = `rgba(${noteColor[0]}, ${noteColor[1]}, ${noteColor[2]}, ${Math.min(1, curved * 1.2)})`;
+    ctx.shadowBlur = curved * 20;
+    ctx.strokeStyle = `rgb(${noteColor[0]}, ${noteColor[1]}, ${noteColor[2]})`;
+    ctx.lineWidth = 2 + curved * 6;
+
+    function blend(c, amt) {
+      return Math.floor(c + (255 - c) * amt);
+    }
+
+    function worldCoord(gx, gy) {
+      const wx = (gx - (resolution - 1) / 2) * spacing;
+      const wy = (gy - (resolution - 1) / 2) * spacing;
+      const wz = warpZ(wx, wy);
+      return rotate([wx, wy, wz], rotation.x, rotation.y);
+    }
+
+    for (let x = 0; x < resolution - 1; x++) {
+      for (let y = 0; y < resolution - 1; y++) {
+        const v1 = worldCoord(x, y);
+        const v2 = worldCoord(x + 1, y);
+        const v3 = worldCoord(x + 1, y + 1);
+        const v4 = worldCoord(x, y + 1);
+
+        const p1 = project3D(v1);
+        const p2 = project3D(v2);
+        const p3 = project3D(v3);
+        const p4 = project3D(v4);
+
+        ctx.beginPath();
+        ctx.moveTo(...p1);
+        ctx.lineTo(...p2);
+        ctx.lineTo(...p3);
+        ctx.lineTo(...p4);
+        ctx.closePath();
+
+        const avgY = (p1[1] + p2[1] + p3[1] + p4[1]) / 4;
+        const faceNormalZ = (avgY - canvas.height / 2) / canvas.height;
+        const normalTilt = Math.abs(faceNormalZ);
+        const r = blend(noteColor[0], normalTilt);
+        const g = blend(noteColor[1], normalTilt);
+        const b = blend(noteColor[2], normalTilt);
+        const alpha = 0.2 + Math.pow(normalTilt, 2.0) * 1.2;
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${Math.min(1, alpha).toFixed(3)})`;
+        ctx.fill();
+
+        const shineAlpha = Math.pow(normalTilt, 6.0) * 0.6;
+        if (shineAlpha > 0.01) {
+          const centerX = (p1[0] + p2[0] + p3[0] + p4[0]) / 4;
+          const centerY = (p1[1] + p2[1] + p3[1] + p4[1]) / 4;
+          const grad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 60);
+          grad.addColorStop(0, `rgba(255,255,255,${shineAlpha.toFixed(3)})`);
+          grad.addColorStop(1, `rgba(255,255,255,0)`);
+          ctx.fillStyle = grad;
+          ctx.fill();
+        }
+
+        ctx.stroke();
+      }
+    }
+  }
+
+  function updateRotation() {
+    const harmonyNotes = Object.keys(notes).map(n => parseInt(n));
+    const harmony = harmonyNotes.length > 1;
+    if (harmony) {
+      const root = harmonyNotes[0] % 12;
+      const intervalSum = harmonyNotes.reduce((a, b) => a + b, 0) % 24;
+      const dirX = (root % 3 === 0) ? 1 : -1;
+      const dirY = (intervalSum % 2 === 0) ? 1 : -1;
+      rotation.x += dirX * 0.0015;
+      rotation.y += dirY * 0.0012;
+    } else {
+      rotation.x += (defaultRotation.x - rotation.x) * 0.05;
+      rotation.y += (defaultRotation.y - rotation.y) * 0.05;
+    }
+  }
+
+  function reset() {
+    ctx.globalAlpha = 1.0;
+    ctx.globalCompositeOperation = "source-over";
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = "transparent";
+  }
+
+  return { draw, updateRotation, reset };
+})();
+
+
+
+
+const PlasmaVisualizer = (() => {
+  let orbs = [];
+
+  // Now using full MIDI note values as keys
+  let driftDirections = {};
+  let noteSpawnAngles = {};
+  let driftSpeedLFO = 0;
+  let driftSpeedTarget = 0.2;
+  const resolution = 40;
+
+  let cosCache = [], sinCache = [];
+  let baseRadius = Math.min(canvas.width, canvas.height) * 0.33;
+  let currentRadius = baseRadius;
+
+  // Per-note (full MIDI note) drift properties
+  let noteDriftAngle = {};
+  let noteDriftVelocity = {};
+  let noteLfoTimers = {};
+  let prevActiveNotes = {};
+  let noteFlickerAmplitude = {}; // <-- this must exist!
+
+  const noteDriftSpeeds = {};
+  const noteDriftTargets = {};
+  const noteDriftTimers = {};
+
+  function generateSphere(time, pulse = 1) {
+    cosCache = [], sinCache = [];
+    const radius = baseRadius * pulse;
+    for (let i = 0; i <= resolution; i++) {
+      cosCache[i] = Math.cos(i * Math.PI / resolution);
+      sinCache[i] = Math.sin(i * Math.PI / resolution);
+    }
+    currentRadius = radius;
+  }
+
+
+  function drawElectricOrbs(points) {
+  const MAX_NEW_ORBS = 30;
+  let newCount = 0;
+
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i + 1; j < points.length; j++) {
+      if (newCount >= MAX_NEW_ORBS) return;
+
+      const [x1, y1] = points[i];
+      const [x2, y2] = points[j];
+      const dx = x1 - x2;
+      const dy = y1 - y2;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 30) {
+        const cx = (x1 + x2) / 2;
+        const cy = (y1 + y2) / 2;
+        const angle = Math.random() * 2 * Math.PI;
+        const speed = 5 + Math.random() * 3;
+        const maxLife = 90;
+
+        orbs.push({
+          x: cx,
+          y: cy,
+          r: 10,
+          life: maxLife,
+          maxLife,
+          angle,
+          speed
+        });
+
+        newCount++;
+      }
+    }
+  }
+}
+
+
+  function updateAndDrawOrbs() {
+    for (let i = orbs.length - 1; i >= 0; i--) {
+      const orb = orbs[i];
+
+      // Move orb
+      orb.x += Math.cos(orb.angle) * orb.speed;
+      orb.y += Math.sin(orb.angle) * orb.speed;
+
+      // Visual properties
+      const alpha = orb.life / 60;
+      const radius = orb.r + (30 - orb.life) * 0.8;
+
+      // Create glow gradient
+      const gradient = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, radius);
+      gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
+      gradient.addColorStop(1, `rgba(255,255,255,0)`);
+
+      // Draw orb
+      ctx.beginPath();
+      ctx.arc(orb.x, orb.y, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      // Countdown to death
+      orb.life--;
+      if (orb.life <= 0) orbs.splice(i, 1);
+    }
+  }
+
+
+  function draw() {
+  const time = Date.now() * 0.002;
+  const now = performance.now() * 0.001; // 🛠 This line must come BEFORE any "now" usage
+
+  const keys = Object.keys(activeNotes).map(k => parseInt(k));
+  
+
+  // Then use `now` as needed safely:
+  // --- Asymmetric LFO-sampled drift multiplier with smooth slew ---
+  if (!PlasmaVisualizer.lastDriftUpdate) PlasmaVisualizer.lastDriftUpdate = now;
+  if (!PlasmaVisualizer.targetDriftMultiplier) PlasmaVisualizer.targetDriftMultiplier = 1.0;
+  if (!PlasmaVisualizer.driftMultiplier) PlasmaVisualizer.driftMultiplier = 1.0;
+
+  // How long since we last picked a new drift target?
+  const timeSinceUpdate = now - PlasmaVisualizer.lastDriftUpdate;
+
+  // Pick a new target every 2–5 seconds
+  if (timeSinceUpdate > 2 + Math.random() * 3) {
+    PlasmaVisualizer.targetDriftMultiplier = 0.7 + Math.random() * 2.5; // ⚠️ Adjust range here
+    PlasmaVisualizer.lastDriftUpdate = now;
+  }
+
+  // Slew toward the target multiplier
+  const slewRate = 0.01; // ⚠️ Lower = slower changes, higher = sharper
+  PlasmaVisualizer.driftMultiplier +=
+    (PlasmaVisualizer.targetDriftMultiplier - PlasmaVisualizer.driftMultiplier) * slewRate;
+
+  // Use this in tendril drift
+  const driftMultiplier = PlasmaVisualizer.driftMultiplier;
+
+
+
+  // Ensure each note has a fixed spawn angle
+  keys.forEach(note => {
+    if (!(note in noteSpawnAngles)) {
+      noteSpawnAngles[note] = (note % 12) / 12 * Math.PI * 2; // Keep spread uniform
+    }
+  });
+
+  // Random LFO target update (global)
+  if (!PlasmaVisualizer.lastSpeedUpdate || time - PlasmaVisualizer.lastSpeedUpdate > 3) {
+    PlasmaVisualizer.lastSpeedUpdate = time;
+    driftSpeedTarget = 0.05 + Math.random() * 0.4;
+  }
+
+  // Smoothly move toward new target (slew)
+  driftSpeedLFO += (driftSpeedTarget - driftSpeedLFO) * 0.01;
+
+  const x = canvas.width / 2;
+  const y = canvas.height / 2;
+  let pulse = 1 + 0.05 * keys.length;
+
+  generateSphere(time, pulse);
+  const r = currentRadius;
+
+  let hue = 220, lightness = 10, avgVelocity = 0;
+  let blendedHue = 200;
+
+  if (keys.length > 0) {
+    const avgNote = keys.reduce((a, b) => a + b, 0) / keys.length;
+    const totalVel = keys.reduce((a, k) => a + activeNotes[k], 0);
+    avgVelocity = totalVel / keys.length / 127;
+
+    // Use note % 12 to map to color wheel (0–360 deg)
+    hue = (avgNote % 12) / 12 * 360;
+    blendedHue = keys
+      .map(k => (k % 12) / 12 * 360)
+      .reduce((a, b) => a + b, 0) / keys.length;
+
+    lightness = 15 + (avgNote % 12) / 12 * 40;
+  }
+
+  // Background clear
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Reset shadows before drawing anything
+  ctx.shadowColor = "transparent";
+  ctx.shadowBlur = 0;
+
+
+    // Draw the base sphere gradient (always visible)
+    const sunX = x + Math.cos(time * 0.2) * r * 0.7;
+    const sunY = y + Math.sin(time * 0.2) * r * 0.7;
+    const gradient = ctx.createRadialGradient(sunX, sunY, r * 0.2, x, y, r);
+    gradient.addColorStop(0, `hsl(${hue}, 100%, ${Math.min(lightness + 30, 100)}%)`);
+    gradient.addColorStop(0.5, `hsl(${hue}, 100%, ${lightness}%)`);
+    gradient.addColorStop(1, `hsl(${hue}, 100%, 10%)`);
+
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, 2 * Math.PI);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    // Optional glow (only when keys are active)
+    if (keys.length > 0) {
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 1.5);
+      glow.addColorStop(0, `hsla(${blendedHue}, 100%, 60%, ${0.1 + avgVelocity * 0.3})`);
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Rim and gloss only with active notes
+      const rim = ctx.createRadialGradient(x, y, r * 0.95, x, y, r);
+      rim.addColorStop(0, 'rgba(0,0,0,0)');
+      rim.addColorStop(1, 'rgba(0,0,0,0.6)');
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, 2 * Math.PI);
+      ctx.fillStyle = rim;
+      ctx.fill();
+
+      const gloss = ctx.createRadialGradient(x - r * 0.4, y - r * 0.4, 0, x - r * 0.4, y - r * 0.4, r * 0.6);
+      gloss.addColorStop(0, 'rgba(255,255,255,0.25)');
+      gloss.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, 2 * Math.PI);
+      ctx.fillStyle = gloss;
+      ctx.fill();
+    }
+
+    if (keys.length > 0) {
+      const outerGlow = ctx.createRadialGradient(x, y, r * 1.05, x, y, r * 1.4);
+      outerGlow.addColorStop(0, `hsla(${blendedHue}, 100%, 70%, 0.15)`);
+      outerGlow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.beginPath();
+      ctx.arc(x, y, r * 1.25, 0, 2 * Math.PI);
+      ctx.fillStyle = outerGlow;
+      ctx.fill();
+    }
+
+    const segments = 30;
+    const tendrilTips = [];
+
+    for (let i = 0; i < keys.length; i++) {
+      const noteKey = keys[i]; // ✅ Full MIDI note number
+      if (!(noteKey in notePhaseOffset)) {
+        notePhaseOffset[noteKey] = Math.random() * Math.PI * 2;
+      }
+      if (!(noteKey in noteDepthBias)) {
+        noteDepthBias[noteKey] = Math.random() < 0.5 ? -1 : 1;
+      }
+      if (!(noteKey in noteTendrilModes)) {
+        noteTendrilModes[noteKey] = Math.random() < 0.5 ? 0 : 1; // 0 = subtle, 1 = aggressive
+      }
+      if (!(noteKey in noteFlickerAmplitude)) {
+        // Range 0.5 → 1.5 for subtle to wild motion, scaled by velocity
+        noteFlickerAmplitude[noteKey] = 0.5 + Math.random() * 1.0;
+      }
+
+      const lastOn = noteOnTimestamps[noteKey] || 0;
+      const isNewPress = !(noteKey in prevActiveNotes);
+
+      // Always ensure drift state is initialized
+      if (!(noteKey in noteDriftTimers)) noteDriftTimers[noteKey] = now;
+      if (!(noteKey in noteLfoTimers)) noteLfoTimers[noteKey] = now;
+      if (!(noteKey in noteDriftAngle)) noteDriftAngle[noteKey] = 0;
+      if (!(noteKey in noteDriftVelocity)) noteDriftVelocity[noteKey] = 0;
+
+      // Reset drift values if note was just pressed
+      if (isNewPress) {
+        noteTendrilModes[noteKey] = Math.random() < 0.5 ? 0 : 1;
+        noteDriftTimers[noteKey] = now;
+        noteLfoTimers[noteKey] = now;
+
+        // Only hard reset if it's not currently drifting
+        if (Math.abs(noteDriftVelocity[noteKey]) < 0.001) {
+          noteDriftAngle[noteKey] = 0;
+          noteDriftVelocity[noteKey] = 0;
+          driftDirections[noteKey] = (Math.random() - 0.5) * 2 * Math.PI;
+        }
+      }
+
+
+      // Use full note value directly
+      const note = notes[noteKey];
+      if (!note) continue;
+
+      const velocity = note.velocity;
+      const velocityFactor = velocity / 127;
+      const baseHue = blendedHue;
+
+      // Initialize random drift direction if missing
+      if (!(noteKey in driftDirections)) {
+        driftDirections[noteKey] = (Math.random() - 0.5) * 2 * Math.PI;
+      }
+
+      // Drift speed and timer init (per-note)
+      if (!(noteKey in noteDriftSpeeds)) {
+        noteDriftSpeeds[noteKey] = 0.1 + Math.random() * 0.2;
+        noteDriftTargets[noteKey] = 0.1 + Math.random() * 0.3;
+        noteDriftTimers[noteKey] = now;
+      }
+
+      if (!(noteKey in noteLfoTimers)) noteLfoTimers[noteKey] = now;
+
+      const elapsedLFO = now - noteLfoTimers[noteKey];
+      const base = noteDriftSpeeds[noteKey] || 0.1;
+      const lfoPeriod = 0.5 + 12 * Math.exp(-base * 30); // dynamic LFO rate
+
+      // Occasionally update target drift
+      if (elapsedLFO > lfoPeriod) {
+        noteDriftTargets[noteKey] = 0.05 + Math.random() * 0.4;
+        noteLfoTimers[noteKey] = now;
+      }
+
+    
+      // --- Slewed random-walk drift system ---
+      const hasDriftData = noteKey in noteDriftAngle && noteKey in noteDriftVelocity;
+      if (!hasDriftData) {
+        noteDriftAngle[noteKey] = 0;
+        noteDriftVelocity[noteKey] = 0;
+      }
+
+      if (isNaN(noteDriftAngle[noteKey])) noteDriftAngle[noteKey] = 0;
+      if (isNaN(noteDriftVelocity[noteKey])) noteDriftVelocity[noteKey] = 0;
+
+      // Defensive: ensure drift timer exists
+      if (!(noteKey in noteDriftTimers)) noteDriftTimers[noteKey] = now;
+
+      const noteAge = now - noteDriftTimers[noteKey];
+      const minDelay = 0.1;
+      const maxDelay = 0.4;
+      const velocityNorm = velocityFactor || 0;
+      const driftDelay = maxDelay - (maxDelay - minDelay) * velocityNorm;
+
+      let drift = 0;
+
+      // Compute drift based on LFO after delay
+      if (noteAge > driftDelay) {
+        const driftSeed = noteKey * 999;
+        const t = now * 0.7;
+        const noiseAngle =
+          Math.sin(t + driftSeed * 0.1) * 0.4 +
+          Math.sin(t * 0.37 + driftSeed * 0.23) * 0.25;
+
+        noteDriftAngle[noteKey] += (noiseAngle - noteDriftAngle[noteKey]) * 0.08;
+        const fadeIn = Math.min(1, (noteAge - driftDelay) / 0.5);
+        drift = noteDriftAngle[noteKey] * fadeIn;
+      }
+
+      // 🔁 Animate tendril length every frame
+      if (!(noteKey in notePhaseOffset)) {
+        notePhaseOffset[noteKey] = Math.random() * Math.PI * 2;
+      }
+
+      // 🔁 Generate a signed depth from the drift angle
+      let signedDepth = Math.sin(drift * 1.5 + noteKey); // full -1 to +1 sweep
+
+      // ✅ Bias depth toward center (optional, tweak exponent to control bias)
+      const depthStrength = Math.pow(1 - Math.abs(signedDepth), 3.2);
+
+      // ✅ Time-based per-note oscillation, stays in range 0 → 1
+      const timeFactor = Math.sin(now * 0.7 + notePhaseOffset[noteKey]) * 0.5 + 0.6;
+
+      // ✅ Final strength combines bias and animation
+      const animatedStrength = depthStrength * timeFactor;
+
+      // ✅ Full tendril length scale — NO floor, 0 → 1.3 possible
+      //const depthScale = depthStrength * timeFactor * 1.3; // now 0 → 1.3
+
+
+      const baseAngle = (noteKey % 12) / 12 * Math.PI * 2;
+      const driftAngle = baseAngle + drift * driftMultiplier;
+
+      const spreadFactor = (0.05 + velocityFactor * 0.5) * (1 + signedDepth * 0.7);
+      const orbitStrength = 0.15 * velocityFactor;
+      const flickerSpeed = 1 + velocityFactor * 5;
+      //const depthScale = 1 - Math.abs(signedDepth) * 2.5 * spreadFactor;
+      const depthScaleRaw = 1 - Math.abs(signedDepth) * 2.5 * spreadFactor;
+      const depthScale = Math.max(0, Math.min(depthScaleRaw, 1.5));
+
+
+      const mode = noteTendrilModes[noteKey] || 0;
+      const inverseLength = 1 - depthScale; // 0 at full length, 1 at shortest
+      // Inverse of tendril length (0 = long, 1 = short)
+      const shortness = 1 - depthScale;
+      const fade = Math.pow(shortness, 2.5); // stronger response near short end
+
+      // Base thickness and flicker for long tendrils
+      const baseThickness = 2 + velocityFactor * 3;
+      const baseFlicker = 1;
+
+      // Apply mode-specific deltas only when tendril is short
+      const thickness = baseThickness * (1 + fade * (mode === 0 ? 1 : -0.4));
+      const flickerAmp = baseFlicker + fade * (mode === 0 ? 1.5 : -0.5);
+
+
+      ctx.lineWidth = thickness;
+
+
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      let tip = [x, y];
+
+      noteFlickerAmplitude[noteKey] += (0.5 + Math.random() * 1.0 - noteFlickerAmplitude[noteKey]) * 0.02;
+
+      for (let j = 1; j <= segments; j++) {
+        const flickerPhase = Math.sin(time * flickerSpeed + j + noteKey);
+        const fade = Math.max(0, Math.min(1, 1 - depthScale)); // Clamp 0 to 1
+        const flickerBoost = 1 + (mode === 0 ? (Math.pow(fade, 2.2) * flickerPhase * 0.6) : 0);
+        const rf = (j / segments) * flickerBoost;
+        const flickerAmp = noteFlickerAmplitude[noteKey];
+        const orbit = Math.sin(time * flickerSpeed + j * 0.3 + noteKey) * orbitStrength * flickerAmp;
+        const offset = Math.sin(time * flickerSpeed + j + noteKey) * spreadFactor * flickerAmp;
+
+        // Apply depth scaling
+        const angle = driftAngle + offset + orbit;
+        const tx = x + Math.cos(angle) * r * rf * depthScale;
+        const ty = y + Math.sin(angle) * r * rf * depthScale;
+
+        ctx.lineTo(tx, ty);
+        if (j === segments) tip = [tx, ty];
+      }
+
+      tendrilTips.push(tip);
+
+      ctx.strokeStyle = `hsl(${baseHue}, 100%, 70%)`;
+      // Use our calculated `thickness` instead of overriding it again
+      ctx.lineWidth = thickness;
+      ctx.shadowColor = `hsl(${baseHue}, 100%, 70%)`;
+      ctx.shadowBlur = 20;
+      ctx.stroke();
+
+
+      // Flash at the end of the tendril
+      ctx.beginPath();
+      const tipSize = (8 + velocityFactor * 6) * (1 + signedDepth * 0.5);
+      ctx.arc(tip[0], tip[1], tipSize, 0, 2 * Math.PI);
+      ctx.fillStyle = `hsla(${baseHue}, 100%, 80%, ${0.2 + 0.5 * velocityFactor})`;
+      ctx.shadowColor = `hsla(${baseHue}, 100%, 80%, 0.6)`;
+      ctx.shadowBlur = 20 + velocityFactor * 20;
+      ctx.fill();
+
+    }
+    prevActiveNotes = { ...activeNotes };
+  }
+
+  function reset() {
+    // Clear all dynamic visual state
+    orbs.length = 0;
+
+    // Reset per-note maps by clearing keys
+    const maps = [
+      driftDirections,
+      noteSpawnAngles,
+      noteDriftAngle,
+      noteDriftVelocity,
+      noteLfoTimers,
+      noteFlickerAmplitude,
+      noteDriftSpeeds,
+      noteDriftTargets,
+      noteDriftTimers,
+      prevActiveNotes
+    ];
+
+    for (const map of maps) {
+      for (const key in map) delete map[key];
+    }
+
+    // Reset internal globals
+    PlasmaVisualizer.lastDriftUpdate = null;
+    PlasmaVisualizer.driftMultiplier = 1.0;
+    PlasmaVisualizer.targetDriftMultiplier = 1.0;
+    PlasmaVisualizer.lastSpeedUpdate = null;
+
+    // Reset any canvas effects
+    ctx.globalAlpha = 1.0;
+    ctx.globalCompositeOperation = "source-over";
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = "transparent";
+  }
+
+  return { draw, reset };
+})();
+
+
+
+
+
+const RubikVisualizer = (() => {
+  const cubeSize = 80;
+  const spacing = 4;
+  const scaleFactor = 1 / (1 + (explosionFactor - 1) * expansionZoom);
+  const offset = cubeSize + spacing;
+  const rotation = {
+    x: -Math.PI / -1.4, // -0.785 → top-down angle
+    y: Math.PI / 3.9   // 0.785  → slight front-right view
+  };
+  let cubelets = [];
+
+  function createCube() {
+    cubelets = [];
+
+    for (let x = -1; x <= 1; x++) {
+      for (let y = -1; y <= 1; y++) {
+        for (let z = -1; z <= 1; z++) {
+          //if (x === 0 && y === 0 && z === 0) continue;
+
+          cubelets.push({
+            position: { x, y, z },
+            faces: {
+              front:  z ===  1 ? 'red'     : '#444',
+              back:   z === -1 ? 'orange'  : '#444',
+              right:  x ===  1 ? 'green'   : '#444',
+              left:   x === -1 ? 'blue'    : '#444',
+              top:    y ===  1 ? 'white'   : '#444',
+              bottom: y === -1 ? 'yellow'  : '#444'
+            }
+          });
+        }
+      }
+    }
+  }
+
+  function rotate3D([x, y, z], rx = 0, ry = 0, rz = 0) {
+    const cosX = Math.cos(rx), sinX = Math.sin(rx);
+    const cosY = Math.cos(ry), sinY = Math.sin(ry);
+    const cosZ = Math.cos(rz), sinZ = Math.sin(rz);
+
+    // X-axis
+    let dy = y * cosX - z * sinX;
+    let dz = y * sinX + z * cosX;
+    y = dy; z = dz;
+
+    // Y-axis
+    let dx = x * cosY - z * sinY;
+    dz = x * sinY + z * cosY;
+    x = dx; z = dz;
+
+    // Z-axis
+    dx = x * cosZ - y * sinZ;
+    dy = x * sinZ + y * cosZ;
+    x = dx; y = dy;
+
+    return [x, y, z];
+  }
+
+
+  function project3D([x, y, z]) {
+    const perspective = 600;
+    const viewerZ = 4.2 * offset; // camera sits in front of cube
+
+    const scale = perspective / (viewerZ - z);
+    return [
+      canvas.width / 2 + x * scale,
+      canvas.height / 2 + y * scale
+    ];
+  }
+
+  let pulseToSolveActive = false;
+  let pulseStartTime = 0;
+  let pulseDuration = 700; // in ms
+
+  function triggerPulseToSolve() {
+    pulseToSolveActive = true;
+    pulseStartTime = performance.now();
+    for (const cubelet of cubelets) {
+      cubelet.tempColor = 'purple';
+    }
+  }
+
+  function updatePulseToSolve() {
+    if (!pulseToSolveActive) return;
+
+    const now = performance.now();
+    const elapsed = now - pulseStartTime;
+    const t = Math.min(elapsed / pulseDuration, 1);
+
+    // Fade back to original cube
+    for (const cubelet of cubelets) {
+      const faces = cubelet.faces;
+      for (let face in faces) {
+        if (t < 0.4) {
+          faces[face] = 'purple';
+        } else {
+          const original = getOriginalFaceColor(face, cubelet.position);
+          faces[face] = blendColors('purple', original, (t - 0.4) / 0.6);
+        }
+      }
+    }
+
+    if (t >= 1) {
+      pulseToSolveActive = false;
+      RubikVisualizer.createCube(); // Reset to solved cube
+    }
+  }
+
+  // Utility: Get default face color for solved state
+  function getOriginalFaceColor(face, pos) {
+    if (face === 'front' && pos.z === 1) return 'red';
+    if (face === 'back' && pos.z === -1) return 'orange';
+    if (face === 'left' && pos.x === -1) return 'blue';
+    if (face === 'right' && pos.x === 1) return 'green';
+    if (face === 'top' && pos.y === 1) return 'white';
+    if (face === 'bottom' && pos.y === -1) return 'yellow';
+    return '#444';
+  }
+
+  // Utility: blend from c1 to c2 by amount (0–1)
+  function blendColors(c1, c2, amt) {
+    const toRGB = (color) => {
+      const dummy = document.createElement('div');
+      dummy.style.color = color;
+      document.body.appendChild(dummy);
+      const rgb = getComputedStyle(dummy).color;
+      document.body.removeChild(dummy);
+      return rgb.match(/\d+/g).map(Number);
+    };
+    const [r1, g1, b1] = toRGB(c1);
+    const [r2, g2, b2] = toRGB(c2);
+    const r = Math.round(r1 + (r2 - r1) * amt);
+    const g = Math.round(g1 + (g2 - g1) * amt);
+    const b = Math.round(b1 + (b2 - b1) * amt);
+    return `rgb(${r},${g},${b})`;
+  }
+
+
+
+  function draw() {
+    const facesToDraw = [];
+
+    const cubelets = RubikVisualizer.cubelets;
+
+    const sorted = [...cubelets].sort((a, b) => {
+      const za = rotate3D([a.position.x * offset, a.position.y * offset, a.position.z * offset], rotation.x, rotation.y)[2];
+      const zb = rotate3D([b.position.x * offset, b.position.y * offset, b.position.z * offset], rotation.x, rotation.y)[2];
+      return zb - za;
+    });
+
+
+    for (const cubelet of sorted) {
+      let { x, y, z } = cubelet.position;
+      // 💡 Ensure explosion properties exist
+      if (!cubelet.explodeOffset) cubelet.explodeOffset = { x: 0, y: 0, z: 0 };
+      if (!cubelet.explodeTarget) cubelet.explodeTarget = { x: 0, y: 0, z: 0 };
+      let [rx, ry, rz] = [0, 0, 0]; // Temporary rotation angles
+
+      if (currentRubikRotation) {
+        const { type, face, plane, axis, dir, group } = currentRubikRotation;
+        const duration = type === 'whole' ? 400 : 150;
+        const now = performance.now();
+        const t = Math.min((now - rubikRotationStartTime) / duration, 1);
+        const easedT = ease(type, t);
+        let angle = dir * easedT * (Math.PI / 2);
+        if ((axis || plane) === 'y' || (face && ['U', 'D'].includes(face))) angle *= -1;
+
+        const isAffected = (() => {
+          if (type === 'whole') return true;
+          if (type === 'face') {
+            const faceMap = { U: ['y', 1], D: ['y', -1], F: ['z', 1], B: ['z', -1], L: ['x', -1], R: ['x', 1] };
+            const [a, v] = faceMap[face];
+            return cubelet.position[a] === v;
+          }
+          if (type === 'middle') {
+            const midMap = { M: 'x', E: 'y', S: 'z' };
+            return cubelet.position[midMap[plane]] === 0;
+          }
+          if (type === 'double') {
+            const v = cubelet.position[axis];
+            return group === 'top2' ? v >= 0 : v <= 0;
+          }
+          return false;
+        })();
+
+        if (isAffected) {
+          if (type === 'face' || type === 'middle' || type === 'whole') {
+            if (axis || plane) {
+              const ax = axis || { M: 'x', E: 'y', S: 'z' }[plane];
+              if (ax === 'x') rx = angle;
+              if (ax === 'y') ry = angle;
+              if (ax === 'z') rz = angle;
+            } else {
+              // Face-based lookup
+              const axMap = { U: 'y', D: 'y', F: 'z', B: 'z', L: 'x', R: 'x' };
+              const ax = axMap[face];
+              if (ax === 'x') rx = angle;
+              if (ax === 'y') ry = angle;
+              if (ax === 'z') rz = angle;
+            }
+          }
+        }
+      }
+
+      // 🌀 Animate explosion offset
+      const speed = 0.08; // Controls how fast the explosion snaps
+      cubelet.explodeOffset.x += (cubelet.explodeTarget.x - cubelet.explodeOffset.x) * speed;
+      cubelet.explodeOffset.y += (cubelet.explodeTarget.y - cubelet.explodeOffset.y) * speed;
+      cubelet.explodeOffset.z += (cubelet.explodeTarget.z - cubelet.explodeOffset.z) * speed;
+
+      const effectiveOffset = offset * (1 - 0.2 * expansionZoom);
+
+      const worldX = (x + cubelet.explodeOffset.x) * effectiveOffset;
+      const worldY = (y + cubelet.explodeOffset.y) * effectiveOffset;
+      const worldZ = (z + cubelet.explodeOffset.z) * effectiveOffset;
+
+      const scaleFactor = 1 / (1 + (1.8 - 1) * expansionZoom * 1.2); // shrink cubelets during full explosion
+      const cubeletSize = cubeSize * scaleFactor;
+
+
+
+      const points = [
+        [worldX - cubeletSize / 2, worldY - cubeletSize / 2, worldZ - cubeletSize / 2],
+        [worldX + cubeletSize / 2, worldY - cubeletSize / 2, worldZ - cubeletSize / 2],
+        [worldX + cubeletSize / 2, worldY + cubeletSize / 2, worldZ - cubeletSize / 2],
+        [worldX - cubeletSize / 2, worldY + cubeletSize / 2, worldZ - cubeletSize / 2],
+        [worldX - cubeletSize / 2, worldY - cubeletSize / 2, worldZ + cubeletSize / 2],
+        [worldX + cubeletSize / 2, worldY - cubeletSize / 2, worldZ + cubeletSize / 2],
+        [worldX + cubeletSize / 2, worldY + cubeletSize / 2, worldZ + cubeletSize / 2],
+        [worldX - cubeletSize / 2, worldY + cubeletSize / 2, worldZ + cubeletSize / 2],
+      ].map(p => {
+        return project3D(
+          rotate3D(rotate3D(rotate3D(p, rx, 0), 0, ry), 0, rz)
+        );
+      });
+
+      const corners = [
+        [worldX - cubeletSize / 2, worldY - cubeletSize / 2, worldZ - cubeletSize / 2],
+        [worldX + cubeletSize / 2, worldY - cubeletSize / 2, worldZ - cubeletSize / 2],
+        [worldX + cubeletSize / 2, worldY + cubeletSize / 2, worldZ - cubeletSize / 2],
+        [worldX - cubeletSize / 2, worldY + cubeletSize / 2, worldZ - cubeletSize / 2],
+        [worldX - cubeletSize / 2, worldY - cubeletSize / 2, worldZ + cubeletSize / 2],
+        [worldX + cubeletSize / 2, worldY - cubeletSize / 2, worldZ + cubeletSize / 2],
+        [worldX + cubeletSize / 2, worldY + cubeletSize / 2, worldZ + cubeletSize / 2],
+        [worldX - cubeletSize / 2, worldY + cubeletSize / 2, worldZ + cubeletSize / 2]
+      ];
+
+      const faceDefs = [
+        { name: 'front',  idx: [4, 5, 6, 7] },
+        { name: 'back',   idx: [0, 1, 2, 3] },
+        { name: 'right',  idx: [1, 5, 6, 2] },
+        { name: 'left',   idx: [0, 4, 7, 3] },
+        { name: 'top',    idx: [3, 2, 6, 7] },
+        { name: 'bottom', idx: [0, 1, 5, 4] }
+      ];
+
+      for (const face of faceDefs) {
+        const pts3D = face.idx.map(i =>
+          rotate3D(
+            rotate3D(corners[i], rx, ry, rz),
+            rotation.x, rotation.y
+          )
+        );
+        const avgZ = pts3D.reduce((sum, p) => sum + p[2], 0) / pts3D.length;
+        const pts2D = pts3D.map(p => project3D(p));
+
+        let baseColor = cubelet.faces[face.name] || '#444';
+        let faceColor = invertColors ? invertHexColor(baseColor) : baseColor;
+
+        facesToDraw.push({
+          points: pts2D,
+          center: [
+            pts2D.reduce((sum, p) => sum + p[0], 0) / 4,
+            pts2D.reduce((sum, p) => sum + p[1], 0) / 4
+          ],
+          color: faceColor,
+          depth: avgZ
+        });
+      }
+  }
+
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = "transparent";
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = 1.0;
+  ctx.globalCompositeOperation = "source-over";
+
+    
+
+  // Sort faces back to front for proper painter's rendering
+  facesToDraw.sort((a, b) => a.depth - b.depth);
+
+  for (const face of facesToDraw) {
+    let [a, b, c, d] = face.points;
+
+    // Shrink the face slightly inward toward its center
+    const shrink = 0.9;
+    const cx = face.center[0];
+    const cy = face.center[1];
+    [a, b, c, d] = [a, b, c, d].map(p => [
+      cx + (p[0] - cx) * shrink,
+      cy + (p[1] - cy) * shrink
+    ]);
+
+    ctx.beginPath();
+    ctx.moveTo(...a);
+    ctx.lineTo(...b);
+    ctx.lineTo(...c);
+    ctx.lineTo(...d);
+    ctx.closePath();
+    ctx.fillStyle = face.color;
+    ctx.fill();
+    ctx.strokeStyle = 'black';
+    ctx.stroke();
+  }
+}
+
+
+createCube();
+
+function reset() {
+  for (const c of cubelets) {
+    c.explodeTarget = { x: 0, y: 0, z: 0 };
+    c.explodeOffset = { x: 0, y: 0, z: 0 };
+  }
+
+  expansionZoom = 0;
+  invertColors = false;
+  activeLasers.x = false;
+  activeLasers.y = false;
+  activeLasers.z = false;
+}
+
+return {
+  draw,
+  get cubelets() { return cubelets; },
+  reset,
+  updatePulseToSolve,
+  triggerPulseToSolve,
+  createCube // ← 🩹 this line fixes the error!
+};
+})();
+
+
+
+
+
+
+
+
+
+function rotateFaceByNote(index) {
+  const faces = ['U', 'D', 'L', 'R', 'F', 'B'];
+  const face = faces[index % 6];
+  const dir = index < 6 ? +1 : -1;
+  queueRotation({ type: 'face', face, dir });
+}
+
+function rotateMiddleByNote(index) {
+  const mids = ['M', 'E', 'S']; // x, y, z middles
+  const plane = mids[index % 3];
+  const dir = index < 3 ? +1 : -1;
+  queueRotation({ type: 'middle', plane, dir });
+}
+
+function rotateDoubleLayerByNote(index) {
+  const sides = ['x', 'y', 'z'];
+  const axis = sides[index % 3];
+  const group = Math.floor(index / 3) % 2 === 0 ? 'top2' : 'bottom2';
+  const dir = Math.floor(index / 6) % 2 === 0 ? +1 : -1;
+  queueRotation({ type: 'double', axis, group, dir });
+}
+
+function rotateWholeCubeByNote(index) {
+  const axes = ['x', 'y', 'z'];
+  const axis = axes[index % 3];
+  const dir = index < 3 ? +1 : -1;
+  queueRotation({ type: 'whole', axis, dir });
+}
+
+function queueRotation({ type, face, plane, axis, dir, group }) {
+  if (currentRubikRotation) {
+    applyLogicalRotation(currentRubikRotation);
+    currentRubikRotation = null;
+  }
+
+  rubikRotationQueue.push({ type, face, plane, axis, dir, group });
+
+  if (currentMode === 'rubik') {
+    RubikVisualizer.draw();
+  }
+
+  console.log("Queued rotation:", { type, face, plane, axis, dir, group });
+}
+
+
+function rotateFaceLayer(face, dir) {
+  const axisMap = {
+    U: { axis: 'y', value: 1 },
+    D: { axis: 'y', value: -1 },
+    F: { axis: 'z', value: 1 },
+    B: { axis: 'z', value: -1 },
+    L: { axis: 'x', value: -1 },
+    R: { axis: 'x', value: 1 }
+  };
+ 
+  const { axis, value } = axisMap[face];
+
+  // ⛔ Old (causes ReferenceError)
+  // const toRotate = cubelets.filter(...);
+
+  // ✅ New
+  const cubelets = RubikVisualizer.cubelets;
+  const toRotate = cubelets.filter(c => c.position[axis] === value);
+
+
+  for (const cubelet of toRotate) {
+    const pos = cubelet.position;
+    const faces = cubelet.faces;
+
+    // Rotate position
+    const [x, y, z] = [pos.x, pos.y, pos.z];
+    if (axis === 'x') {
+      [pos.y, pos.z] = dir > 0 ? [-z, y] : [z, -y];
+    } else if (axis === 'y') {
+      [pos.x, pos.z] = dir > 0 ? [z, -x] : [-z, x];
+    } else if (axis === 'z') {
+      [pos.x, pos.y] = dir > 0 ? [-y, x] : [y, -x];
+    }
+
+    const faceCycles = {
+      x: [['top', 'front'], ['front', 'bottom'], ['bottom', 'back'], ['back', 'top']],
+      y: [['left', 'front'], ['front', 'right'], ['right', 'back'], ['back', 'left']],
+      z: [['top', 'left'], ['left', 'bottom'], ['bottom', 'right'], ['right', 'top']]
+    };
+
+    const rotateFaces = (cycle, clockwise) => {
+      const temp = {};
+      for (const [a, b] of cycle) {
+        temp[a] = faces[a];
+        temp[b] = faces[b];
+      }
+
+      const indexes = clockwise
+        ? cycle.map(pair => pair[0])
+        : cycle.map(pair => pair[1]).reverse();
+
+      for (let i = 0; i < indexes.length; i++) {
+        const from = indexes[i];
+        const to = indexes[(i + 1) % indexes.length];
+
+        if (temp[from] != null) {
+          faces[to] = temp[from];
+        } else {
+          delete faces[to];
+        }
+      }
+    };
+
+    const effectiveDir = axis === 'y' ? -dir : dir;
+
+    // ✅ Override logic only for Y-axis
+    if (axis === 'y') {
+      const clockwise = dir > 0;
+      const ordered = clockwise
+        ? ['front', 'right', 'back', 'left']
+        : ['left', 'back', 'right', 'front'];
+
+      const temp = { ...faces };
+
+      for (let i = 0; i < 4; i++) {
+        const from = ordered[i];
+        const to = ordered[(i + 1) % 4];
+
+        if (temp[from] !== undefined) {
+          faces[to] = temp[from] ?? '#444';
+        }
+      }
+    } else {
+      const cycle = faceCycles[axis];
+      rotateFaces(cycle, dir > 0);
+    }
+  }
+}
+
+
+
+function rotateMiddleLayer(plane, dir) {
+  const planeToAxis = { M: 'x', E: 'y', S: 'z' };
+  const axis = planeToAxis[plane];
+  const cubelets = RubikVisualizer.cubelets;
+
+  const faceCycles = {
+    x: [['top', 'front'], ['front', 'bottom'], ['bottom', 'back'], ['back', 'top']],
+    y: [['left', 'front'], ['front', 'right'], ['right', 'back'], ['back', 'left']],
+    z: [['top', 'left'], ['left', 'bottom'], ['bottom', 'right'], ['right', 'top']]
+  };
+
+  const toRotate = cubelets.filter(c => c.position[axis] === 0);
+
+  console.log("Middle axis:", axis, "→", toRotate.length, "cubelets");
+  if (plane === 'E') dir *= -1;
+
+  for (const cubelet of toRotate) {
+    const pos = cubelet.position;
+    const faces = cubelet.faces;
+
+    console.log("Before pos:", { ...pos });
+    console.log("Before faces:", { ...faces });
+
+    const [x, y, z] = [pos.x, pos.y, pos.z];
+    
+
+
+    if (axis === 'x') {
+      [pos.y, pos.z] = dir > 0 ? [-z, y] : [z, -y];
+    } else if (axis === 'y') {
+      [pos.x, pos.z] = dir > 0 ? [z, -x] : [-z, x];
+    } else if (axis === 'z') {
+      [pos.x, pos.y] = dir > 0 ? [-y, x] : [y, -x];
+    }
+
+    // after rotating position...
+
+    const rotateFaces = (cycle, clockwise) => {
+      const temp = {};
+      for (const [a, b] of cycle) {
+        temp[a] = faces[a];
+        temp[b] = faces[b];
+      }
+
+      const indexes = clockwise
+        ? cycle.map(pair => pair[0])
+        : cycle.map(pair => pair[1]).reverse();
+
+      for (let i = 0; i < indexes.length; i++) {
+        const from = indexes[i];
+        const to = indexes[(i + 1) % indexes.length];
+
+        if (temp[from] != null) {
+          faces[to] = temp[from];
+        } else {
+          delete faces[to];
+        }
+      }
+    };
+
+    const effectiveDir = axis === 'y' ? -dir : dir;
+
+    // ✅ Fix specifically for Y-axis middle slice:
+    if (axis === 'y') {
+      const clockwise = dir > 0;
+
+      const ordered = clockwise
+        ? ['front', 'right', 'back', 'left']
+        : ['left', 'back', 'right', 'front'];
+
+      const temp = { ...faces };
+      for (let i = 0; i < 4; i++) {
+        const from = ordered[i];
+        const to = ordered[(i + 1) % 4];
+
+        if (temp[from] !== undefined) {
+          faces[to] = temp[from] ?? '#444';
+        }
+      }
+    } else {
+      const cycle = faceCycles[axis];
+      rotateFaces(cycle, dir > 0);
+    }
+    console.log("After pos:", { ...pos });
+    console.log("After faces:", { ...faces });
+  }
+
+  if (currentMode === 'rubik') RubikVisualizer.draw();
+}
+
+
+function rotateDoubleLayer(axis, group, dir) {
+  const cubelets = RubikVisualizer.cubelets;
+
+  // 2-layer selection: includes middle (0) + one outer layer
+  const inGroup = (v) => (group === 'top2' ? v >= 0 : v <= 0);
+  const toRotate = cubelets.filter(c => inGroup(c.position[axis]));
+
+  const faceCycles = {
+    x: [['top', 'front'], ['front', 'bottom'], ['bottom', 'back'], ['back', 'top']],
+    y: [['left', 'front'], ['front', 'right'], ['right', 'back'], ['back', 'left']],
+    z: [['top', 'left'], ['left', 'bottom'], ['bottom', 'right'], ['right', 'top']]
+  };
+
+  for (const cubelet of toRotate) {
+    const pos = cubelet.position;
+    const faces = cubelet.faces;
+
+    const [x, y, z] = [pos.x, pos.y, pos.z];
+    if (axis === 'x') [pos.y, pos.z] = dir > 0 ? [-z, y] : [z, -y];
+    if (axis === 'y') [pos.x, pos.z] = dir > 0 ? [z, -x] : [-z, x];
+    if (axis === 'z') [pos.x, pos.y] = dir > 0 ? [-y, x] : [y, -x];
+
+    if (axis === 'y') {
+      const clockwise = dir > 0;
+      const ordered = clockwise ? ['front', 'right', 'back', 'left'] : ['left', 'back', 'right', 'front'];
+      const temp = { ...faces };
+      for (let i = 0; i < 4; i++) {
+        const from = ordered[i];
+        const to = ordered[(i + 1) % 4];
+        if (temp[from] !== undefined) faces[to] = temp[from] ?? '#444';
+      }
+    } else {
+      const cycle = faceCycles[axis];
+      const temp = {};
+      for (const [a, b] of cycle) { temp[a] = faces[a]; temp[b] = faces[b]; }
+      const indexes = (dir > 0) ? cycle.map(p => p[0]) : cycle.map(p => p[1]).reverse();
+      for (let i = 0; i < indexes.length; i++) {
+        const from = indexes[i];
+        const to = indexes[(i + 1) % indexes.length];
+        if (temp[from] != null) faces[to] = temp[from] ?? '#444';
+      }
+    }
+  }
+}
+
+
+
+function rotateWholeCube(axis, dir) {
+  const cubelets = RubikVisualizer.cubelets;
+
+  const faceCycles = {
+    x: ['top', 'front', 'bottom', 'back'],
+    y: ['left', 'front', 'right', 'back'],
+    z: ['top', 'left', 'bottom', 'right']
+  };
+
+  for (const cubelet of cubelets) {
+    const pos = cubelet.position;
+    const faces = cubelet.faces;
+
+    // Rotate position
+    const [x, y, z] = [pos.x, pos.y, pos.z];
+    if (axis === 'x') {
+      [pos.y, pos.z] = dir > 0 ? [-z, y] : [z, -y];
+    } else if (axis === 'y') {
+      [pos.x, pos.z] = dir > 0 ? [z, -x] : [-z, x];
+    } else if (axis === 'z') {
+      [pos.x, pos.y] = dir > 0 ? [-y, x] : [y, -x];
+    }
+
+    const effectiveDir = axis === 'y' ? -dir : dir;
+
+    if (axis === 'y') {
+      const clockwise = dir > 0;
+
+      const ordered = clockwise
+        ? ['front', 'right', 'back', 'left']
+        : ['left', 'back', 'right', 'front'];
+
+      const temp = { ...faces };
+
+      for (let i = 0; i < 4; i++) {
+        const from = ordered[i];
+        const to = ordered[(i + 1) % 4];
+
+        if (temp[from] !== undefined) {
+          faces[to] = temp[from];
+        } else {
+          delete faces[to];
+        }
+      }
+    } else {
+      const faceCycles = {
+        x: [['top', 'front'], ['front', 'bottom'], ['bottom', 'back'], ['back', 'top']],
+        z: [['top', 'left'], ['left', 'bottom'], ['bottom', 'right'], ['right', 'top']],
+        y: [['left', 'front'], ['front', 'right'], ['right', 'back'], ['back', 'left']]
+      };
+
+      const rotateFaces = (cycle, clockwise) => {
+        const temp = {};
+        for (const [a, b] of cycle) {
+          temp[a] = faces[a];
+          temp[b] = faces[b];
+        }
+
+        const indexes = clockwise
+          ? cycle.map(pair => pair[0])
+          : cycle.map(pair => pair[1]).reverse();
+
+        for (let i = 0; i < indexes.length; i++) {
+          const from = indexes[i];
+          const to = indexes[(i + 1) % indexes.length];
+
+          if (temp[from] != null) {
+            faces[to] = temp[from] ?? '#444';
+          }
+        }
+      };
+
+      const cycle = faceCycles[axis];
+      rotateFaces(cycle, dir > 0);
+    }
+
+  }
+}
+
+
+
+
+
+function rotateRubikFaceFromNote(note) {
+  const relNote = ((note - 21) % 36 + 36) % 36;
+  if (relNote < 12) {
+    rotateFaceByNote(relNote);
+  } else if (relNote < 18) {
+    rotateMiddleByNote(relNote - 12);
+  } else if (relNote < 30) {
+    rotateDoubleLayerByNote(relNote - 18);
+  } else {
+    rotateWholeCubeByNote(relNote - 30);
+  }
+}
+
+function applyLogicalRotation(rotation) {
+  const { type, face, plane, axis, dir, group } = rotation;
+
+  if (type === 'face') {
+    rotateFaceLayer(face, dir);
+  } else if (type === 'middle') {
+    rotateMiddleLayer(plane, dir);
+  } else if (type === 'whole') {
+    rotateWholeCube(axis, dir);
+  } else if (type === 'double') rotateDoubleLayer(axis, group, dir);
+
+
+  // If needed later:
+  // if (type === 'double') rotateDoubleLayer(axis, group, dir);
+}
+
+
+let rubikRotationQueue = [];
+let currentRubikRotation = null;
+let rubikRotationStartTime = 0;
+
+function processRubikAnimation() {
+  const now = performance.now();
+
+  if (rubikRotationQueue.length > 0) {
+  currentRubikRotation = rubikRotationQueue.shift();
+  rubikRotationStartTime = now;
+  }
+
+  if (!currentRubikRotation) return;
+
+  const elapsed = now - rubikRotationStartTime;
+  const duration =
+    currentRubikRotation.type === 'whole' ? 400 : 150;
+
+  const t = Math.min(elapsed / duration, 1);
+  const easedT = ease(currentRubikRotation.type, t);
+
+  // TODO: apply easedT rotation to selected cubelets
+
+  if (t >= 1) {
+    // Finalize cube state after animation
+    applyLogicalRotation(currentRubikRotation);
+    currentRubikRotation = null;
+  }
+}
+
+function ease(type, t) {
+  if (type === 'whole') {
+    // Overshoot ease-out
+    return t < 0.9
+      ? 1 - Math.pow(1 - t, 3)
+      : 1 + 0.05 * Math.sin((t - 0.9) * 10 * Math.PI);
+  }
+
+  // Linear for face/middle
+  return t;
+}
+
+
+
+
+
+
+
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  processRubikAnimation();
+
+  if (currentMode === 'plane') {
+    PlaneVisualizer.draw();
+  } else if (currentMode === 'plasma') {
+    PlasmaVisualizer.draw();
+  } else if (currentMode === 'rubik') {
+    RubikVisualizer.updatePulseToSolve?.();
+    RubikVisualizer.draw();
+  } else {
+    drawDefault();
+  }
+
+  PlaneVisualizer.updateRotation();
+
+  const isExploding = Object.keys(notes).some(k => (parseInt(k) - 21) % 36 === 18);
+  const targetZoom = isExploding ? 1 : 0;
+  expansionZoom += (targetZoom - expansionZoom) * 0.015;
+
+  if (activeLasers.x) rotation.x += 0.005;
+  if (activeLasers.y) rotation.y += 0.005;
+  if (activeLasers.z) rotation.z += 0.005;
+
+  requestAnimationFrame(animate);
+}
+
+
+
+
+
+animate();
+
+
+let noteOnTimestamps = {};
+const noteDriftTimers = {};
+const noteLfoTimers = {};
+const noteDriftVelocity = {};
+const noteDriftAngle = {};
+const noteDriftSpeeds = {};
+const noteDriftTargets = {};
+const driftDirections = {};
+
+
+
+
+function onMIDIMessage(msg) {
+  const [status, data1, data2] = msg.data;
+  const cmd = status & 0xf0;
+  const note = data1;
+  if (cmd === 0x90 || cmd === 0x80) {
+    console.log(`🎹 MIDI In → Note: ${note}, Velocity: ${data2}, Channel: ${status & 0x0F}`);
+  }
+  const noteKey = note;
+  const now = performance.now() * 0.001;
+
+  if (cmd === 0x90 && data2 > 0) {
+    notes[noteKey] = { velocity: data2 };
+    activeNotes[noteKey] = data2;
+    noteOnTimestamps[noteKey] = performance.now();
+
+    // Reset drift state for this noteKey
+    noteDriftTimers[noteKey] = performance.now();
+    noteLfoTimers[noteKey] = performance.now();
+    noteDriftVelocity[noteKey] = 0;
+    noteDriftAngle[noteKey] = 0;
+    noteOnTimestamps[noteKey] = now;
+
+    // Optional: re-randomize motion parameters on each press
+    noteDriftSpeeds[noteKey] = 0.1 + Math.random() * 0.2;
+    noteDriftTargets[noteKey] = 0.1 + Math.random() * 0.3;
+    driftDirections[noteKey] = (Math.random() - 0.5) * 2 * Math.PI;
+
+    // 🔄 Call Rubik handler if in rubik mode
+    if (currentMode === 'rubik') {
+      onMIDINote(note, data2);
+    }
+
+  } else if (cmd === 0x80 || (cmd === 0x90 && data2 === 0)) {
+    delete notes[noteKey];
+    delete activeNotes[noteKey];
+
+    // 🎯 Trigger snap-back on note release
+    if (currentMode === 'rubik') {
+      onMIDINote(note, 0); // Velocity 0 = note off
+    }
+  }
+
+  // ✅ Keep this *outside* both conditionals
+  if (cmd === 0xB0 && data1 === 21) {
+    colorLerpSpeed = data2 / 127 * 0.5;
+  }
+}
+
+
+
+
+// 🔁 Called only when rubik mode is active
+function onMIDINote(note, velocity) {
+  const relNote = ((note - 21) % 36 + 36) % 36;
+  const isInvertNote = relNote === 25;
+
+  // 💜 Pulse to solve on note 47
+  if (relNote === 26 && velocity > 0) {
+    console.log("💜 Pulse-to-solve triggered!");
+    RubikVisualizer.triggerPulseToSolve?.();
+    return; // ✅ stop further logic
+  }
+
+
+  // Invert colors
+  if (isInvertNote) {
+    invertColors = velocity > 0;
+  }
+
+  // 🎯 Drawer effect for relative notes 40–45 → relNote 19–24
+  if (relNote >= 19 && relNote <= 24) {
+    const colorMap = {
+      19: 'red',
+      20: 'orange',
+      21: 'green',
+      22: 'blue',
+      23: 'white',
+      24: 'yellow'
+    };
+    const color = colorMap[relNote];
+    if (velocity > 0) {
+      for (const c of RubikVisualizer.cubelets) {
+        for (const [face, faceColor] of Object.entries(c.faces)) {
+          if (faceColor === color) {
+            const d = { x: 0, y: 0, z: 0 };
+            if (face === 'front') d.z = 1;
+            if (face === 'back') d.z = -1;
+            if (face === 'right') d.x = 1;
+            if (face === 'left') d.x = -1;
+            if (face === 'top') d.y = 1;
+            if (face === 'bottom') d.y = -1;
+            c.explodeTarget = {
+              x: d.x * 1.2,
+              y: d.y * 1.2,
+              z: d.z * 1.2
+            };
+          }
+        }
+      }
+    } else {
+      for (const c of RubikVisualizer.cubelets) {
+        c.explodeTarget = { x: 0, y: 0, z: 0 };
+      }
+    }
+    return; // ✅ Stop here so no rotation happens
+  }
+
+  // 💥 Expansion effect for relNote 18 (note 39, 75, etc.)
+  if (relNote === 18 && velocity > 0) {
+    for (const c of RubikVisualizer.cubelets) {
+      c.explodeTarget = {
+        x: c.position.x * explosionFactor,
+        y: c.position.y * explosionFactor,
+        z: c.position.z * explosionFactor
+      };
+    }
+    return;
+  } else if (relNote === 18 && velocity === 0) {
+    for (const c of RubikVisualizer.cubelets) {
+      c.explodeTarget = { x: 0, y: 0, z: 0 };
+    }
+    return;
+  }
+
+  // 🔁 Regular cube logic
+  if (velocity > 0) {
+    rotateRubikFaceFromNote(note);
+  }
+}
+
+
+
+
+
+
+
+navigator.requestMIDIAccess().then(midiAccess => {
+  for (const input of midiAccess.inputs.values()) {
+    input.onmidimessage = onMIDIMessage;
+  }
+});
+
+
+
+canvas.addEventListener("touchstart", e => {
+  e.preventDefault();
+  const touches = e.changedTouches;
+  for (let i = 0; i < touches.length; i++) {
+    const x = touches[i].clientX;
+    const y = touches[i].clientY;
+    const note = Math.floor((x / canvas.width) * 12);
+    const velocity = Math.floor(((canvas.height - y) / canvas.height) * 127);
+    activeNotes[note] = velocity;
+    notes[note] = { velocity }; // <-- Also update notes for 3D Plane
+  }
+});
+
+canvas.addEventListener("touchend", e => {
+  e.preventDefault();
+  const touches = e.changedTouches;
+  for (let i = 0; i < touches.length; i++) {
+    const x = touches[i].clientX;
+    const note = Math.floor((x / canvas.width) * 12);
+    delete activeNotes[note];
+    delete notes[note]; // <-- Clear notes as well
+  }
+});
+
+canvas.addEventListener("touchstart", handleTouchEvent);
+canvas.addEventListener("touchmove", handleTouchEvent);
+canvas.addEventListener("touchend", e => {
+  for (let t of e.changedTouches) {
+    const note = Math.floor((t.clientX / canvas.width) * 12);
+    delete activeNotes[note];
+    delete notes[note];
+  }
+});
+
+function handleTouchEvent(e) {
+  e.preventDefault();
+  for (let t of e.touches) {
+    const note = Math.floor((t.clientX / canvas.width) * 12);
+    const velocity = Math.floor(((canvas.height - t.clientY) / canvas.height) * 127);
+    activeNotes[note] = velocity;
+    notes[note] = { velocity };
+  }
+}
+
+
+
+animate();
+</script>
+</body>
+</html>
