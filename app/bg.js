@@ -51,9 +51,11 @@ export function startBackground() {
 
   // Internal resolution scale: smaller = faster.
   // 0.5–0.7 is usually smooth. Start conservative.
-  const INTERNAL_SCALE = 0.5;
+  const INTERNAL_SCALE = 0.2;
 
   let w = 0, h = 0, img = null, data = null;
+  let lastT = 0;
+
 
   function resize() {
     const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
@@ -70,7 +72,12 @@ export function startBackground() {
     data = img.data;
   }
 
-  function render(t) {
+    function render(t) {
+    if (t - lastT < 33) { // ~30fps
+        requestAnimationFrame(render);
+        return;
+    }
+    lastT = t;
     // slow time in seconds
     const time = t * 0.0001;
 
