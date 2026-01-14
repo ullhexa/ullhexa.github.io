@@ -132,11 +132,26 @@ body {
   .pack-img { height: 160px; }
 }
 
+a {
+  color: white;          /* or any color */
+  text-decoration: none; /* removes underline */
+}
+
+a:hover {
+  color: #aaa;           /* hover color */
+  text-decoration: none; /* optional */
+}
+
+a:visited {
+  color: white;          /* prevents purple visited links */
+}
+
 .bio {
   display: grid;
   grid-template-columns: 140px 1fr;
   gap: 20px;
-  align-items: center;
+  align-items: start;
+  margin-bottom: 28px;
 }
 
 .bio-img {
@@ -151,6 +166,28 @@ body {
   line-height: 1.5;
 }
 
+.home-section-title {
+  margin: 28px 0 4px;   /* reduced bottom margin */
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.home-section-text {
+  margin: 0 0 14px;    /* no top margin, keeps section spacing */
+  line-height: 1.6;
+  max-width: 720px;
+}
+
+.home-section-title a {
+  display: inline-block;
+  transition: transform 0.15s ease, text-shadow 0.15s ease;
+}
+
+.home-section-title a:hover {
+  transform: scale(1.06);
+  text-shadow: 0 0 0.01px currentColor;
+}
+
 @media (max-width: 700px) {
   .bio {
     grid-template-columns: 1fr;
@@ -160,4 +197,26 @@ body {
   .bio-img {
     margin: 0 auto;
   }
+
+  .site-header {
+    height: auto;
+    padding: 18px 0 8px;
+  }
+
+  .logo {
+    width: 70%;
+    max-width: 240px;
+  }
+
+  .nav {
+    flex-wrap: wrap;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .card {
+    margin: 12px 12px 28px;
+  }
 }
+
+
