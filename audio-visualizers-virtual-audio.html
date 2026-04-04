@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Audio Visualizers (Virtual Audio)</title>
+  <style>
+    body { background: black; margin: 0; overflow: hidden; }
+    canvas { display: block; }
+    #controls {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      color: white;
+      font-family: sans-serif;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-width: min(96vw, 1000px);
+    }
+    #sourceSelect, #modeSelect, #activateBtn, #deactivateBtn, #refreshBtn {
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid #666;
+      background: #111;
+      color: #fff;
+    }
+    #activateBtn, #deactivateBtn, #refreshBtn { cursor: pointer; }
+    #status {
+      opacity: 0.9;
+      font-size: 12px;
+      border: 1px solid #444;
+      border-radius: 999px;
+      padding: 3px 8px;
+    }
+    #status.on { color: #9aff9a; border-color: #2d6f2d; }
+    #status.off { color: #ffb0b0; border-color: #6f2d2d; }
+    #hint { opacity: 0.8; font-size: 12px; }
+  </style>
+</head>
+<body>
+<div id="controls">
+  <label for="modeSelect">Mode:</label>
+  <select id="modeSelect" onchange="setMode(this.value)">
+    <option value="default">Default Audio Model</option>
+  </select>
+
+  <label for="sourceSelect">Input device:</label>
+  <select id="sourceSelect"></select>
+  <button id="refreshBtn">Refresh devices</button>
+
+  <button id="activateBtn">Activate input</button>
+  <button id="deactivateBtn">Deactivate</button>
+  <span id="status" class="off">inactive</span>
+  <span id="hint">Tip: choose BlackHole/Loopback device if installed.</span>
+</div>
+<canvas id="canvas"></canvas>
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const statusEl = document.getElementById("status");
+const sourceSelect = document.getElementById("sourceSelect");
+const activateBtn = document.getElementById("activateBtn");
+const deactivateBtn = document.getElementById("deactivateBtn");
+const refreshBtn = document.getElementById("refreshBtn");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+let currentMode = "default";
+function setMode(mode) { currentMode = mode; }
+
+const features = {
+  volumeRms: 0,
+  peak: 0,
+  spectralCentroid: 0,
+  bassEnergy: 0,
+  midEnergy: 0,
+  highEnergy: 0,
+  spectralFlux: 0,
+  zeroCrossingRate: 0,
+  onset: 0,
+  lowSub: 0
+};
+
+let audioReady = false;
+let audioCtx = null;
+let analyser = null;
+let timeData = null;
+let freqData = null;
+let prevFreq = null;
+let fluxEma = 0;
+let currentStream = null;
+let currentDeviceLabel = "none";
+
+function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+function smooth(name, target, alpha = 0.2) { features[name] += (target - features[name]) * alpha; }
+
+function setStatus(isActive, text) {
+  statusEl.textContent = text;
+  statusEl.classList.toggle("on", isActive);
+  statusEl.classList.toggle("off", !isActive);
+}
+
+function stopCurrentStream() {
+  if (currentStream) {
+    currentStream.getTracks().forEach(t => t.stop());
+    currentStream = null;
+  }
+  audioReady = false;
+  setStatus(false, "inactive");
+}
+
+async function listInputDevices() {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const inputs = devices.filter(d => d.kind === "audioinput");
+
+  sourceSelect.innerHTML = "";
+  if (!inputs.length) {
+    const o = document.createElement("option");
+    o.value = "";
+    o.textContent = "No input devices found";
+    sourceSelect.appendChild(o);
+    return;
+  }
+
+  for (const d of inputs) {
+    const o = document.createElement("option");
+    o.value = d.deviceId;
+    o.textContent = d.label || `Audio input (${d.deviceId.slice(0, 6)}...)`;
+    sourceSelect.appendChild(o);
+  }
+
+  // Prefer virtual devices if present
+  const preferred = inputs.find(d => /blackhole|loopback|virtual/i.test(d.label));
+  if (preferred) sourceSelect.value = preferred.deviceId;
+}
+
+async function primePermissionsAndDevices() {
+  try {
+    // Needed once so labels can show up on many browsers.
+    const temp = await navigator.mediaDevices.getUserMedia({ audio: true });
+    temp.getTracks().forEach(t => t.stop());
+  } catch {}
+
+  try {
+    await listInputDevices();
+  } catch {
+    setStatus(false, "device list blocked");
+  }
+}
+
+async function setupAnalyserFromStream(stream, label) {
+  stopCurrentStream();
+
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") await audioCtx.resume();
+
+  const source = audioCtx.createMediaStreamSource(stream);
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 1024;
+  analyser.smoothingTimeConstant = 0.82;
+  source.connect(analyser);
+
+  timeData = new Float32Array(analyser.fftSize);
+  freqData = new Uint8Array(analyser.frequencyBinCount);
+  prevFreq = new Float32Array(analyser.frequencyBinCount);
+
+  currentStream = stream;
+  currentDeviceLabel = label;
+  audioReady = true;
+  setStatus(true, `active: ${label}`);
+}
+
+async function activateSelectedInput() {
+  const deviceId = sourceSelect.value;
+  if (!deviceId) {
+    setStatus(false, "no input selected");
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        deviceId: { exact: deviceId },
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false
+      }
+    });
+
+    const label = sourceSelect.options[sourceSelect.selectedIndex]?.text || "input";
+    await setupAnalyserFromStream(stream, label);
+  } catch {
+    setStatus(false, "activation blocked/failed");
+  }
+}
+
+function computeFeatures() {
+  if (!audioReady || !analyser) return;
+
+  analyser.getFloatTimeDomainData(timeData);
+  analyser.getByteFrequencyData(freqData);
+
+  let sum = 0, peak = 0, crossings = 0;
+  for (let i = 0; i < timeData.length; i++) {
+    const v = timeData[i];
+    sum += v * v;
+    if (Math.abs(v) > peak) peak = Math.abs(v);
+    if (i > 0 && ((timeData[i - 1] <= 0 && v > 0) || (timeData[i - 1] >= 0 && v < 0))) crossings++;
+  }
+  const rms = Math.sqrt(sum / timeData.length);
+  const zcr = crossings / timeData.length;
+
+  const nyquist = (audioCtx.sampleRate || 48000) / 2;
+  const hzPerBin = nyquist / freqData.length;
+
+  let bass = 0, mid = 0, high = 0, lowSub = 0;
+  let weighted = 0, total = 0, flux = 0;
+
+  for (let i = 0; i < freqData.length; i++) {
+    const mag = freqData[i] / 255;
+    const hz = i * hzPerBin;
+    const lowBoost = 1 + 1.1 * (1 - Math.min(hz, 20000) / 20000);
+    const magW = mag * lowBoost;
+
+    total += magW;
+    weighted += magW * hz;
+
+    if (hz >= 20 && hz < 250) lowSub += magW * 1.35;
+    if (hz >= 150 && hz < 350) bass += magW * 1.25;
+    else if (hz >= 350 && hz < 2500) mid += magW;
+    else if (hz >= 2500 && hz <= 20000) high += magW;
+
+    const prev = prevFreq[i] || 0;
+    const d = mag - prev;
+    if (d > 0) flux += d;
+    prevFreq[i] = mag;
+  }
+
+  const centroid = total > 1e-6 ? (weighted / total) / nyquist : 0;
+  const bassN = clamp01(bass / (freqData.length * 0.02));
+  const midN  = clamp01(mid  / (freqData.length * 0.10));
+  const highN = clamp01(high / (freqData.length * 0.11));
+  const fluxN = clamp01(flux * 0.9);
+  const lowSubN = clamp01(lowSub / (freqData.length * 0.04));
+
+  fluxEma = fluxEma * 0.86 + fluxN * 0.14;
+  const onset = clamp01((fluxN - fluxEma) * 4.5 + rms * 0.6);
+
+  smooth("volumeRms", clamp01(rms * 4.2), 0.2);
+  smooth("peak", clamp01(peak * 2.4), 0.22);
+  smooth("spectralCentroid", centroid, 0.18);
+  smooth("bassEnergy", bassN, 0.2);
+  smooth("midEnergy", midN, 0.2);
+  smooth("highEnergy", highN, 0.2);
+  smooth("spectralFlux", fluxN, 0.2);
+  smooth("zeroCrossingRate", clamp01(zcr * 8), 0.2);
+  smooth("onset", onset, 0.25);
+  smooth("lowSub", lowSubN, 0.24);
+}
+
+function drawDefault() {
+  const w = canvas.width, h = canvas.height;
+  const cx = w * 0.5, cy = h * 0.5;
+
+  const vol = features.volumeRms;
+  const bass = features.bassEnergy;
+  const mid = features.midEnergy;
+  const high = features.highEnergy;
+  const onset = features.onset;
+  const centroid = features.spectralCentroid;
+  const zcr = features.zeroCrossingRate;
+  const lowSub = features.lowSub;
+
+  const bg = Math.floor(8 + vol * 28 + onset * 22);
+  const trailAlpha = 0.095 + (1 - vol) * 0.05;
+  ctx.fillStyle = `rgba(${Math.floor(bg * 0.25)}, ${Math.floor(bg * 0.35)}, ${Math.floor(bg * 0.5)}, ${trailAlpha})`;
+  ctx.fillRect(0, 0, w, h);
+
+  const coreR = 18 + lowSub * 30;
+  const outerR = 52 + lowSub * 180;
+  const g = ctx.createRadialGradient(cx, cy, coreR, cx, cy, outerR);
+  g.addColorStop(0, `rgba(180, 80, 255, ${0.26 + lowSub * 0.46})`);
+  g.addColorStop(0.45, `rgba(150, 60, 230, ${0.18 + lowSub * 0.28})`);
+  g.addColorStop(1, 'rgba(90, 30, 140, 0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+  ctx.fill();
+
+  function drawDistortedRing(baseRadius, energy, color, widthBase, sampleOffset = 0) {
+    const loudDistort = clamp01((vol - 0.22) / 0.78);
+    const distortAmp = loudDistort * (8 + energy * 26);
+
+    ctx.shadowBlur = 8 + energy * 20;
+    ctx.shadowColor = color;
+    ctx.lineWidth = widthBase + energy * 7;
+    ctx.strokeStyle = color;
+
+    const segs = 180;
+    ctx.beginPath();
+    for (let i = 0; i <= segs; i++) {
+      const t = i / segs;
+      const a = t * Math.PI * 2;
+
+      let distort = 0;
+      if (audioReady && timeData) {
+        const idx = ((i * 5 + sampleOffset) % timeData.length) | 0;
+        distort = timeData[idx] * distortAmp;
+      }
+
+      const r = baseRadius + distort;
+      const x = cx + Math.cos(a) * r;
+      const y = cy + Math.sin(a) * r;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  drawDistortedRing(78 + bass * 145, bass, `rgba(80,170,255,${0.3 + bass * 0.52})`, 2.2, 7);
+  drawDistortedRing(150 + mid * 110, mid, `rgba(120,255,170,${0.26 + mid * 0.48})`, 2, 47);
+  drawDistortedRing(220 + high * 100, high, `rgba(255,170,110,${0.22 + high * 0.45})`, 1.5, 89);
+
+  ctx.shadowBlur = 0;
+
+  if (audioReady && timeData) {
+    const samples = 220;
+    const step = Math.floor(timeData.length / samples);
+    const yBase = h * 0.78;
+    const amp = 170 + vol * 320;
+
+    ctx.beginPath();
+    for (let i = 0; i < samples; i++) {
+      const x = (i / (samples - 1)) * w;
+      const y = yBase + timeData[i * step] * amp;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = `rgba(230,240,255,${0.35 + vol * 0.55})`;
+    ctx.lineWidth = 1.2 + features.peak * 2.4;
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "rgba(255,255,255,0.75)";
+  ctx.font = "12px monospace";
+  ctx.fillText(`state:${audioReady ? 'on' : 'off'} dev:${currentDeviceLabel} vol:${vol.toFixed(2)} peak:${features.peak.toFixed(2)} cen:${centroid.toFixed(2)} bass:${bass.toFixed(2)} mid:${mid.toFixed(2)} high:${high.toFixed(2)} flux:${features.spectralFlux.toFixed(2)} zcr:${zcr.toFixed(2)}`, 12, h - 12);
+}
+
+function animate() {
+  computeFeatures();
+  if (currentMode === "default") drawDefault();
+  requestAnimationFrame(animate);
+}
+animate();
+
+activateBtn.addEventListener("click", activateSelectedInput);
+deactivateBtn.addEventListener("click", stopCurrentStream);
+refreshBtn.addEventListener("click", listInputDevices);
+navigator.mediaDevices?.addEventListener?.("devicechange", listInputDevices);
+
+primePermissionsAndDevices();
+</script>
+</body>
+</html>

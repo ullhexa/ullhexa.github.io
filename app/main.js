@@ -16,6 +16,20 @@ function packCard({ title, desc, img, url, buttonText = "Open Google Drive" }) {
   `;
 }
 
+function buildMailtoHref({ recipient, senderName, senderEmail, subject, message }) {
+  const bodyLines = [
+    senderName ? `Name: ${senderName}` : "",
+    senderEmail ? `Reply email: ${senderEmail}` : "",
+    "",
+    message || ""
+  ].filter(Boolean);
+
+  const params = new URLSearchParams();
+  if (subject) params.set("subject", subject);
+  if (bodyLines.length > 0) params.set("body", bodyLines.join("\n"));
+  return `mailto:${recipient}?${params.toString()}`;
+}
+
 const pages = {
   home: () => `
     <h2>Home</h2>
@@ -109,21 +123,88 @@ const pages = {
 
 
   contact: () => `
-    <h2>Contact</h2>
-    <p>Links and basic contact info.</p>
-    <ul>
-      <li>Email: <a href="mailto:you@domain.com">you@domain.com</a></li>
-      <li>Linktree: <a href="#" target="_blank" rel="noreferrer">add link</a></li>
-      <li>Instagram: <a href="#" target="_blank" rel="noreferrer">add link</a></li>
-      <li>Spotify: <a href="#" target="_blank" rel="noreferrer">add link</a></li>
-    </ul>
+    <section class="contactShell">
+      <div class="contactIntro">
+        <p class="contactEyebrow">Contact</p>
+        <h2>Fredrik Gjerstad Støpamo</h2>
+        <p class="contactLead">
+          For music, sound design, collaborations, licensing, or visualizer ideas, send a note here.
+          The form below opens a ready-made email draft so it works immediately without a backend.
+        </p>
+      </div>
+
+      <div class="contactGrid">
+        <div class="contactPanel contactIdentity">
+          <div class="contactIdentityGlow"></div>
+          <p class="contactRole">Ull Hexa</p>
+          <h3>Direct contact</h3>
+          <div class="contactChips">
+            <a class="contactChip" href="mailto:fstopamo@gmail.com">fstopamo@gmail.com</a>
+            <a class="contactChip" href="mailto:ullhexa.music@gmail.com">ullhexa.music@gmail.com</a>
+          </div>
+          <p class="contactNote">
+            Use the personal address for direct contact, or the Ull Hexa address for music-related inquiries.
+          </p>
+        </div>
+
+        <div class="contactPanel">
+          <form id="contactForm" class="contactForm">
+            <div class="contactField">
+              <label for="contactRecipient">Send to</label>
+              <select id="contactRecipient" name="recipient">
+                <option value="fstopamo@gmail.com">Fredrik Gjerstad Støpamo</option>
+                <option value="ullhexa.music@gmail.com">Ull Hexa Music</option>
+              </select>
+            </div>
+
+            <div class="contactFieldRow">
+              <div class="contactField">
+                <label for="contactName">Your name</label>
+                <input id="contactName" name="name" type="text" placeholder="Your name" />
+              </div>
+              <div class="contactField">
+                <label for="contactEmail">Your email</label>
+                <input id="contactEmail" name="email" type="email" placeholder="you@example.com" />
+              </div>
+            </div>
+
+            <div class="contactField">
+              <label for="contactSubject">Subject</label>
+              <input id="contactSubject" name="subject" type="text" placeholder="Project, licensing, collaboration..." />
+            </div>
+
+            <div class="contactField">
+              <label for="contactMessage">Message</label>
+              <textarea id="contactMessage" name="message" rows="7" placeholder="Write a short message..."></textarea>
+            </div>
+
+            <div class="contactActions">
+              <button type="submit" class="contactPrimaryBtn">Open email draft</button>
+              <a id="contactMailtoPreview" class="contactSecondaryBtn" href="mailto:fstopamo@gmail.com">Open direct email</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  `,
+
+
+  visualizers: () => `
+    <h2>Visualizers</h2>
+    <p>Choose input type:</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;max-width:680px;">
+      <a href="./midi-visualizers.html" target="_blank" rel="noreferrer" style="display:inline-block;text-align:center;text-decoration:none;color:#fff;border:1px solid #555;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.06);transition:background 0.06s ease;" onmouseover="this.style.transition='background 0s';this.style.background='rgba(220,220,220,0.28)'" onmouseout="this.style.transition='background 0.14s ease';this.style.background='rgba(255,255,255,0.06)'">MIDI Visualizers</a>
+      <a href="./audio-visualizers.html" target="_blank" rel="noreferrer" style="display:inline-block;text-align:center;text-decoration:none;color:#fff;border:1px solid #555;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.06);transition:background 0.06s ease;" onmouseover="this.style.transition='background 0s';this.style.background='rgba(220,220,220,0.28)'" onmouseout="this.style.transition='background 0.14s ease';this.style.background='rgba(255,255,255,0.06)'">Audio Visualizers</a>
+    </div>
   `,
 };
 
+const mutedRoutes = new Set(["skins", "presets", "samples"]);
 
 
 function routeFromHash() {
-  return (location.hash || "#home").slice(1);
+  const route = (location.hash || "#home").slice(1);
+  return mutedRoutes.has(route) ? "home" : route;
 }
 
 function render() {
@@ -136,8 +217,41 @@ function render() {
     a.classList.toggle("active", href === route);
   });
 
+  const contactForm = document.getElementById("contactForm");
+  const contactRecipient = document.getElementById("contactRecipient");
+  const contactName = document.getElementById("contactName");
+  const contactEmail = document.getElementById("contactEmail");
+  const contactSubject = document.getElementById("contactSubject");
+  const contactMessage = document.getElementById("contactMessage");
+  const contactMailtoPreview = document.getElementById("contactMailtoPreview");
+
+  if (contactForm && contactRecipient && contactMailtoPreview) {
+    const syncMailto = () => {
+      const href = buildMailtoHref({
+        recipient: contactRecipient.value,
+        senderName: contactName?.value || "",
+        senderEmail: contactEmail?.value || "",
+        subject: contactSubject?.value || "",
+        message: contactMessage?.value || ""
+      });
+      contactMailtoPreview.href = href;
+      contactMailtoPreview.textContent = `Email ${contactRecipient.value}`;
+    };
+
+    [contactRecipient, contactName, contactEmail, contactSubject, contactMessage].forEach(el => {
+      if (el) el.addEventListener("input", syncMailto);
+    });
+
+    contactForm.addEventListener("submit", e => {
+      e.preventDefault();
+      syncMailto();
+      window.location.href = contactMailtoPreview.href;
+    });
+
+    syncMailto();
+  }
+
 }
 
 window.addEventListener("hashchange", render);
 render();
-
