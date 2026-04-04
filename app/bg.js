@@ -48,19 +48,34 @@ function fbm(x, y) {
 export function startBackground() {
   const canvas = document.getElementById("bg");
   const ctx = canvas.getContext("2d", { alpha: false });
-
-  // Internal resolution scale: smaller = faster.
-  // 0.5–0.7 is usually smooth. Start conservative.
-  const INTERNAL_SCALE = 0.2;
+  if (!canvas || !ctx) return;
 
   let w = 0, h = 0, img = null, data = null;
   let lastT = 0;
+  let rafId = 0;
 
+  const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  function getPerfProfile() {
+    const shortSide = Math.min(window.innerWidth, window.innerHeight);
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+    const reducedMotion = reducedMotionQuery.matches;
+
+    if (reducedMotion) {
+      return { scale: 0.12, minFrameMs: 120, animate: false };
+    }
+    if (isTouchDevice) {
+      if (shortSide <= 480) return { scale: 0.12, minFrameMs: 80, animate: true };
+      return { scale: 0.14, minFrameMs: 66, animate: true };
+    }
+    return { scale: 0.18, minFrameMs: 40, animate: true };
+  }
 
   function resize() {
+    const profile = getPerfProfile();
     const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-    const cw = Math.floor(window.innerWidth * dpr * INTERNAL_SCALE);
-    const ch = Math.floor(window.innerHeight * dpr * INTERNAL_SCALE);
+    const cw = Math.max(1, Math.floor(window.innerWidth * dpr * profile.scale));
+    const ch = Math.max(1, Math.floor(window.innerHeight * dpr * profile.scale));
 
     canvas.width = cw;
     canvas.height = ch;
@@ -72,14 +87,19 @@ export function startBackground() {
     data = img.data;
   }
 
-    function render(t) {
-    if (t - lastT < 33) { // ~30fps
-        requestAnimationFrame(render);
-        return;
+  function render(t) {
+    const profile = getPerfProfile();
+    if (document.visibilityState === "hidden") {
+      rafId = requestAnimationFrame(render);
+      return;
+    }
+    if (t - lastT < profile.minFrameMs) {
+      rafId = requestAnimationFrame(render);
+      return;
     }
     lastT = t;
     // slow time in seconds
-    const time = t * 0.0001;
+    const time = profile.animate ? t * 0.0001 : 0;
 
     // Tune these for subtlety
     const baseScale = 0.012;     // larger = bigger blobs
@@ -115,10 +135,25 @@ export function startBackground() {
     }
 
     ctx.putImageData(img, 0, 0);
-    requestAnimationFrame(render);
+    rafId = requestAnimationFrame(render);
+  }
+
+  function restart() {
+    resize();
+    if (rafId) cancelAnimationFrame(rafId);
+    lastT = 0;
+    rafId = requestAnimationFrame(render);
   }
 
   window.addEventListener("resize", resize, { passive: true });
-  resize();
-  requestAnimationFrame(render);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") lastT = 0;
+  });
+  if (typeof reducedMotionQuery.addEventListener === "function") {
+    reducedMotionQuery.addEventListener("change", restart);
+  } else if (typeof reducedMotionQuery.addListener === "function") {
+    reducedMotionQuery.addListener(restart);
+  }
+
+  restart();
 }
