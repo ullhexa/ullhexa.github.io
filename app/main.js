@@ -28,7 +28,10 @@ function isValidEmail(value) {
 
 const pages = {
   home: () => `
-    <h2>Home</h2>
+    <div class="contactIntro">
+      <p class="contactEyebrow">Home</p>
+      <h2>About Ull Hexa</h2>
+    </div>
 
     <div class="bio">
       <img src="./assets/profile.png" alt="Profile photo" class="bio-img" />
@@ -48,6 +51,35 @@ const pages = {
         </p>
       </div>
     </div>
+  `,
+
+
+  plugins: () => `
+    <section class="contactShell">
+      <div class="contactIntro">
+        <p class="contactEyebrow">Plugins</p>
+        <h2>Plugin Releases</h2>
+        <p class="contactLead">
+          Coming soon.
+        </p>
+      </div>
+
+      <div class="contactGrid pluginOnlyGrid">
+        <div class="contactPanel contactIdentity pluginTeaseCard">
+          <div class="contactIdentityGlow"></div>
+          <div class="pluginTeaseBlur" aria-hidden="true"></div>
+          <p class="contactRole">Plugin</p>
+        </div>
+
+        <div class="contactPanel">
+          <p class="contactRole">Status</p>
+          <h3 style="margin:0 0 14px;font-size:28px;line-height:1;">Coming soon</h3>
+          <p class="contactLead" style="max-width:none;">
+            Plugin downloads and release details will be added later.
+          </p>
+        </div>
+      </div>
+    </section>
   `,
 
 
