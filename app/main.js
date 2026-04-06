@@ -167,11 +167,10 @@ const pages = {
           <p class="contactRole">Ull Hexa</p>
           <h3>Direct contact</h3>
           <div class="contactChips">
-            <div class="contactChip">fstopamo@gmail.com</div>
             <div class="contactChip">ullhexa.music@gmail.com</div>
           </div>
           <p class="contactNote">
-            Use the personal address for direct contact, or the Ull Hexa address for music-related inquiries.
+            Use the Ull Hexa address for music, sound design, licensing, collaboration, or visualizer inquiries.
           </p>
         </div>
 
