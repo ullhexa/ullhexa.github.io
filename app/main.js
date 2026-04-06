@@ -154,7 +154,7 @@ const pages = {
     <section class="contactShell">
       <div class="contactIntro">
         <p class="contactEyebrow">Contact</p>
-        <h2>Fredrik Gjerstad Støpamo</h2>
+        <h2>Ull Hexa</h2>
         <p class="contactLead">
           For music, sound design, collaborations, licensing, or visualizer ideas, send a note here.
           The form below is prepared for direct sending from the page, without opening a mail app.
@@ -167,11 +167,10 @@ const pages = {
           <p class="contactRole">Ull Hexa</p>
           <h3>Direct contact</h3>
           <div class="contactChips">
-            <div class="contactChip">fstopamo@gmail.com</div>
             <div class="contactChip">ullhexa.music@gmail.com</div>
           </div>
           <p class="contactNote">
-            Use the personal address for direct contact, or the Ull Hexa address for music-related inquiries.
+            Use the Ull Hexa address for music, sound design, licensing, collaboration, or visualizer inquiries.
           </p>
         </div>
 
