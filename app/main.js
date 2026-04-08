@@ -2,6 +2,7 @@ import { startBackground } from "./bg.js?v=20260404b";
 startBackground();
 
 const content = document.getElementById("content");
+
 const contactFormConfig = {
   "ullhexa.music@gmail.com": {
     label: "Ull Hexa Music",
@@ -9,21 +10,154 @@ const contactFormConfig = {
   }
 };
 
-function packCard({ title, desc, img, url, buttonText = "Open Google Drive" }) {
+const SOCIAL_LINKS = [
+  {
+    title: "Spotify",
+    href: "https://open.spotify.com/artist/2CBJIAXw4zQRDW0cul9HIn?si=6xXT4taoRBaWTvmcOs_YsQ",
+    img: "./assets/Brands/Spotify_Primary_Logo_RGB_Green.png",
+    alt: "Spotify"
+  },
+  {
+    title: "TikTok",
+    href: "https://www.tiktok.com/@ullhexa",
+    img: "./assets/Brands/TikTok_Icon_Black_Circle.png",
+    alt: "TikTok"
+  },
+  {
+    title: "YouTube",
+    href: "https://www.youtube.com/@ull_hexa",
+    img: "./assets/Brands/yt_logo_fullcolor_white_digital.png",
+    alt: "YouTube"
+  }
+];
+
+const TOOL_RELEASES = {
+  plugins: [],
+  skins: [],
+  nks: [],
+  visualizers: []
+};
+
+const SYNC_RELEASES = [];
+
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function logoLink({ href, img, alt, title }) {
   return `
-    <div class="pack">
-      <img class="pack-img" src="${img}" alt="${title}" loading="lazy" />
-      <div class="pack-body">
-        <h3 class="pack-title">${title}</h3>
-        <p class="pack-desc">${desc}</p>
-        <a class="pack-btn" href="${url}" target="_blank" rel="noreferrer">⬇ ${buttonText}</a>
-      </div>
+    <a href="${href}" target="_blank" rel="noreferrer" class="brandLogoOnlyBtn" aria-label="${title}">
+      <img src="${img}" alt="${alt}" class="brandIconImg" loading="lazy" />
+    </a>
+  `;
+}
+
+function actionButton({ href, label, external = false, active = false, disabled = false }) {
+  const attrs = external ? 'target="_blank" rel="noreferrer"' : "";
+  return `
+    <a href="${disabled ? "#" : href}" class="softActionBtn${active ? " softActionBtnActive" : ""}${disabled ? " softActionBtnDisabled" : ""}" ${attrs} ${disabled ? 'aria-disabled="true" tabindex="-1"' : ""}>
+      ${label}
+    </a>
+  `;
+}
+
+function toolsNav(activeKey = "") {
+  const items = [
+    { key: "plugins", label: "Plugins", href: "#plugins" },
+    { key: "skins", label: "Skins", href: "#skins" },
+    { key: "nks", label: "NKS Instruments", href: "#nks" },
+    { key: "visualizers", label: "Visualizers", href: "#visualizers" }
+  ];
+
+  return `
+    <div class="toolButtonRow">
+      ${items.map(item => actionButton({ href: item.href, label: item.label, active: item.key === activeKey })).join("")}
     </div>
   `;
 }
 
-function isValidEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+function renderImageStack(images, altBase) {
+  if (!images || images.length === 0) {
+    return `
+      <div class="releaseImagePlaceholder">
+        <span>Images coming soon</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="releaseImageScroller">
+      ${images.map((src, index) => `<img src="${src}" alt="${altBase} image ${index + 1}" class="releaseImage" loading="lazy" />`).join("")}
+    </div>
+  `;
+}
+
+function downloadButtons(item) {
+  return `
+    <div class="releaseActions">
+      ${actionButton({ href: item.macUrl || "#", label: "Download macOS", external: Boolean(item.macUrl), disabled: !item.macUrl })}
+      ${actionButton({ href: item.windowsUrl || "#", label: "Download Windows", external: Boolean(item.windowsUrl), disabled: !item.windowsUrl })}
+    </div>
+  `;
+}
+
+function releaseSortValue(id) {
+  const match = String(id || "").match(/(\d+)/);
+  return match ? Number(match[1]) : 0;
+}
+
+function renderReleaseFeed(items, emptyMessage, variant = "tools") {
+  const sortedItems = [...items].sort((a, b) => releaseSortValue(b.id) - releaseSortValue(a.id));
+
+  if (sortedItems.length === 0) {
+    return `
+      <div class="releaseEmpty">
+        <h3>Coming soon</h3>
+        <p>${emptyMessage}</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="releaseFeed releaseFeed${variant === "sync" ? " releaseFeedSync" : ""}">
+      ${sortedItems
+        .map(item => `
+          <article class="releaseCard releaseCard${variant === "sync" ? " releaseCardSync" : ""}">
+            <div class="releaseVisual">
+              ${renderImageStack(item.images, item.title)}
+              ${variant === "sync"
+                ? actionButton({
+                    href: item.discoUrl || "https://ullhexa.com",
+                    label: "Go to DISCO",
+                    external: Boolean(item.discoUrl),
+                    disabled: !item.discoUrl
+                  })
+                : downloadButtons(item)}
+            </div>
+            <div class="releaseCopy">
+              <h3>${item.title}</h3>
+              <p class="releaseDesc">${item.desc}</p>
+            </div>
+          </article>
+        `)
+        .join("")}
+    </div>
+  `;
+}
+
+function toolsSection(title, activeKey, contentHtml) {
+  return `
+    <section class="contactShell">
+      <div class="contactIntro">
+        <p class="contactEyebrow">Tools</p>
+      </div>
+      ${toolsNav(activeKey)}
+      <div class="contactIntro">
+        <h2>${title}</h2>
+      </div>
+      ${contentHtml}
+    </section>
+  `;
 }
 
 const pages = {
@@ -37,118 +171,112 @@ const pages = {
       <img src="./assets/profile.png" alt="Profile photo" class="bio-img" />
 
       <div class="bio-text">
-        <p><strong>Ull Hexa</strong></p>
         <p>
-          Ull Hexa is a TV- and game-music composer and sound sculptor from Norway, obsessed with 
-          crafting sounds that fuses the tribal instictual with the futuristic unknown. All sounds are made by hand and ear, using analog modular 
-          synthesizers, acoustic instruments, field recordings, and sounds taken from 
-          real objects and environments, and blended together with some of the best 
-          orchestral sample libraries available. The sonic experience draws the mind 
-          into abstract spaces and unseen worlds, beyond any single time or place. 
+          Ull Hexa is a TV- and game-music composer and sound sculptor from Norway, obsessed with
+          crafting sounds that fuses the tribal instictual with the futuristic unknown. All sounds are made by hand and ear,
+          using analog modular synthesizers, acoustic instruments, field recordings, and sounds taken from real objects and
+          environments, and blended together with some of the best orchestral sample libraries available. The sonic experience
+          draws the mind into abstract spaces and unseen worlds, beyond any single time or place.
         </p>
-        <p>
-          Everything here is free and shared openly.
-        </p>
+
+        <div class="homeQuickLinks">
+          <p class="homeQuickLinksTitle">See more by Ull Hexa</p>
+          <div class="homeBrandRow">
+            ${SOCIAL_LINKS.map(logoLink).join("")}
+          </div>
+          <div class="homeDiscoRow">
+            <span>For Sync licensing</span>
+            ${actionButton({ href: "#sync", label: "Press here" })}
+            <span>and continue to DISCO.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contactGrid">
+      <div class="contactPanel">
+        <p class="contactRole">News / Projects</p>
+        <h3 style="margin:0 0 14px;font-size:28px;line-height:1;">Coming soon</h3>
       </div>
     </div>
   `,
 
-
-  plugins: () => `
-    <section class="contactShell">
+  sync: () => `
+    <section class="pageStack">
       <div class="contactIntro">
-        <p class="contactEyebrow">Plugins</p>
-        <h2>Plugin Releases</h2>
-        <p class="contactLead">
-          Coming soon.
-        </p>
+        <p class="contactEyebrow">Sync</p>
+        <h2>Music for Film, TV, & Games</h2>
+        <p class="contactLead">Explore the musical releases by Ull Hexa</p>
       </div>
 
-      <div class="contactGrid pluginOnlyGrid">
-        <div class="contactPanel contactIdentity pluginTeaseCard">
-          <div class="contactIdentityGlow"></div>
-          <div class="pluginTeaseBlur" aria-hidden="true"></div>
-          <p class="contactRole">Plugin</p>
-        </div>
-
-        <div class="contactPanel">
-          <p class="contactRole">Status</p>
-          <h3 style="margin:0 0 14px;font-size:28px;line-height:1;">Coming soon</h3>
-          <p class="contactLead" style="max-width:none;">
-            Plugin downloads and release details will be added later.
-          </p>
-        </div>
-      </div>
+      <section class="flatSection">
+        <h3>DISCO</h3>
+        ${renderReleaseFeed(
+          SYNC_RELEASES,
+          "Album releases, artwork, notes, and DISCO links will be added here with the newest release at the top.",
+          "sync"
+        )}
+      </section>
     </section>
   `,
 
+  tools: () => toolsSection(
+    "Plugins",
+    "plugins",
+    renderReleaseFeed(
+      TOOL_RELEASES.plugins,
+      "Plugin releases will appear here with artwork, text, and download buttons for macOS and Windows."
+    )
+  ),
 
-  skins: () => `
-    <h2>Skins</h2>
-    <p>Free skin packs for synths.</p>
+  plugins: () => toolsSection(
+    "Plugins",
+    "plugins",
+    renderReleaseFeed(
+      TOOL_RELEASES.plugins,
+      "Plugin releases will appear here with artwork, text, and download buttons for macOS and Windows."
+    )
+  ),
 
-    ${packCard({
-      title: "Serum — Dark Glass Skin Pack",
-      desc: "High-contrast, minimal, night-friendly.",
-      img: "./assets/skins/serum-dark-glass.png",
-      url: "PASTE_YOUR_GOOGLE_DRIVE_FOLDER_LINK_HERE",
-    })}
+  skins: () => toolsSection(
+    "Skins",
+    "skins",
+    renderReleaseFeed(
+      TOOL_RELEASES.skins,
+      "Skin pack releases will appear here with artwork, text, and download buttons for macOS and Windows."
+    )
+  ),
 
-    ${packCard({
-      title: "Vital — Mono UI Pack",
-      desc: "Clean monochrome UI with subtle accents.",
-      img: "./assets/skins/vital-mono.png",
-      url: "PASTE_YOUR_GOOGLE_DRIVE_FOLDER_LINK_HERE",
-    })}
-  `,
+  nks: () => toolsSection(
+    "NKS Instruments",
+    "nks",
+    renderReleaseFeed(
+      TOOL_RELEASES.nks,
+      "NKS instrument releases will appear here with artwork, text, and download buttons for macOS and Windows."
+    )
+  ),
 
+  visualizers: () => toolsSection(
+    "Visualizers",
+    "visualizers",
+    `
+      <section class="flatSection">
+        <h3>Choose visualizer type:</h3>
+        <div class="visualizerChooser">
+          ${actionButton({ href: "./midi-visualizers.html?v=20260408a", label: "MIDI Visualizer", external: true })}
+          ${actionButton({ href: "./audio-visualizers.html?v=20260408a", label: "Audio Visualizer", external: true })}
+        </div>
+      </section>
 
-  presets: () => `
-    <h2>Presets</h2>
-    <p>Free preset packs for synths.</p>
-
-    ${packCard({
-      title: "Serum — Psy / Tech Pack",
-      desc: "Bass, leads, atmospheres. Clean + musical.",
-      img: "./assets/presets/serum-pack.png",
-      url: "PASTE_GOOGLE_DRIVE_LINK",
-    })}
-
-    ${packCard({
-      title: "Pigments — Ambient Pack",
-      desc: "Textures, pads, evolving sounds.",
-      img: "./assets/presets/pigments-pack.png",
-      url: "PASTE_GOOGLE_DRIVE_LINK",
-    })}
-  `,
-
-
-  samples: () => `
-    <h2>Samples</h2>
-    <p>Free sample packs made during music sessions.</p>
-
-    ${packCard({
-      title: "Drum One-Shots",
-      desc: "Kicks, snares, hats. Clean, punchy, usable.",
-      img: "./assets/samples/drum-oneshots.png",
-      url: "PASTE_GOOGLE_DRIVE_LINK",
-    })}
-
-    ${packCard({
-      title: "Textures & Atmospheres",
-      desc: "Organic noise, drones, field-style textures.",
-      img: "./assets/samples/textures.png",
-      url: "PASTE_GOOGLE_DRIVE_LINK",
-    })}
-
-    ${packCard({
-      title: "FX & Risers",
-      desc: "Impacts, sweeps, transitions.",
-      img: "./assets/samples/fx-risers.png",
-      url: "PASTE_GOOGLE_DRIVE_LINK",
-    })}
-  `,
-
+      <section class="flatSection">
+        <h3>About the visualizers</h3>
+        ${renderReleaseFeed(
+          TOOL_RELEASES.visualizers,
+          "Visualizer descriptions, screenshots, and release notes will appear here."
+        )}
+      </section>
+    `
+  ),
 
   contact: () => `
     <section class="contactShell">
@@ -207,25 +335,11 @@ const pages = {
         </div>
       </div>
     </section>
-  `,
-
-
-  visualizers: () => `
-    <h2>Visualizers</h2>
-    <p>Choose input type:</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;max-width:680px;">
-      <a href="./midi-visualizers.html?v=20260404b" target="_blank" rel="noreferrer" style="display:inline-block;text-align:center;text-decoration:none;color:#fff;border:1px solid #555;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.06);transition:background 0.06s ease;" onmouseover="this.style.transition='background 0s';this.style.background='rgba(220,220,220,0.28)'" onmouseout="this.style.transition='background 0.14s ease';this.style.background='rgba(255,255,255,0.06)'">MIDI Visualizers</a>
-      <a href="./audio-visualizers.html?v=20260404b" target="_blank" rel="noreferrer" style="display:inline-block;text-align:center;text-decoration:none;color:#fff;border:1px solid #555;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.06);transition:background 0.06s ease;" onmouseover="this.style.transition='background 0s';this.style.background='rgba(220,220,220,0.28)'" onmouseout="this.style.transition='background 0.14s ease';this.style.background='rgba(255,255,255,0.06)'">Audio Visualizers</a>
-    </div>
-  `,
+  `
 };
 
-const mutedRoutes = new Set(["skins", "presets", "samples"]);
-
-
 function routeFromHash() {
-  const route = (location.hash || "#home").slice(1);
-  return mutedRoutes.has(route) ? "home" : route;
+  return (location.hash || "#home").slice(1);
 }
 
 function render() {
@@ -350,7 +464,6 @@ function render() {
 
     syncFormState();
   }
-
 }
 
 window.addEventListener("hashchange", render);
