@@ -1,9 +1,11 @@
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=5';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=6';
+export const GRID_COLORS = ['map','black','white'];
 export function validateMap(map) {
   if (!map || map.schemaVersion !== 1) throw new Error('Unsupported map format.');
   if (![map.id,map.version,map.title,map.grid?.unit].every(s=>typeof s==='string'&&s.length>0)) throw new Error('Missing map identity or units.');
   if (![map.art?.base,map.art?.roofs].every(s=>typeof s==='string'&&s.startsWith('./')&&!s.includes('..'))) throw new Error('Artwork must use relative asset paths.');
   if (![map.width,map.height,map.grid?.size,map.grid?.distance].every(n=>Number.isFinite(n)&&n>0)) throw new Error('Invalid map dimensions or scale.');
+  if (map.grid.color !== undefined && (typeof map.grid.color !== 'string' || !/^#[0-9a-f]{6}$/i.test(map.grid.color))) throw new Error('Invalid map grid color.');
   if(!Array.isArray(map.places)||!Array.isArray(map.interactions)) throw new Error('Missing map objects.');
   const ids=new Set();
   for(const item of map.interactions){
@@ -27,7 +29,7 @@ export function validateMap(map) {
   return map;
 }
 export function validPoint(point){return Array.isArray(point)&&point.length===2&&point.every(n=>Number.isFinite(n)&&n>=0&&n<=1);}
-export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],party:[...map.partyStart],grid:true,tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
+export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],party:[...map.partyStart],grid:true,gridColor:'map',tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
 export function sanitizeState(map,input){
   const fresh=initialState(map);
   if(!input||input.format!==1||input.mapId!==map.id||(input.mapVersion!==map.version&&!(map.previousVersions||[]).includes(input.mapVersion)))return fresh;
@@ -36,6 +38,7 @@ export function sanitizeState(map,input){
   if(validPoint(input.party))fresh.party=[...input.party];
   Object.assign(fresh,normalizeEncounter(map,input,fresh.party));
   fresh.grid=typeof input.grid==='boolean'?input.grid:true;
+  fresh.gridColor=GRID_COLORS.includes(input.gridColor)?input.gridColor:'map';
   if(input.camera&&validPoint([input.camera.x,input.camera.y])&&Number.isFinite(input.camera.zoom))fresh.camera={x:input.camera.x,y:input.camera.y,zoom:Math.max(1,Math.min(4,input.camera.zoom))};
   fresh.revision=Number.isSafeInteger(input.revision)&&input.revision>=0?input.revision:0;
   return fresh;

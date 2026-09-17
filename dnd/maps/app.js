@@ -1,9 +1,9 @@
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=5';
-import { createEncounterTools } from './encounter-tools.js?v=5';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=5';
-import { createMapMenu } from './map-menu.js?v=5';
-import { createSaveControls } from './save-controls.js?v=5';
-import { parseSave, restoreSave } from './save-file.js?v=5';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=6';
+import { createEncounterTools } from './encounter-tools.js?v=6';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=6';
+import { createMapMenu } from './map-menu.js?v=6';
+import { createSaveControls } from './save-controls.js?v=6';
+import { parseSave, restoreSave } from './save-file.js?v=6';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -32,7 +32,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player map of the Last Lantern crossing');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=5')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=6')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -42,7 +42,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(await fetchJSON(`${item.manifest}?v=5`));
+    const content=validateMap(await fetchJSON(`${item.manifest}?v=6`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -88,6 +88,9 @@ async function start() {
   $('map-grid').setAttribute('width', map.grid.size);
   $('map-grid').setAttribute('height', map.grid.size);
   $('map-grid').firstElementChild.setAttribute('d', `M${map.grid.size} 0H0V${map.grid.size}`);
+  const gridColors = {map:map.grid.color || '#eff4d2',black:'#000000',white:'#ffffff'};
+  const gridColorButtons = [...document.querySelectorAll('[data-grid-color]')];
+  for(const button of gridColorButtons)button.style.setProperty('--grid-color',gridColors[button.dataset.gridColor]);
   for (const [attr, value] of Object.entries(dimensions)) $('grid-overlay').setAttribute(attr, value);
   $('scale-label').textContent = `1 square = ${map.grid.distance} ${map.grid.unit}`;
   $('artwork').append(svgNode('image', { ...dimensions, href: map.art.base }));
@@ -206,6 +209,9 @@ async function start() {
     $('zoom-in').disabled = zoom >= 4;
     $('grid-overlay').style.display = state.grid ? '' : 'none';
     $('show-grid').checked = state.grid;
+    $('map-grid').firstElementChild.setAttribute('stroke',gridColors[state.gridColor]);
+    $('map-grid').firstElementChild.setAttribute('stroke-opacity',state.gridColor==='map'?'0.3':'0.55');
+    for(const button of gridColorButtons)button.setAttribute('aria-pressed',button.dataset.gridColor===state.gridColor);
     const [px, py] = xy(state.party); party.setAttribute('transform', `translate(${px} ${py})`);
     $('party-layer').style.display = state.tokenMode === 'party' ? '' : 'none';
     $('party-hint').textContent = state.tokenMode === 'party' ? 'Drag the party marker to move.' : 'Drag each character to move freely.';
@@ -267,6 +273,7 @@ async function start() {
     $('fit-map').addEventListener('click', () => commit({ ...state, camera: initialState(map).camera }, 'Showing the whole crossing.', false));
     $('sidebar-overview').addEventListener('click', () => $('fit-map').click());
     $('show-grid').addEventListener('change', event => commit({ ...state, grid: event.target.checked }, '', false));
+    for(const button of gridColorButtons)button.addEventListener('click',()=>commit({...state,gridColor:button.dataset.gridColor},'',false));
     $('measure').addEventListener('click', () => {
       measuring = !measuring; ruler = []; $('measure').setAttribute('aria-pressed', measuring);
       $('map').style.cursor = measuring ? 'crosshair' : '';
@@ -278,7 +285,7 @@ async function start() {
       if(!history.length)return;
       const {restoreView,...previous}=history.pop();
       if(restoreView)ruler=restoreView.ruler;
-      commit({ ...previous, camera: restoreView?previous.camera:state.camera, grid: restoreView?previous.grid:state.grid }, 'Last encounter change undone.', false);
+      commit({ ...previous, camera: restoreView?previous.camera:state.camera, grid: restoreView?previous.grid:state.grid, gridColor: restoreView?previous.gridColor:state.gridColor }, 'Last encounter change undone.', false);
       if(restoreView)selectPlace(restoreView.selectedPlace);
     });
     $('reset-session').addEventListener('click', () => $('reset-dialog').showModal());

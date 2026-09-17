@@ -8,7 +8,8 @@
   "grid": {
     "size": 48,
     "distance": 5,
-    "unit": "ft"
+    "unit": "ft",
+    "color": "#eff4d2"
   },
   "art": {
     "base": "./maps/last-lantern/interior.png",
