@@ -1,4 +1,5 @@
-import { PORTRAITS, portraitAsset, SHAPE_TYPES, SHAPE_COLORS, clamp, feetToWorld, setRosterCount, setTokenMode, newShape, resizeShape, rotateShape } from './encounter-state.js?v=14';
+import { tokenPortrait } from './token-portraits.js?v=15';
+import { PORTRAITS, portraitAsset, SHAPE_TYPES, SHAPE_COLORS, clamp, feetToWorld, setRosterCount, setTokenMode, newShape, resizeShape, rotateShape } from './encounter-state.js?v=15';
 
 const NS='http://www.w3.org/2000/svg';
 const $=id=>document.getElementById(id);
@@ -8,17 +9,30 @@ const colorNames=['Gold','Red','Blue','Purple','Green','Pink'];
 
 export function createEncounterTools({map,player,getState,commit,preview,finishDrag,pointAt,announce}) {
   let selectedShape=null,drag=null,portraitPlayer=null,scaleStart=null;
-  const svg=$('map');
+  const svg=$('map'),stage=$('map-stage');
+  const tokenLayer=document.createElement('div');tokenLayer.id='character-tokens';stage.append(tokenLayer);
+  const handleOverlay=node('svg',{id:'shape-handle-overlay','aria-label':'Spell area handles'});if(!player){handleOverlay.append($('shape-handles'));stage.append(handleOverlay);}
+  let tokenGeometry=null,pendingPreview=null,dragFrame=0;
+  function flushPreview(){cancelAnimationFrame(dragFrame);dragFrame=0;if(pendingPreview){const {state,characters}=pendingPreview;pendingPreview=null;preview(state,characters);}}
+  function queuePreview(state,characters=false){pendingPreview={state,characters};if(!dragFrame)dragFrame=requestAnimationFrame(flushPreview);}
+  function positionCharacters(state){
+    if(!tokenGeometry)return;
+    const {matrix,left,top}=tokenGeometry;
+    for(const member of state.roster){
+      const el=characterNodes.get(member.id);if(!el)continue;
+      const [x,y]=world(member.position),size=Math.hypot(matrix.a,matrix.b);
+      const transform=`translate3d(${matrix.a*x+matrix.c*y+matrix.e-left-25*size}px,${matrix.b*x+matrix.d*y+matrix.f-top-25*size}px,0) scale(${size})`;
+      if(el.style.transform!==transform)el.style.transform=transform;
+    }
+  }
+  function updateTokenGeometry(){const matrix=svg.getScreenCTM(),rect=stage.getBoundingClientRect();if(matrix)tokenGeometry={matrix,left:rect.left+stage.clientLeft,top:rect.top+stage.clientTop};positionCharacters(getState());}
+  const tokenObserver=new ResizeObserver(updateTokenGeometry);tokenObserver.observe(stage);
+  window.addEventListener('pagehide',()=>{tokenObserver.disconnect();cancelAnimationFrame(dragFrame);},{once:true});
   const characterNodes=new Map(),shapeNodes=new Map(),shapeButtons=new Map(),rosterRows=new Map();
   const world=p=>[p[0]*map.width,p[1]*map.height];
   const shapeById=id=>getState().shapes.find(s=>s.id===id);
   const updateShape=(id,patch,message='')=>commit({...getState(),shapes:getState().shapes.map(s=>s.id===id?{...s,...patch}:s)},message);
   const portraitStyle=(el,index)=>{const {url,columns,column,row}=portraitAsset(index);el.style.backgroundImage=`url('${url}')`;el.style.backgroundSize=`${columns*100}% ${columns*100}%`;el.style.backgroundPosition=`${column/(columns-1)*100}% ${row/(columns-1)*100}%`;};
-  function faceGraphic(index) {
-    const {url,columns,column,row}=portraitAsset(index);
-    const view=node('svg',{x:-22,y:-22,width:44,height:44,viewBox:`${column*100} ${row*100} 100 100`,'pointer-events':'none'});
-    view.append(node('image',{href:url,width:columns*100,height:columns*100}));return view;
-  }
   function footprint(s,thumbnail=false) {
     const width=thumbnail?s.width:feetToWorld(map,s.width),height=thumbnail?s.height:feetToWorld(map,s.height);
     const attrs={fill:s.color,'fill-opacity':thumbnail?.75:.27,stroke:s.color,'stroke-width':thumbnail?1.5:2,'vector-effect':'non-scaling-stroke'};
@@ -36,23 +50,26 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
     button.title=`${s.width} × ${s.height} ft · ${s.visible?'Visible to players':'DM only'}`;
   }
   function renderCharacters(state) {
-    $('character-layer').style.display=state.tokenMode==='players'?'':'none';
+    tokenLayer.hidden=state.tokenMode!=='players';
     for(const[id,el]of characterNodes)if(!state.roster.some(p=>p.id===id)){el.remove();characterNodes.delete(id);}
     for(const member of state.roster){
       let el=characterNodes.get(member.id);
       if(!el){
-        el=node('g',{class:'character-token','data-character':member.id,...(player?{}:{role:'button',tabindex:0})});
-        characterNodes.set(member.id,el);$('character-layer').append(el);
+        el=document.createElement(player?'div':'button');el.className='character-token';el.dataset.character=member.id;
+        if(!player)el.type='button';
+        const face=document.createElement('img');face.className='token-face';face.alt='';face.width=face.height=96;face.draggable=false;face.decoding='async';
+        const label=document.createElement('span');label.className='token-label';el.append(face,label);
+        characterNodes.set(member.id,el);tokenLayer.append(el);
       }
-      const identity=`${member.name}:${member.portrait}`;
-      if(el.dataset.identity!==identity){
-        const clip=node('clipPath',{id:`face-${member.id}`});clip.append(node('circle',{r:22}));
-        const face=node('g',{'clip-path':`url(#face-${member.id})`});face.append(faceGraphic(member.portrait));
-        el.replaceChildren(clip,node('circle',{r:25,fill:'#162822',stroke:'#e8ba71','stroke-width':3}),face,node('text',{class:'marker-label','text-anchor':'middle',y:43,'font-size':16},member.name));el.dataset.identity=identity;
+      const portrait=String(member.portrait);
+      if(el.dataset.portrait!==portrait){
+        el.dataset.portrait=portrait;
+        tokenPortrait(member.portrait).then(url=>{if(el.dataset.portrait===portrait)el.firstElementChild.src=url;}).catch(()=>{ /* The ring and name remain usable if artwork is unavailable. */ });
       }
-      const[x,y]=world(member.position);el.setAttribute('transform',`translate(${x} ${y})`);
+      if(el.lastElementChild.textContent!==member.name)el.lastElementChild.textContent=member.name;
       if(!player)el.setAttribute('aria-label',`${member.name}. Drag to move or use arrow keys.`);
     }
+    updateTokenGeometry();
   }
   function renderShapes(state) {
     for(const[id,el]of shapeNodes)if(!state.shapes.some(s=>s.id===id&&(!player||s.visible))){el.remove();shapeNodes.delete(id);}
@@ -87,6 +104,8 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
     renderHandles(selected);
   }
   function renderHandles(s) {
+    handleOverlay.setAttribute('viewBox',svg.getAttribute('viewBox'));
+    handleOverlay.style.display=s?'':'none';
     const focusedHandle=document.activeElement?.closest('[data-handle]')?.dataset.handle;
     $('shape-handles').replaceChildren();if(!s)return;
     const[x,y]=world(s.center),w=feetToWorld(map,s.width),h=feetToWorld(map,s.height),z=getState().camera.zoom;
@@ -96,7 +115,7 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
     group.append(node('line',{x1:0,y1:-h/2,x2:0,y2:-h/2-36*unit,stroke:'#fff3ce','stroke-width':2*unit,'pointer-events':'none'}));
     const handles=[['width',w/2,0],['height',0,h/2],['size',w/2,h/2],['rotate',0,-h/2-36*unit]];
     for(const[type,hx,hy]of handles){
-      const handle=node('g',{'data-handle':type,role:'button',tabindex:0,'aria-label':`${type==='rotate'?'Rotate':type==='size'?'Resize':type==='width'?'Adjust width of':'Adjust length of'} selected area`,class:`shape-handle ${type}`});
+      const handle=node('g',{'data-handle':type,role:'button',tabindex:0,'aria-label':`${type==='rotate'?'Rotate':type==='size'?'Resize':type==='width'?'Adjust width of':'Adjust length of'} selected area`,class:`shape-handle ${type}`,'pointer-events':'all'});
       handle.append(node('circle',{cx:hx,cy:hy,r:16*unit,fill:'transparent'}));
       handle.append(type==='rotate'?node('circle',{cx:hx,cy:hy,r:8*unit,fill:'#e8ba71',stroke:'#15261e','stroke-width':2*unit}):node('rect',{x:hx-7*unit,y:hy-7*unit,width:14*unit,height:14*unit,rx:2*unit,fill:'#fff3ce',stroke:'#15261e','stroke-width':2*unit}));
       group.append(handle);
@@ -147,33 +166,33 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
       preview({...getState(),shapes:getState().shapes.map(item=>item.id===s.id?{...item,width:clamp(Math.round(s.width*factor),1,200),height:clamp(Math.round(s.height*factor),1,200)}:item)});
     });
     $('shape-size').addEventListener('change',()=>{if(scaleStart){const start=scaleStart.state;scaleStart=null;finishDrag(start,'Area resized.');}});
-    svg.addEventListener('pointerdown',event=>{
+    stage.addEventListener('pointerdown',event=>{
       const character=event.target.closest('[data-character]'),shape=event.target.closest('[data-shape]'),handle=event.target.closest('[data-handle]');
       if(event.button!==0||(!character&&!shape)||$('measure').getAttribute('aria-pressed')==='true')return;
       event.stopImmediatePropagation();event.preventDefault();
       const p=pointAt(event),state=getState();
       if(shape){selectedShape=shape.dataset.shape;$('spell-areas').open=true;}
       drag={pointer:event.pointerId,character:character?.dataset.character,shape:shape?.dataset.shape,handle:handle?.dataset.handle,point:p,start:structuredClone(state),x:event.clientX,y:event.clientY,moved:false};
-      svg.setPointerCapture(event.pointerId);render();
+      stage.setPointerCapture(event.pointerId);if(character)character.classList.add('is-dragging');else render();
     },true);
-    svg.addEventListener('pointermove',event=>{
+    stage.addEventListener('pointermove',event=>{
       if(!drag||event.pointerId!==drag.pointer)return;event.stopImmediatePropagation();
       if(!drag.moved&&Math.hypot(event.clientX-drag.x,event.clientY-drag.y)<3)return;drag.moved=true;
       const p=pointAt(event),state=getState();
-      if(drag.character){const member=drag.start.roster.find(p=>p.id===drag.character);const position=member.position.map((n,axis)=>clamp(n+p[axis]-drag.point[axis],0,1));preview({...state,roster:state.roster.map(m=>m.id===member.id?{...m,position}:m)});}
+      if(drag.character){const member=drag.start.roster.find(p=>p.id===drag.character);const position=member.position.map((n,axis)=>clamp(n+p[axis]-drag.point[axis],0,1));queuePreview({...state,roster:state.roster.map(m=>m.id===member.id?{...m,position}:m)},true);}
       else{const original=drag.start.shapes.find(s=>s.id===drag.shape);let next;
         if(drag.handle==='rotate')next=rotateShape(map,original,p);
         else if(drag.handle)next=resizeShape(map,original,p,drag.handle);
         else next={...original,center:original.center.map((n,axis)=>clamp(n+p[axis]-drag.point[axis],0,1))};
-        preview({...state,shapes:state.shapes.map(s=>s.id===next.id?next:s)});
+        queuePreview({...state,shapes:state.shapes.map(s=>s.id===next.id?next:s)});
       }
     },true);
-    svg.addEventListener('pointerup',event=>{
-      if(!drag||event.pointerId!==drag.pointer)return;event.stopImmediatePropagation();const current=drag;drag=null;
+    stage.addEventListener('pointerup',event=>{
+      if(!drag||event.pointerId!==drag.pointer)return;event.stopImmediatePropagation();flushPreview();const current=drag;drag=null;characterNodes.get(current.character)?.classList.remove('is-dragging');
       if(current.moved)finishDrag(current.start,current.character?'Player moved.':'Area adjusted.');else render();
     },true);
-    svg.addEventListener('pointercancel',event=>{if(drag?.pointer===event.pointerId){event.stopImmediatePropagation();const start=drag.start;drag=null;preview(start);}},true);
-    svg.addEventListener('keydown',event=>{
+    stage.addEventListener('pointercancel',event=>{if(drag?.pointer===event.pointerId){event.stopImmediatePropagation();const start=drag.start;characterNodes.get(drag.character)?.classList.remove('is-dragging');drag=null;pendingPreview=null;cancelAnimationFrame(dragFrame);dragFrame=0;preview(start);}},true);
+    stage.addEventListener('keydown',event=>{
       const character=event.target.closest('[data-character]'),shape=event.target.closest('[data-shape]'),handle=event.target.closest('[data-handle]');
       if(!character&&!shape)return;
       const offsets={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]},offset=offsets[event.key];
@@ -186,5 +205,5 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
       else updateShape(s.id,{center:s.center.map((n,axis)=>clamp(n+offset[axis]*map.grid.size/(axis?map.height:map.width),0,1))});
     });
   }
-  return {render,isDragging:()=>!!drag,clearSelection:()=>{selectedShape=null;}};
+  return {render,renderCharacterPositions:()=>positionCharacters(getState()),isDragging:()=>!!drag,clearSelection:()=>{selectedShape=null;}};
 }

@@ -2,6 +2,15 @@ const $=id=>document.getElementById(id);
 const svgNode=(tag,attrs)=>{const el=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [key,value] of Object.entries(attrs))el.setAttribute(key,value);return el;};
 
 export function setupFullscreen({player,announce}) {
+  const host=!player&&window.parent!==window?window.parent.ullhexaDM:null;
+  if(host){
+    const button=$('fullscreen'),update=active=>{button.textContent=active?'Exit full screen':'Full screen';button.setAttribute('aria-pressed',active);};
+    update(host.fullscreen);
+    button.addEventListener('click',()=>host.toggleFullscreen().catch(()=>announce('The browser could not enter full screen. Use its own full-screen command, or try again.')));
+    window.addEventListener('message',event=>{if(event.source===window.parent&&event.origin===location.origin&&event.data?.type==='dm-fullscreen')update(event.data.active);});
+    $('exit-player-fullscreen')?.remove();
+    return {showControls:()=>{}};
+  }
   const fullscreenTarget=player ? $('map-stage') : document.documentElement;
   $('fullscreen').addEventListener('click', async () => {
     try { if (document.fullscreenElement) await document.exitFullscreen(); else await fullscreenTarget.requestFullscreen(); }

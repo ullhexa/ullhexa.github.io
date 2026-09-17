@@ -1,6 +1,6 @@
-import { sanitizeState, validPoint, GRID_COLORS, validEnvironment } from './state.js?v=14';
-import { PORTRAITS, SHAPE_TYPES, SHAPE_COLORS } from './encounter-state.js?v=14';
-import { validProject } from './presentation-state.js?v=14';
+import { sanitizeState, validPoint, GRID_COLORS, validEnvironment } from './state.js?v=15';
+import { PORTRAITS, SHAPE_TYPES, SHAPE_COLORS } from './encounter-state.js?v=15';
+import { validProject } from './presentation-state.js?v=15';
 
 export const MAX_SAVE_BYTES = 256 * 1024;
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
