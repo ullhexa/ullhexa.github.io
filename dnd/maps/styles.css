@@ -24,3 +24,6 @@
 
 /* Keep DM tools in their own row, outside the playable canvas at every size. */
 .map-controls{position:static;inset:auto;flex:0 0 auto;margin:0 0 10px;pointer-events:auto}
+
+/* Grid color choices share the grid control without toggling visibility. */
+.grid-control{padding:6px 9px;gap:10px}.grid-control>label{display:flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}.grid-colors{display:flex;align-items:center;gap:6px}.map-controls .grid-color{width:24px;height:24px;min-height:24px;padding:0;border:1px solid #788574;border-radius:3px;background:var(--grid-color);box-shadow:inset 0 0 0 1px #0002}.map-controls .grid-color:hover:not(:disabled){background:var(--grid-color);border-color:var(--gold)}.map-controls .grid-color[aria-pressed=true]{background:var(--grid-color);border-color:var(--gold);outline:2px solid var(--gold);outline-offset:2px}.map-controls .grid-color:focus-visible{outline:2px solid #fff;outline-offset:3px}
