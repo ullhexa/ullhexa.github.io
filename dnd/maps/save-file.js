@@ -1,5 +1,5 @@
-import { sanitizeState, validPoint, GRID_COLORS } from './state.js?v=6';
-import { PORTRAITS, SHAPE_TYPES, SHAPE_COLORS } from './encounter-state.js?v=6';
+import { sanitizeState, validPoint, GRID_COLORS, validEnvironment } from './state.js?v=7';
+import { PORTRAITS, SHAPE_TYPES, SHAPE_COLORS } from './encounter-state.js?v=7';
 
 export const MAX_SAVE_BYTES = 256 * 1024;
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -31,6 +31,7 @@ export function restoreSave(map,data) {
   check(s.mapVersion===map.version||(map.previousVersions||[]).includes(s.mapVersion),'This save needs a map version that is not available here.');
   check(validPoint(s.party)&&typeof s.grid==='boolean'&&['party','players'].includes(s.tokenMode)&&typeof s.regroupPlayers==='boolean');
   check(s.gridColor===undefined||GRID_COLORS.includes(s.gridColor));
+  check(s.environment===undefined||validEnvironment(s.environment));
   check(object(s.camera)&&validPoint([s.camera.x,s.camera.y])&&Number.isFinite(s.camera.zoom)&&s.camera.zoom>=1&&s.camera.zoom<=4);
   check(Array.isArray(s.active)&&unique(s.active)&&s.active.every(value=>map.interactions.some(item=>item.id===value)));
   check(Array.isArray(s.roster)&&s.roster.length>=1&&s.roster.length<=12);

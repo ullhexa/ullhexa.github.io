@@ -1,9 +1,10 @@
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=6';
-import { createEncounterTools } from './encounter-tools.js?v=6';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=6';
-import { createMapMenu } from './map-menu.js?v=6';
-import { createSaveControls } from './save-controls.js?v=6';
-import { parseSave, restoreSave } from './save-file.js?v=6';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=7';
+import { createEncounterTools } from './encounter-tools.js?v=7';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=7';
+import { createMapMenu } from './map-menu.js?v=7';
+import { createSaveControls } from './save-controls.js?v=7';
+import { parseSave, restoreSave } from './save-file.js?v=7';
+import { createLighting } from './lighting.js?v=7';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -32,7 +33,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player map of the Last Lantern crossing');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=6')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=7')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -42,7 +43,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(await fetchJSON(`${item.manifest}?v=6`));
+    const content=validateMap(await fetchJSON(`${item.manifest}?v=7`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -56,14 +57,23 @@ async function start() {
     document.querySelector('.encounter-heading h1').textContent=map.title;
     document.querySelector('.encounter-heading .eyebrow').textContent=entry.category.toUpperCase();
     document.querySelector('.encounter-heading .intro').textContent=entry.description;
-    createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,applyMap:id=>{
-      if(id===map.id){announce(`${map.title} is already in play. Your progress is kept.`);return;}
-      save();const url=new URL(location.href);url.searchParams.set('map',id);location.assign(url);
+    createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,getEnvironment:target=>target.id===map.id?state.environment:readMapState(target).environment,applyMap:(target,environment)=>{
+      if(target.id===map.id){
+        if(environment.timeOfDay!==state.environment.timeOfDay||environment.darkness!==state.environment.darkness)commit({...state,environment},`${map.title}: ${environment.timeOfDay==='night'?'night':'day'}.`);
+        else announce(`${map.title} is already in play. Your progress is kept.`);
+        return;
+      }
+      save();const next=readMapState(target);
+      writeStored(`lanternford:${target.id}:${target.version}:${session}`,{...next,environment,revision:next.revision+1});
+      const url=new URL(location.href);url.searchParams.set('map',target.id);location.assign(url);
     }});
   }
   const key = `lanternford:${map.id}:${map.version}:${session}`;
-  const previousSave = readStored(key) || (map.previousVersions || []).map(version => readStored(`lanternford:${map.id}:${version}:${session}`)).find(Boolean);
-  let state = sanitizeState(map, previousSave);
+  function readMapState(content){
+    const previous=readStored(`lanternford:${content.id}:${content.version}:${session}`)||(content.previousVersions||[]).map(version=>readStored(`lanternford:${content.id}:${version}:${session}`)).find(Boolean);
+    return sanitizeState(content,previous);
+  }
+  let state = readMapState(map);
   if (player) state = playerProjection(state);
   let selected = map.places[0].id;
   let history = [];
@@ -94,6 +104,7 @@ async function start() {
   for (const [attr, value] of Object.entries(dimensions)) $('grid-overlay').setAttribute(attr, value);
   $('scale-label').textContent = `1 square = ${map.grid.distance} ${map.grid.unit}`;
   $('artwork').append(svgNode('image', { ...dimensions, href: map.art.base }));
+  const renderLighting=createLighting(map,defs,$('lighting-layer'));
 
   for (const item of map.interactions) {
     let node;
@@ -197,6 +208,10 @@ async function start() {
     $('fit-map').disabled = overview;
   }
   function render() {
+    renderLighting(state);
+    document.querySelector('.map-name').textContent=`${map.title} · ${entry.subtitle}${state.environment.timeOfDay==='night'?' · Night':''}`;
+    $('time-day').setAttribute('aria-pressed',state.environment.timeOfDay==='day');
+    $('time-night').setAttribute('aria-pressed',state.environment.timeOfDay==='night');
     for (const item of map.interactions) {
       const visible = isVisible(map, state, item.id);
       layerNodes.get(item.id).style.display = (['marker','terrain'].includes(item.type) ? visible : !visible) ? '' : 'none';
@@ -274,6 +289,9 @@ async function start() {
     $('sidebar-overview').addEventListener('click', () => $('fit-map').click());
     $('show-grid').addEventListener('change', event => commit({ ...state, grid: event.target.checked }, '', false));
     for(const button of gridColorButtons)button.addEventListener('click',()=>commit({...state,gridColor:button.dataset.gridColor},'',false));
+    for(const timeOfDay of ['day','night'])$(`time-${timeOfDay}`).addEventListener('click',()=>{
+      if(state.environment.timeOfDay!==timeOfDay)commit({...state,environment:{...state.environment,timeOfDay}},`${timeOfDay==='night'?'Night falls over':'Day returns to'} the crossing.`);
+    });
     $('measure').addEventListener('click', () => {
       measuring = !measuring; ruler = []; $('measure').setAttribute('aria-pressed', measuring);
       $('map').style.cursor = measuring ? 'crosshair' : '';
