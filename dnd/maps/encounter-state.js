@@ -30,17 +30,22 @@ export function normalizeEncounter(map,input,party) {
   const roster=Array.isArray(input.roster)?input.roster.slice(0,12).filter(p=>p&&typeof p.id==='string'&&/^[-a-zA-Z0-9]+$/.test(p.id)&&!used.has(p.id)&&used.add(p.id)).map((p,i)=>({id:p.id,name:typeof p.name==='string'?p.name.trim().slice(0,32)||`Player ${i+1}`:`Player ${i+1}`,portrait:Number.isInteger(p.portrait)?clamp(p.portrait,0,PORTRAITS.length-1):i%PORTRAITS.length,position:boundedPoint(p.position)?[...p.position]:formation(map,party,12)[i]})):[];
   const shapeIds=new Set();
   const shapes=Array.isArray(input.shapes)?input.shapes.slice(0,32).filter(s=>s&&typeof s.id==='string'&&/^[-a-zA-Z0-9]+$/.test(s.id)&&!shapeIds.has(s.id)&&shapeIds.add(s.id)&&SHAPE_TYPES.includes(s.type)&&boundedPoint(s.center)&&[s.width,s.height,s.rotation].every(Number.isFinite)).map(s=>({id:s.id,type:s.type,center:[...s.center],width:clamp(Math.round(s.width),1,200),height:clamp(Math.round(s.height),1,200),rotation:((s.rotation%360)+360)%360,color:SHAPE_COLORS.includes(s.color)?s.color:SHAPE_COLORS[0],visible:s.visible===true})):[];
-  return {roster:roster.length?roster:defaultRoster(map,party),tokenMode:input.tokenMode==='players'?'players':'party',shapes};
+  return {roster:roster.length?roster:defaultRoster(map,party),tokenMode:input.tokenMode==='players'?'players':'party',regroupPlayers:typeof input.regroupPlayers==='boolean'?input.regroupPlayers:input.tokenMode!=='players',shapes};
+}
+export function moveParty(state,position) {
+  if(position.every((n,axis)=>n===state.party[axis]))return state;
+  return {...state,party:[...position],regroupPlayers:true};
 }
 export function setTokenMode(map,state,mode) {
   if(!['party','players'].includes(mode))throw new Error('Unknown party mode.');
   if(mode===state.tokenMode)return state;
   if(mode==='players'){
+    if(!state.regroupPlayers)return {...state,tokenMode:mode};
     const points=formation(map,state.party,state.roster.length);
-    return {...state,tokenMode:mode,roster:state.roster.map((p,i)=>({...p,position:points[i]}))};
+    return {...state,tokenMode:mode,regroupPlayers:false,roster:state.roster.map((p,i)=>({...p,position:points[i]}))};
   }
   const party=[0,1].map(axis=>state.roster.reduce((sum,p)=>sum+p.position[axis],0)/state.roster.length);
-  return {...state,tokenMode:mode,party};
+  return {...state,tokenMode:mode,party,regroupPlayers:false};
 }
 export function setRosterCount(map,state,count) {
   if(!Number.isInteger(count)||count<1||count>12)throw new Error('Choose 1–12 players.');

@@ -1,0 +1,14 @@
+{
+  "maps": [
+    {
+      "id": "last-lantern",
+      "title": "The Last Lantern",
+      "category": "Riverside encounter",
+      "subtitle": "River crossing",
+      "description": "An inn at the crossing. A missing courier. Something stirring beyond the river.",
+      "thumbnail": "./maps/last-lantern/roofs.png",
+      "manifest": "./maps/last-lantern/map.json",
+      "notes": "./maps/last-lantern/dm-notes.json"
+    }
+  ]
+}
