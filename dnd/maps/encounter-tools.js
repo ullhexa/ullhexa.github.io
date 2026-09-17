@@ -1,11 +1,10 @@
-import { PORTRAITS, SHAPE_TYPES, SHAPE_COLORS, clamp, feetToWorld, setRosterCount, setTokenMode, newShape, resizeShape, rotateShape } from './encounter-state.js?v=2';
+import { PORTRAITS, portraitAsset, SHAPE_TYPES, SHAPE_COLORS, clamp, feetToWorld, setRosterCount, setTokenMode, newShape, resizeShape, rotateShape } from './encounter-state.js?v=3';
 
 const NS='http://www.w3.org/2000/svg';
 const $=id=>document.getElementById(id);
 const node=(tag,attrs={},text)=>{const el=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);if(text!==undefined)el.textContent=text;return el;};
 const pretty=type=>type[0].toUpperCase()+type.slice(1);
 const colorNames=['Gold','Red','Blue','Purple','Green','Pink'];
-const portraitURL='./assets/portraits.png';
 
 export function createEncounterTools({map,player,getState,commit,preview,finishDrag,pointAt,announce}) {
   let selectedShape=null,drag=null,portraitPlayer=null,scaleStart=null;
@@ -14,10 +13,11 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
   const world=p=>[p[0]*map.width,p[1]*map.height];
   const shapeById=id=>getState().shapes.find(s=>s.id===id);
   const updateShape=(id,patch,message='')=>commit({...getState(),shapes:getState().shapes.map(s=>s.id===id?{...s,...patch}:s)},message);
-  const portraitStyle=(el,index)=>{el.style.backgroundImage=`url('${portraitURL}')`;el.style.backgroundPosition=`${index%3*50}% ${Math.floor(index/3)*50}%`;};
+  const portraitStyle=(el,index)=>{const {url,columns,column,row}=portraitAsset(index);el.style.backgroundImage=`url('${url}')`;el.style.backgroundSize=`${columns*100}% ${columns*100}%`;el.style.backgroundPosition=`${column/(columns-1)*100}% ${row/(columns-1)*100}%`;};
   function faceGraphic(index) {
-    const view=node('svg',{x:-22,y:-22,width:44,height:44,viewBox:`${index%3*100} ${Math.floor(index/3)*100} 100 100`,'pointer-events':'none'});
-    view.append(node('image',{href:portraitURL,width:300,height:300}));return view;
+    const {url,columns,column,row}=portraitAsset(index);
+    const view=node('svg',{x:-22,y:-22,width:44,height:44,viewBox:`${column*100} ${row*100} 100 100`,'pointer-events':'none'});
+    view.append(node('image',{href:url,width:columns*100,height:columns*100}));return view;
   }
   function footprint(s,thumbnail=false) {
     const width=thumbnail?s.width:feetToWorld(map,s.width),height=thumbnail?s.height:feetToWorld(map,s.height);
@@ -73,7 +73,7 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
     for(const[id,el]of shapeButtons)if(!state.shapes.some(s=>s.id===id)){el.remove();shapeButtons.delete(id);}
     for(const s of state.shapes){
       let button=shapeButtons.get(s.id);
-      if(!button){button=document.createElement('button');button.type='button';button.className='shape-choice';button.addEventListener('click',()=>{selectedShape=s.id;scaleStart=null;render();});shapeButtons.set(s.id,button);$('shape-list').append(button);}
+      if(!button){button=document.createElement('button');button.type='button';button.className='shape-choice';button.addEventListener('click',()=>{selectedShape=s.id;scaleStart=null;$('spell-areas').open=true;render();});shapeButtons.set(s.id,button);$('shape-list').append(button);}
       renderThumbnail(button,s);button.setAttribute('aria-pressed',s.id===selectedShape);
     }
     $('shape-editor').hidden=!selected;
@@ -133,7 +133,7 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
     PORTRAITS.forEach((description,index)=>{const button=document.createElement('button');button.type='button';button.className='portrait-option';button.setAttribute('aria-label',description);button.title=description;const face=document.createElement('span');face.className='portrait-thumb';portraitStyle(face,index);button.append(face);button.addEventListener('click',()=>{commit({...getState(),roster:getState().roster.map(p=>p.id===portraitPlayer?{...p,portrait:index}:p)},'Character face updated.');$('portrait-dialog').close();});$('portrait-options').append(button);});
     document.querySelectorAll('[data-add-shape]').forEach(button=>button.addEventListener('click',()=>{
       if(getState().shapes.length>=32){announce('Up to 32 areas can be placed on this map.');return;}
-      const state=getState();const shape=newShape(button.dataset.addShape,[state.camera.x,state.camera.y],crypto.randomUUID());selectedShape=shape.id;commit({...state,shapes:[...state.shapes,shape]},'Area added. Adjust it, then choose Show to players.');
+      const state=getState();const shape=newShape(button.dataset.addShape,[state.camera.x,state.camera.y],crypto.randomUUID());selectedShape=shape.id;$('spell-areas').open=true;commit({...state,shapes:[...state.shapes,shape]},'Area added. Adjust it, then choose Show to players.');
     }));
     SHAPE_COLORS.forEach((color,index)=>{const button=document.createElement('button');button.type='button';button.dataset.color=color;button.className='color-swatch';button.style.backgroundColor=color;button.setAttribute('aria-label',`${colorNames[index]} area`);button.addEventListener('click',()=>updateShape(selectedShape,{color}));$('shape-colors').append(button);});
     $('shape-visible').addEventListener('click',()=>{const s=shapeById(selectedShape);if(s)updateShape(s.id,{visible:!s.visible},s.visible?'Area hidden from players.':'Area shown to players.');});
@@ -152,7 +152,7 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
       if(event.button!==0||(!character&&!shape)||$('measure').getAttribute('aria-pressed')==='true')return;
       event.stopImmediatePropagation();event.preventDefault();
       const p=pointAt(event),state=getState();
-      if(shape)selectedShape=shape.dataset.shape;
+      if(shape){selectedShape=shape.dataset.shape;$('spell-areas').open=true;}
       drag={pointer:event.pointerId,character:character?.dataset.character,shape:shape?.dataset.shape,handle:handle?.dataset.handle,point:p,start:structuredClone(state),x:event.clientX,y:event.clientY,moved:false};
       svg.setPointerCapture(event.pointerId);render();
     },true);
@@ -177,7 +177,7 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
       const character=event.target.closest('[data-character]'),shape=event.target.closest('[data-shape]'),handle=event.target.closest('[data-handle]');
       if(!character&&!shape)return;
       const offsets={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]},offset=offsets[event.key];
-      if(shape&&(event.key==='Enter'||event.key===' ')){event.preventDefault();selectedShape=shape.dataset.shape;render();return;}
+      if(shape&&(event.key==='Enter'||event.key===' ')){event.preventDefault();selectedShape=shape.dataset.shape;$('spell-areas').open=true;render();return;}
       if(!offset)return;event.preventDefault();event.stopPropagation();
       if(character){commit({...getState(),roster:getState().roster.map(p=>p.id===character.dataset.character?{...p,position:p.position.map((n,axis)=>clamp(n+offset[axis]*map.grid.size/(axis?map.height:map.width),0,1))}:p)},'Player moved one square.');return;}
       selectedShape=shape.dataset.shape;const s=shapeById(selectedShape);if(!s)return;

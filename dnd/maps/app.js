@@ -1,6 +1,6 @@
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=2';
-import { createEncounterTools } from './encounter-tools.js?v=2';
-import { playerProjection, formation } from './encounter-state.js?v=2';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=3';
+import { createEncounterTools } from './encounter-tools.js?v=3';
+import { playerProjection, formation, PORTRAIT_ASSETS } from './encounter-state.js?v=3';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -27,7 +27,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player map of the Last Lantern crossing');
   }
-  const map = validateMap(await fetchJSON('./maps/last-lantern/map.json?v=2'));
+  const map = validateMap(await fetchJSON('./maps/last-lantern/map.json?v=3'));
   const notes = player ? {} : await fetchJSON('./maps/last-lantern/dm-notes.json');
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
@@ -317,7 +317,7 @@ async function start() {
   render(); updateConnection();
   if (!player) save(); else send({ type: 'hello' });
   const loadImage = src => new Promise((resolve, reject) => { const image = new Image(); image.onload = resolve; image.onerror = () => reject(new Error('The map artwork could not load. Reload to try again.')); image.src = src; });
-  await Promise.all([...Object.values(map.art).map(loadImage), loadImage('./assets/portraits.png')]);
+  await Promise.all([...Object.values(map.art).map(loadImage), ...PORTRAIT_ASSETS.map(loadImage)]);
   $('map-loading').hidden = true;
 
   // Optional browser-native agent tools use the same state transitions as the visible controls.
