@@ -32,3 +32,15 @@
 .map-environment{border-top:1px solid var(--line);margin-top:20px;padding-top:18px}.map-environment h4{margin:0 0 12px;font-size:.85rem;font-weight:600}.lighting-label{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:.75rem;color:var(--muted)}.lighting-label output{font-variant-numeric:tabular-nums;color:var(--gold)}.map-environment input[type=range]{display:block;width:100%;margin:12px 0;accent-color:var(--gold)}.map-environment .environment-hint{font-size:.75rem;line-height:1.55;margin:8px 0 0}
 .lighting-control{display:flex;align-items:center;gap:7px;border:1px solid #485045;border-radius:7px;background:#17201eed;padding:8px 10px;min-height:44px;font-size:.75rem;white-space:nowrap}.lighting-control label,.lighting-control>span{color:var(--muted)}.lighting-control input{width:86px;min-width:0;margin:0;accent-color:var(--gold);cursor:pointer}.lighting-control output{min-width:27px;text-align:right;color:var(--gold);font-variant-numeric:tabular-nums}.map-action-group{flex-wrap:wrap}#lighting-layer{opacity:0;transition:opacity .35s ease-out}
 @media(prefers-reduced-motion:reduce){#lighting-layer{transition:none}}
+
+/* The player map itself occupies fullscreen; page furniture stays outside it. */
+.fullscreen-exit{display:none}
+.player-mode #map-stage:fullscreen{position:fixed;inset:0;display:block;width:100vw;height:100dvh;min-height:0;max-height:none;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;background:#000}
+.player-mode #map-stage::backdrop{background:#000}
+.player-mode #map-stage:fullscreen .map-caption{display:none}
+.player-mode #map-stage:fullscreen #map{cursor:none}
+.player-mode #map-stage:fullscreen.fullscreen-controls-visible #map{cursor:default}
+.player-mode #map-stage:fullscreen .fullscreen-exit{display:grid;place-items:center;position:absolute;top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));z-index:5;width:44px;height:44px;padding:0;border:1px solid #ffffff50;border-radius:8px;background:#101915cc;color:#fff;opacity:0;pointer-events:none;transition:opacity .18s ease}
+.player-mode #map-stage:fullscreen.fullscreen-controls-visible .fullscreen-exit,.player-mode #map-stage:fullscreen .fullscreen-exit:hover,.player-mode #map-stage:fullscreen .fullscreen-exit:focus-visible{opacity:1;pointer-events:auto}
+.player-mode #map-stage:fullscreen .fullscreen-exit:hover{background:#26352fee}
+@media(prefers-reduced-motion:reduce){.player-mode #map-stage:fullscreen .fullscreen-exit{transition:none}}

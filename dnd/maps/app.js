@@ -1,10 +1,10 @@
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=10';
-import { createEncounterTools } from './encounter-tools.js?v=10';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=10';
-import { createMapMenu } from './map-menu.js?v=10';
-import { createSaveControls } from './save-controls.js?v=10';
-import { parseSave, restoreSave } from './save-file.js?v=10';
-import { createLighting } from './lighting.js?v=10';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=11';
+import { createEncounterTools } from './encounter-tools.js?v=11';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=11';
+import { createMapMenu } from './map-menu.js?v=11';
+import { createSaveControls } from './save-controls.js?v=11';
+import { parseSave, restoreSave } from './save-file.js?v=11';
+import { createLighting } from './lighting.js?v=11';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -33,7 +33,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=10')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=11')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -43,12 +43,12 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(await fetchJSON(`${item.manifest}?v=10`));
+    const content=validateMap(await fetchJSON(`${item.manifest}?v=11`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
   const map = await loadMap(entry);
-  const notes = player ? {} : await fetchJSON(`${entry.notes}?v=10`);
+  const notes = player ? {} : await fetchJSON(`${entry.notes}?v=11`);
   $('map-identity').textContent = entry.identity || map.title;
   document.querySelector('.edition').textContent = entry.edition || 'FIELD TEST';
   document.querySelector('.brand').setAttribute('aria-label', `${entry.identity || map.title} home`);
@@ -406,11 +406,43 @@ async function start() {
   }
   setInterval(() => { if (player) send({ type: 'hello' }); updateConnection(); }, 5000);
   window.addEventListener('pagehide', () => { if (!player) save(); });
+  const fullscreenTarget=player ? $('map-stage') : document.documentElement;
   $('fullscreen').addEventListener('click', async () => {
-    try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); }
-    catch { announce('Use your browser’s full-screen command for this display.'); }
+    try { if (document.fullscreenElement) await document.exitFullscreen(); else await fullscreenTarget.requestFullscreen(); }
+    catch { announce('Full screen could not open. Please try again in a browser that supports full screen.'); }
   });
-  document.addEventListener('fullscreenchange', () => $('fullscreen').textContent = document.fullscreenElement ? 'Exit full screen' : 'Full screen');
+  const exitFullscreen=$('exit-player-fullscreen');
+  let fullscreenControlsTimer,wasPlayerFullscreen=false;
+  const hideFullscreenControls=()=>{
+    clearTimeout(fullscreenControlsTimer);
+    $('map-stage').classList.remove('fullscreen-controls-visible');
+  };
+  if(player){
+    const showFullscreenControls=()=>{
+      if(document.fullscreenElement!==fullscreenTarget)return;
+      clearTimeout(fullscreenControlsTimer);
+      fullscreenTarget.classList.add('fullscreen-controls-visible');
+      fullscreenControlsTimer=setTimeout(hideFullscreenControls,1800);
+    };
+    fullscreenTarget.addEventListener('pointermove',showFullscreenControls);
+    fullscreenTarget.addEventListener('pointerdown',showFullscreenControls);
+    fullscreenTarget.addEventListener('pointerleave',hideFullscreenControls);
+    exitFullscreen.addEventListener('click',async()=>{
+      if(document.fullscreenElement)await document.exitFullscreen();
+    });
+    document.addEventListener('keydown',event=>{
+      if(event.key==='Escape'&&document.fullscreenElement===fullscreenTarget){
+        document.exitFullscreen().catch(()=>{ /* The browser may already be leaving fullscreen. */ });
+      }
+    });
+  } else exitFullscreen.remove();
+  document.addEventListener('fullscreenchange',()=>{
+    $('fullscreen').textContent=document.fullscreenElement ? 'Exit full screen' : 'Full screen';
+    hideFullscreenControls();
+    const active=player&&document.fullscreenElement===fullscreenTarget;
+    if(wasPlayerFullscreen&&!active)$('fullscreen').focus({preventScroll:true});
+    wasPlayerFullscreen=active;
+  });
   render(); updateConnection();
   if (!player) save(); else send({ type: 'hello' });
   const loadImage = src => new Promise((resolve, reject) => { const image = new Image(); image.onload = resolve; image.onerror = () => reject(new Error('The map artwork could not load. Reload to try again.')); image.src = src; });
