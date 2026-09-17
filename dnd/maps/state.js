@@ -1,4 +1,4 @@
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=11';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=12';
 export const GRID_COLORS = ['map','black','white'];
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {
