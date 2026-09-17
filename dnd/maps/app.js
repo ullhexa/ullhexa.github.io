@@ -1,7 +1,9 @@
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=4';
-import { createEncounterTools } from './encounter-tools.js?v=4';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=4';
-import { createMapMenu } from './map-menu.js?v=4';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=5';
+import { createEncounterTools } from './encounter-tools.js?v=5';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=5';
+import { createMapMenu } from './map-menu.js?v=5';
+import { createSaveControls } from './save-controls.js?v=5';
+import { parseSave, restoreSave } from './save-file.js?v=5';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -24,21 +26,23 @@ async function start() {
     $('dm-panel').remove();
     $('open-maps').remove();
     $('map-dialog').remove();
+    for(const id of ['save-controls','load-game-file','save-game-dialog','save-error-dialog'])$(id).remove();
     $('view-label').textContent = 'PLAYER DISPLAY';
     $('gesture-hint').textContent = 'View follows the DM';
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player map of the Last Lantern crossing');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=4')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=5')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
   if (!player && !query.has('session')) writeStored('lanternford:last-session', session);
   const sessionKey = `lanternford:session:${session}`;
+  const pendingLoadKey = `${sessionKey}:pending-load`;
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(await fetchJSON(`${item.manifest}?v=4`));
+    const content=validateMap(await fetchJSON(`${item.manifest}?v=5`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -137,6 +141,15 @@ async function start() {
     state = { ...next, revision: state.revision + 1 };
     render(); save();
     if (message) announce(message);
+  }
+  function restoreEncounter(restored) {
+    remember();
+    history[history.length-1].restoreView={selectedPlace:selected,ruler:structuredClone(ruler)};
+    ruler=restored.view.ruler;measuring=false;
+    $('measure').setAttribute('aria-pressed','false');$('map').style.cursor='';
+    encounter.clearSelection();clearTimeout(zoomSave);
+    commit(restored.state,`Loaded ${restored.name}.`,false);
+    selectPlace(restored.view.selectedPlace);
   }
   function activate(id) {
     const item = map.interactions.find(item => item.id === id);
@@ -261,7 +274,13 @@ async function start() {
     });
     $('clear-measurement').addEventListener('click', () => { ruler = []; renderRuler(true); });
     document.addEventListener('keydown', event => { if (event.key === 'Escape' && measuring) $('measure').click(); });
-    $('undo').addEventListener('click', () => { if (history.length) { const previous = history.pop(); commit({ ...previous, camera: state.camera, grid: state.grid }, 'Last encounter change undone.', false); } });
+    $('undo').addEventListener('click', () => {
+      if(!history.length)return;
+      const {restoreView,...previous}=history.pop();
+      if(restoreView)ruler=restoreView.ruler;
+      commit({ ...previous, camera: restoreView?previous.camera:state.camera, grid: restoreView?previous.grid:state.grid }, 'Last encounter change undone.', false);
+      if(restoreView)selectPlace(restoreView.selectedPlace);
+    });
     $('reset-session').addEventListener('click', () => $('reset-dialog').showModal());
     $('cancel-reset').addEventListener('click', () => $('reset-dialog').close());
     $('confirm-reset').addEventListener('click', () => { ruler = []; const fresh = initialState(map); const positions = formation(map, fresh.party, state.roster.length); encounter.clearSelection(); commit({ ...fresh, roster: state.roster.map((p,i) => ({...p,position:positions[i]})) }, 'The encounter is ready to begin again.'); $('reset-dialog').close(); });
@@ -350,6 +369,25 @@ async function start() {
   const loadImage = src => new Promise((resolve, reject) => { const image = new Image(); image.onload = resolve; image.onerror = () => reject(new Error('The map artwork could not load. Reload to try again.')); image.src = src; });
   await Promise.all([...Object.values(map.art).map(loadImage), ...PORTRAIT_ASSETS.map(loadImage)]);
   $('map-loading').hidden = true;
+  if(!player) {
+    const saveControls=createSaveControls({map,catalog,loadMap,getState:()=>state,getView:()=>({selectedPlace:selected,ruler:structuredClone(ruler)}),announce,
+      applySave:async(target,restored,data)=>{
+        if(target.id===map.id){restoreEncounter(restored);return;}
+        // Hand off only a validated save. The destination restores it after its art loads.
+        try{sessionStorage.setItem(pendingLoadKey,JSON.stringify(data));}
+        catch{throw new Error('This browser could not prepare the saved map. Allow browser storage and try again.');}
+        save();const url=new URL(location.href);url.searchParams.set('map',target.id);location.assign(url);
+      }
+    });
+    let pending;try{pending=sessionStorage.getItem(pendingLoadKey);}catch{}
+    if(pending) {
+      try {
+        const data=parseSave(pending),restored=restoreSave(map,data);
+        restoreEncounter(restored);saveControls.setName(data.name);
+      } catch(error){saveControls.showError(error.message);}
+      try{sessionStorage.removeItem(pendingLoadKey);}catch{}
+    }
+  }
 
   // Optional browser-native agent tools use the same state transitions as the visible controls.
   if (document.modelContext?.registerTool) {
