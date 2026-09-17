@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#141b1a">
+  <meta name="description" content="A ready-to-play interactive encounter map for an in-person tabletop session.">
+  <title>Lanternford — Interactive map playtest</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141b1a'/%3E%3Cpath d='M16 5 26 16 16 27 6 16Z' fill='%23e8ba71'/%3E%3Cpath d='M16 11v10M11 16h10' stroke='%23141b1a' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Lanternford home"><span class="brand-mark" aria-hidden="true">◇</span> LANTERNFORD <span class="edition">FIELD TEST 01</span></a>
+    <div class="top-actions"><span id="save-status" class="status">Ready to play</span><button id="open-player" class="primary">Open player display <span aria-hidden="true">↗</span></button><button id="fullscreen" class="quiet">Full screen</button></div>
+  </header>
+  <main class="workspace">
+    <aside class="dm-panel" id="dm-panel">
+      <div class="encounter-heading"><p class="eyebrow">RIVERSIDE ENCOUNTER</p><h1>The Last Lantern</h1><p class="intro">An inn at the crossing. A missing courier. Something stirring beyond the river.</p></div>
+      <div class="panel-heading"><h2>Places</h2><span>Click a place to inspect</span></div>
+      <div id="places" class="place-list"></div>
+      <section class="selected-place" aria-labelledby="selected-title"><div class="selection-kicker">DM ONLY</div><h2 id="selected-title">The inn</h2><p id="selected-note"></p><div id="selected-actions" class="action-stack"></div><button id="focus-place" class="text-button">Focus on this place</button></section>
+      <details class="playtest-guide"><summary>Run a short playtest</summary><ol><li>Let the party explore the crossing.</li><li>Enter the inn and remove its roof.</li><li>Follow the clues beyond the bridge.</li><li>Reveal the hidden campsite.</li></ol><p>Afterwards: did the map help decisions, did reveals land, and did the controls interrupt the DM?</p><p>The player window runs on this computer. Move it to an extended TV/projector display.</p></details>
+      <div class="session-actions"><button id="undo" disabled>Undo</button><button id="reset-session" class="quiet">Reset encounter</button></div>
+    </aside>
+    <section class="map-panel" aria-label="Interactive encounter map">
+      <div class="map-topline"><div><span class="eyebrow" id="view-label">DM VIEW</span><span class="map-name">The Last Lantern · River crossing</span></div><span id="connection-status" class="status"></span></div>
+      <div class="map-stage" id="map-stage">
+        <svg id="map" role="group" aria-label="Interactive map of the Last Lantern inn and river crossing" viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMid meet"><title>The Last Lantern encounter map</title><defs><pattern id="map-grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#eff4d2" stroke-opacity="0.3" stroke-width="1"/></pattern></defs><g id="artwork"></g><g id="roof-layers"></g><g id="fog-layers"></g><rect id="grid-overlay" width="1536" height="1024" fill="url(#map-grid)" pointer-events="none"/><g id="discovery-markers"></g><g id="dm-hotspots"></g><g id="party-layer"></g><g id="measurement" pointer-events="none"></g></svg>
+        <div id="map-loading" class="map-loading">Preparing the encounter…</div>
+        <div class="map-controls" aria-label="Map controls"><div class="zoom-controls"><button id="zoom-out" aria-label="Zoom out">−</button><span id="zoom-value">100%</span><button id="zoom-in" aria-label="Zoom in">+</button><button id="fit-map">Overview</button></div><label class="check-label"><input id="show-grid" type="checkbox" checked> Grid</label><button id="measure" aria-pressed="false">Measure</button><button id="clear-measurement" hidden>Clear ruler</button></div>
+        <div class="map-caption"><span id="gesture-hint">Drag to pan · Scroll to zoom</span><span id="scale-label">1 square = 5 ft</span></div>
+      </div>
+      <div class="map-footer"><span id="live-message" role="status" aria-live="polite">Choose a place to reveal its story.</span><span id="party-hint">Drag the party marker to move.</span></div>
+    </section>
+  </main>
+  <dialog id="reset-dialog"><h2>Start this encounter again?</h2><p>Roofs, discoveries, and the party marker will return to their starting positions.</p><div class="dialog-actions"><button id="cancel-reset">Keep playing</button><button id="confirm-reset" class="primary">Reset encounter</button></div></dialog>
+</body>
+</html>
