@@ -1,14 +1,14 @@
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=13';
-import { createEncounterTools } from './encounter-tools.js?v=13';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=13';
-import { createMapMenu } from './map-menu.js?v=13';
-import { createSaveControls } from './save-controls.js?v=13';
-import { parseSave, restoreSave } from './save-file.js?v=13';
-import { createLighting } from './lighting.js?v=13';
-import { setupFullscreen } from './fullscreen.js?v=13';
-import { startPlayerDisplay } from './player-display.js?v=13';
-import { createDirector } from './director.js?v=13';
-import { normalizeProject } from './presentation-state.js?v=13';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=14';
+import { createEncounterTools } from './encounter-tools.js?v=14';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=14';
+import { createMapMenu } from './map-menu.js?v=14';
+import { createSaveControls } from './save-controls.js?v=14';
+import { parseSave, restoreSave } from './save-file.js?v=14';
+import { createLighting } from './lighting.js?v=14';
+import { setupFullscreen } from './fullscreen.js?v=14';
+import { startPlayerDisplay } from './player-display.js?v=14';
+import { createDirector } from './director.js?v=14';
+import { normalizeProject } from './presentation-state.js?v=14';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -41,7 +41,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=13')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=14')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -51,7 +51,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(await fetchJSON(`${item.manifest}?v=13`));
+    const content=validateMap(await fetchJSON(`${item.manifest}?v=14`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -74,7 +74,7 @@ async function start() {
     if(environment)writeStored(`lanternford:${target.id}:${target.version}:${session}`,{...next,environment,revision:next.revision+1});
     const url=new URL(location.href);url.searchParams.set('map',id);location.assign(url);
   }
-  const notes = player ? {} : await fetchJSON(`${entry.notes}?v=13`);
+  const notes = player ? {} : await fetchJSON(`${entry.notes}?v=14`);
   $('map-identity').textContent = entry.identity || map.title;
   document.querySelector('.edition').textContent = entry.edition || 'FIELD TEST';
   document.querySelector('.brand').setAttribute('aria-label', `${entry.identity || map.title} home`);
@@ -357,7 +357,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});playerWindow?.close();playerWindow=null;peers.clear();updateConnection();announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'13'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'14'}).toString();
       playerWindow=window.open(url,`lanternford-player-${session}`,'popup,width=1280,height=800');
       if(playerWindow){playerWindow.focus();updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');

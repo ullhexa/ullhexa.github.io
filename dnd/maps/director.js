@@ -1,5 +1,5 @@
-import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=13';
-import { reorder } from './presentation-state.js?v=13';
+import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=14';
+import { reorder } from './presentation-state.js?v=14';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 

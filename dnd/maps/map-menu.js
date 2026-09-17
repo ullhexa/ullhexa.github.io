@@ -1,4 +1,4 @@
-import { renderSequence } from './director.js?v=13';
+import { renderSequence } from './director.js?v=14';
 const $ = id => document.getElementById(id);
 
 export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject}) {
