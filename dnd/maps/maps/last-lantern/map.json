@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "id": "last-lantern",
+  "version": "0.1.0",
+  "title": "The Last Lantern",
+  "width": 1536,
+  "height": 1024,
+  "grid": {
+    "size": 48,
+    "distance": 5,
+    "unit": "ft"
+  },
+  "art": {
+    "base": "./maps/last-lantern/interior.png",
+    "roofs": "./maps/last-lantern/roofs.png"
+  },
+  "places": [
+    {
+      "id": "inn",
+      "name": "The inn",
+      "point": [
+        0.309896,
+        0.293945
+      ],
+      "focusZoom": 2.3,
+      "actions": [
+        "inn-roof",
+        "cellar"
+      ]
+    },
+    {
+      "id": "stable",
+      "name": "The stable",
+      "point": [
+        0.770833,
+        0.186523
+      ],
+      "focusZoom": 2.5,
+      "actions": [
+        "stable-roof",
+        "tracks"
+      ]
+    },
+    {
+      "id": "bridge",
+      "name": "The crossing",
+      "point": [
+        0.654948,
+        0.53125
+      ],
+      "focusZoom": 1.8,
+      "actions": []
+    },
+    {
+      "id": "camp",
+      "name": "Beyond the trees",
+      "point": [
+        0.852865,
+        0.796875
+      ],
+      "focusZoom": 2.2,
+      "actions": [
+        "camp-fog",
+        "cache"
+      ]
+    }
+  ],
+  "interactions": [
+    {
+      "id": "inn-roof",
+      "type": "roof",
+      "label": "Remove inn roof",
+      "activeLabel": "Replace inn roof",
+      "placeId": "inn",
+      "polygon": [
+        [
+          0.160156,
+          0.144531
+        ],
+        [
+          0.266276,
+          0.144531
+        ],
+        [
+          0.266276,
+          0.140625
+        ],
+        [
+          0.296875,
+          0.140625
+        ],
+        [
+          0.296875,
+          0.144531
+        ],
+        [
+          0.459635,
+          0.144531
+        ],
+        [
+          0.460286,
+          0.432617
+        ],
+        [
+          0.160156,
+          0.432617
+        ]
+      ]
+    },
+    {
+      "id": "stable-roof",
+      "type": "roof",
+      "label": "Remove stable roof",
+      "activeLabel": "Replace stable roof",
+      "placeId": "stable",
+      "polygon": [
+        [
+          0.682292,
+          0.070313
+        ],
+        [
+          0.860026,
+          0.070313
+        ],
+        [
+          0.860026,
+          0.287109
+        ],
+        [
+          0.682292,
+          0.287109
+        ]
+      ]
+    },
+    {
+      "id": "camp-fog",
+      "type": "fog",
+      "label": "Reveal the campsite",
+      "activeLabel": "Conceal the campsite",
+      "placeId": "camp",
+      "polygon": [
+        [
+          0.76,
+          0.66
+        ],
+        [
+          0.88,
+          0.63
+        ],
+        [
+          1,
+          0.69
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          0.73,
+          1
+        ],
+        [
+          0.72,
+          0.8
+        ]
+      ]
+    },
+    {
+      "id": "cellar",
+      "type": "marker",
+      "label": "Reveal the trapdoor",
+      "activeLabel": "Hide the trapdoor",
+      "placeId": "inn",
+      "point": [
+        0.417,
+        0.24
+      ],
+      "symbol": "\u2193",
+      "publicLabel": "Cellar entrance",
+      "requires": [
+        "inn-roof"
+      ]
+    },
+    {
+      "id": "tracks",
+      "type": "marker",
+      "label": "Reveal muddy tracks",
+      "activeLabel": "Hide muddy tracks",
+      "placeId": "stable",
+      "point": [
+        0.78,
+        0.36
+      ],
+      "symbol": "?",
+      "publicLabel": "Muddy tracks"
+    },
+    {
+      "id": "cache",
+      "type": "marker",
+      "label": "Reveal the courier\u2019s satchel",
+      "activeLabel": "Hide the courier\u2019s satchel",
+      "placeId": "camp",
+      "point": [
+        0.86,
+        0.82
+      ],
+      "symbol": "\u25c7",
+      "publicLabel": "Courier\u2019s satchel",
+      "requires": [
+        "camp-fog"
+      ]
+    }
+  ],
+  "partyStart": [
+    0.484375,
+    0.6328125
+  ]
+}
