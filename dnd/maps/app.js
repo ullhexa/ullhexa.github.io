@@ -1,10 +1,10 @@
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=11';
-import { createEncounterTools } from './encounter-tools.js?v=11';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=11';
-import { createMapMenu } from './map-menu.js?v=11';
-import { createSaveControls } from './save-controls.js?v=11';
-import { parseSave, restoreSave } from './save-file.js?v=11';
-import { createLighting } from './lighting.js?v=11';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=12';
+import { createEncounterTools } from './encounter-tools.js?v=12';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=12';
+import { createMapMenu } from './map-menu.js?v=12';
+import { createSaveControls } from './save-controls.js?v=12';
+import { parseSave, restoreSave } from './save-file.js?v=12';
+import { createLighting } from './lighting.js?v=12';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -33,7 +33,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=11')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=12')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -43,12 +43,12 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(await fetchJSON(`${item.manifest}?v=11`));
+    const content=validateMap(await fetchJSON(`${item.manifest}?v=12`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
   const map = await loadMap(entry);
-  const notes = player ? {} : await fetchJSON(`${entry.notes}?v=11`);
+  const notes = player ? {} : await fetchJSON(`${entry.notes}?v=12`);
   $('map-identity').textContent = entry.identity || map.title;
   document.querySelector('.edition').textContent = entry.edition || 'FIELD TEST';
   document.querySelector('.brand').setAttribute('aria-label', `${entry.identity || map.title} home`);
@@ -411,7 +411,20 @@ async function start() {
     try { if (document.fullscreenElement) await document.exitFullscreen(); else await fullscreenTarget.requestFullscreen(); }
     catch { announce('Full screen could not open. Please try again in a browser that supports full screen.'); }
   });
-  const exitFullscreen=$('exit-player-fullscreen');
+  let exitFullscreen=$('exit-player-fullscreen');
+  // A cached pre-fullscreen page can load this newer script without the button.
+  if(player&&!exitFullscreen){
+    exitFullscreen=document.createElement('button');
+    exitFullscreen.id='exit-player-fullscreen';
+    exitFullscreen.className='fullscreen-exit';
+    exitFullscreen.type='button';
+    exitFullscreen.setAttribute('aria-label','Exit full screen');
+    exitFullscreen.title='Exit full screen';
+    const icon=svgNode('svg',{viewBox:'0 0 24 24',width:22,height:22,fill:'none',stroke:'currentColor','stroke-width':1.8,'stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':true});
+    icon.append(svgNode('path',{d:'M8 3v5H3m18 0h-5V3M3 16h5v5m8 0v-5h5'}));
+    exitFullscreen.append(icon);
+    fullscreenTarget.prepend(exitFullscreen);
+  }
   let fullscreenControlsTimer,wasPlayerFullscreen=false;
   const hideFullscreenControls=()=>{
     clearTimeout(fullscreenControlsTimer);
@@ -435,7 +448,7 @@ async function start() {
         document.exitFullscreen().catch(()=>{ /* The browser may already be leaving fullscreen. */ });
       }
     });
-  } else exitFullscreen.remove();
+  } else exitFullscreen?.remove();
   document.addEventListener('fullscreenchange',()=>{
     $('fullscreen').textContent=document.fullscreenElement ? 'Exit full screen' : 'Full screen';
     hideFullscreenControls();
