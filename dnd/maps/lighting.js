@@ -1,4 +1,4 @@
-import {isVisible} from './state.js?v=8';
+import {isVisible} from './state.js?v=10';
 
 const NS='http://www.w3.org/2000/svg';
 const node=(tag,attrs={})=>{
@@ -25,7 +25,7 @@ export function createLighting(map,defs,layer){
   const warmth=node('radialGradient',{id:'night-light-warmth'});
   for(const [offset,color,opacity] of [['0%','#ffe3a0',.28],['24%','#ffc470',.21],['58%','#ec9548',.10],['100%','#ec9548',0]])warmth.append(node('stop',{offset,'stop-color':color,'stop-opacity':opacity}));
   defs.append(outdoorMask,darknessMask,falloff,warmth);
-  const darkness=node('rect',{id:'night-darkness',...bounds,fill:'#071329',mask:'url(#night-darkness-mask)'});
+  const darkness=node('rect',{id:'night-darkness',...bounds,fill:'#071329',mask:'url(#night-darkness-mask)',opacity:1});
   const glows=node('g',{id:'night-lights'});
   layer.append(darkness,glows);
   const lights=(map.lighting?.lights||[]).map(light=>{
@@ -43,10 +43,9 @@ export function createLighting(map,defs,layer){
   });
   let firstRender=true;
   return state=>{
-    // Keep the light cutouts intact during fade-out so switching to day never flashes dark.
+    // Fade the prepared darkness and warmth together, retaining the light cutouts.
     if(firstRender)layer.style.transition='none';
-    layer.style.opacity=state.environment.timeOfDay==='night'?'1':'0';
-    darkness.setAttribute('opacity',state.environment.darkness/100);
+    layer.style.opacity=state.environment.darkness/100;
     for(const {light,cutout,glow} of lights){
       const display=lightIsVisible(map,state,light)?'':'none';
       cutout.style.display=display;glow.style.display=display;
