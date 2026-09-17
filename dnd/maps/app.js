@@ -1,15 +1,22 @@
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=12';
-import { createEncounterTools } from './encounter-tools.js?v=12';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=12';
-import { createMapMenu } from './map-menu.js?v=12';
-import { createSaveControls } from './save-controls.js?v=12';
-import { parseSave, restoreSave } from './save-file.js?v=12';
-import { createLighting } from './lighting.js?v=12';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=13';
+import { createEncounterTools } from './encounter-tools.js?v=13';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=13';
+import { createMapMenu } from './map-menu.js?v=13';
+import { createSaveControls } from './save-controls.js?v=13';
+import { parseSave, restoreSave } from './save-file.js?v=13';
+import { createLighting } from './lighting.js?v=13';
+import { setupFullscreen } from './fullscreen.js?v=13';
+import { startPlayerDisplay } from './player-display.js?v=13';
+import { createDirector } from './director.js?v=13';
+import { normalizeProject } from './presentation-state.js?v=13';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
 const query = new URLSearchParams(location.search);
 const player = query.get('view') === 'player';
+const embedded = player && query.get('scene') === '1';
+const headerObserver=new ResizeObserver(entries=>document.documentElement.style.setProperty('--topbar-height',`${entries[0].target.getBoundingClientRect().height}px`));
+headerObserver.observe(document.querySelector('.topbar'));
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 const svgNode = (tag, attrs = {}, text) => {
   const node = document.createElementNS(NS, tag);
@@ -23,6 +30,7 @@ const fetchJSON = async url => { const response = await fetch(url); if (!respons
 
 async function start() {
   document.body.classList.toggle('player-mode', player);
+  document.body.classList.toggle('embedded-scene',embedded);
   if (player) {
     $('dm-panel').remove();
     $('open-maps').remove();
@@ -33,7 +41,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=12')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=13')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -43,12 +51,30 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(await fetchJSON(`${item.manifest}?v=12`));
+    const content=validateMap(await fetchJSON(`${item.manifest}?v=13`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
   const map = await loadMap(entry);
-  const notes = player ? {} : await fetchJSON(`${entry.notes}?v=12`);
+  let project=normalizeProject(readStored(`${sessionKey}:project`),catalog,map.id);
+  let director,playerWindow=null,runtimeReady=false,sceneReady=false;
+  const peers=new Map();
+  const storedRevision=readStored(`${sessionKey}:presentation`)?.revision;
+  let presentationRevision=Number.isSafeInteger(storedRevision)&&storedRevision>=0?storedRevision:0;
+  const setProject=next=>{project=normalizeProject(next,catalog,map.id);writeStored(`${sessionKey}:project`,project);director?.render();publish();};
+  async function prepareMap(id,environment){
+    const target=id===map.id?map:await loadMap(catalog.find(entry=>entry.id===id));
+    if(!project.maps.includes(id))setProject({...project,maps:[...project.maps,id]});
+    if(id===map.id){
+      if(environment&&environment.darkness!==state.environment.darkness)commit({...state,environment},`Map darkness: ${environment.darkness}%.`);
+      else announce(`${map.title} is ready. Your encounter progress is kept.`);
+      return;
+    }
+    save();const next=readMapState(target);
+    if(environment)writeStored(`lanternford:${target.id}:${target.version}:${session}`,{...next,environment,revision:next.revision+1});
+    const url=new URL(location.href);url.searchParams.set('map',id);location.assign(url);
+  }
+  const notes = player ? {} : await fetchJSON(`${entry.notes}?v=13`);
   $('map-identity').textContent = entry.identity || map.title;
   document.querySelector('.edition').textContent = entry.edition || 'FIELD TEST';
   document.querySelector('.brand').setAttribute('aria-label', `${entry.identity || map.title} home`);
@@ -61,16 +87,7 @@ async function start() {
     document.querySelector('.encounter-heading .eyebrow').textContent=entry.category.toUpperCase();
     document.querySelector('.encounter-heading .intro').textContent=entry.description;
     document.querySelector('.playtest-guide ol').replaceChildren(...(entry.playtest || []).map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
-    createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,getEnvironment:target=>target.id===map.id?state.environment:readMapState(target).environment,applyMap:(target,environment)=>{
-      if(target.id===map.id){
-        if(environment.darkness!==state.environment.darkness)commit({...state,environment},`Map darkness: ${environment.darkness}%.`);
-        else announce(`${map.title} is already in play. Your progress is kept.`);
-        return;
-      }
-      save();const next=readMapState(target);
-      writeStored(`lanternford:${target.id}:${target.version}:${session}`,{...next,environment,revision:next.revision+1});
-      const url=new URL(location.href);url.searchParams.set('map',target.id);location.assign(url);
-    }});
+    createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,getEnvironment:target=>target.id===map.id?state.environment:readMapState(target).environment,getProject:()=>project,setProject,applyMap:(target,environment)=>prepareMap(target.id,environment).catch(error=>announce(error.message))});
   }
   const key = `lanternford:${map.id}:${map.version}:${session}`;
   function readMapState(content){
@@ -156,10 +173,17 @@ async function start() {
     storageWorks = writeStored(key, state);
     writeStored(`${sessionKey}:map`,map.id);
     $('save-status').textContent = storageWorks ? 'Saved in this browser' : 'Session only · storage unavailable';
-    send({ type: 'map', mapId: map.id });
-    send({ type: 'state', state: playerProjection(state) });
-    send({ type: 'ruler', points: ruler });
+    writeStored(`${sessionKey}:project`,project);
+    publish();
   }
+  function publish(){
+    if(player||!runtimeReady)return;
+    send({type:'state',state:playerProjection(state)});
+    send({type:'ruler',mapId:map.id,points:ruler});
+    const presentation={mode:project.mode,vibe:project.vibe,mapId:map.id,sceneRevision:state.revision,revision:++presentationRevision};
+    writeStored(`${sessionKey}:presentation`,presentation);send({type:'presentation',presentation});
+  }
+  function reportScene(){if(embedded&&sceneReady)window.parent.postMessage({type:'scene-ready',mapId:map.id,revision:state.revision},location.origin);}
   function commit(next, message, undoable = true) {
     if (player) return;
     if (undoable) remember();
@@ -167,9 +191,10 @@ async function start() {
     render(); save();
     if (message) announce(message);
   }
-  function restoreEncounter(restored) {
+  function restoreEncounter(restored,restoredProject) {
     remember();
-    history[history.length-1].restoreView={selectedPlace:selected,ruler:structuredClone(ruler)};
+    history[history.length-1].restoreView={selectedPlace:selected,ruler:structuredClone(ruler),project:structuredClone(project)};
+    if(restoredProject){project=normalizeProject(restoredProject,catalog,map.id);director.render();}
     ruler=restored.view.ruler;measuring=false;
     $('measure').setAttribute('aria-pressed','false');$('map').style.cursor='';
     encounter.clearSelection();clearTimeout(zoomSave);
@@ -243,10 +268,10 @@ async function start() {
     const [px, py] = xy(state.party); party.setAttribute('transform', `translate(${px} ${py})`);
     $('party-layer').style.display = state.tokenMode === 'party' ? '' : 'none';
     $('party-hint').textContent = state.tokenMode === 'party' ? 'Drag the party marker to move freely.' : 'Drag each character to move freely.';
-    encounter.render(); renderControls(); renderRuler();
+    encounter.render(); renderControls(); renderRuler(); reportScene();
   }
   function renderRuler(broadcast = false) {
-    if (broadcast && !player) send({ type: 'ruler', points: ruler });
+    if (broadcast && !player) send({ type: 'ruler', mapId:map.id, points: ruler });
     const group = $('measurement'); group.replaceChildren();
     $('clear-measurement').hidden = ruler.length === 0;
     if (!ruler.length) return;
@@ -321,6 +346,7 @@ async function start() {
       if(!history.length)return;
       const {restoreView,...previous}=history.pop();
       if(restoreView)ruler=restoreView.ruler;
+      if(restoreView?.project){project=restoreView.project;director.render();}
       commit({ ...previous, camera: restoreView?previous.camera:state.camera, grid: restoreView?previous.grid:state.grid, gridColor: restoreView?previous.gridColor:state.gridColor }, 'Last encounter change undone.', false);
       if(restoreView)selectPlace(restoreView.selectedPlace);
     });
@@ -328,9 +354,12 @@ async function start() {
     $('cancel-reset').addEventListener('click', () => $('reset-dialog').close());
     $('confirm-reset').addEventListener('click', () => { ruler = []; const fresh = initialState(map); const positions = formation(map, fresh.party, state.roster.length); encounter.clearSelection(); commit({ ...fresh, roster: state.roster.map((p,i) => ({...p,position:positions[i]})) }, 'The encounter is ready to begin again.'); $('reset-dialog').close(); });
     $('open-player').addEventListener('click', () => {
-      save(); const url = new URL(location.href); url.search = new URLSearchParams({ view: 'player', session, map: map.id }).toString();
-      const opened = window.open(url, `lanternford-player-${session}`, 'popup,width=1280,height=800');
-      if (opened) { opened.focus(); announce('Move the player window to your TV/projector using an extended display.'); }
+      if((playerWindow&&!playerWindow.closed)||peers.size){
+        send({type:'close-player'});playerWindow?.close();playerWindow=null;peers.clear();updateConnection();announce('Closing the player display…');return;
+      }
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'13'}).toString();
+      playerWindow=window.open(url,`lanternford-player-${session}`,'popup,width=1280,height=800');
+      if(playerWindow){playerWindow.focus();updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
     });
     $('map').addEventListener('wheel', event => { event.preventDefault(); zoomBy(Math.exp(-event.deltaY * .0015), pointAt(event)); }, { passive: false });
@@ -383,16 +412,19 @@ async function start() {
 
   function receive(message) {
     if (!message || typeof message !== 'object') return;
-    if (!player && message.type === 'hello') { lastPeer = Date.now(); send({ type: 'map', mapId: map.id }); send({ type: 'state', state: playerProjection(state) }); send({ type: 'ruler', points: ruler }); updateConnection(); }
-    if (player && message.type === 'map' && message.mapId !== map.id && catalog.some(item=>item.id===message.mapId)) {
-      const url=new URL(location.href);url.searchParams.set('map',message.mapId);location.replace(url);return;
+    if(!player&&message.type==='hello'){
+      if(typeof message.playerId==='string'){peers.set(message.playerId,Date.now());lastPeer=Date.now();updateConnection();}
+      if(runtimeReady){const presentation=readStored(`${sessionKey}:presentation`);if(presentation)send({type:'presentation',presentation});else publish();}
     }
-    if (player && message.type === 'ruler' && Array.isArray(message.points) && message.points.length <= 2 && message.points.every(inBounds)) { ruler = message.points; renderRuler(); }
+    if(!player&&message.type==='scene-hello')publish();
+    if(!player&&message.type==='bye'){peers.delete(message.playerId);updateConnection();}
+    if(!player&&message.type==='close-blocked')announce('This player tab was opened manually. Close it using the browser’s tab controls.');
+    if(!player&&message.type==='display-error')announce('The player map could not load. Close and reopen the player display to retry.');
+    if(player&&message.type==='ruler'&&message.mapId===map.id&&Array.isArray(message.points)&&message.points.length<=2&&message.points.every(inBounds)){ruler=message.points;renderRuler();}
     if (player && message.type === 'state' && message.state?.mapId === map.id && message.state?.mapVersion === map.version) {
       const incoming = playerProjection(sanitizeState(map, message.state));
       if (incoming.revision >= state.revision) { state = incoming; render(); }
       lastPeer = Date.now(); updateConnection();
-      announce('Explore the map. The DM controls what appears here.');
     }
   }
   if (channel) channel.onmessage = event => receive(event.data);
@@ -401,85 +433,49 @@ async function start() {
     try { receive(JSON.parse(event.newValue)); } catch { /* Ignore unrelated or invalid storage data. */ }
   });
   function updateConnection() {
-    const connected = Date.now()-lastPeer < 15000;
-    $('connection-status').textContent = player ? (connected ? 'Following the DM' : 'DM disconnected · last view kept') : (connected ? 'Player display connected' : 'Player display not open');
+    for(const [id,seen] of peers)if(Date.now()-seen>7000)peers.delete(id);
+    const connected=player?Date.now()-lastPeer<15000:!!((playerWindow&&!playerWindow.closed)||peers.size);
+    $('connection-status').textContent=player?(connected?'Following the DM':'DM disconnected · last view kept'):(connected?'Player display connected':'Player display not open');
+    if(!player){$('open-player').replaceChildren(document.createTextNode(connected?'Close player display ':'Open player display '));const arrow=document.createElement('span');arrow.setAttribute('aria-hidden','true');arrow.textContent=connected?'↙':'↗';$('open-player').append(arrow);}
   }
-  setInterval(() => { if (player) send({ type: 'hello' }); updateConnection(); }, 5000);
-  window.addEventListener('pagehide', () => { if (!player) save(); });
-  const fullscreenTarget=player ? $('map-stage') : document.documentElement;
-  $('fullscreen').addEventListener('click', async () => {
-    try { if (document.fullscreenElement) await document.exitFullscreen(); else await fullscreenTarget.requestFullscreen(); }
-    catch { announce('Full screen could not open. Please try again in a browser that supports full screen.'); }
-  });
-  let exitFullscreen=$('exit-player-fullscreen');
-  // A cached pre-fullscreen page can load this newer script without the button.
-  if(player&&!exitFullscreen){
-    exitFullscreen=document.createElement('button');
-    exitFullscreen.id='exit-player-fullscreen';
-    exitFullscreen.className='fullscreen-exit';
-    exitFullscreen.type='button';
-    exitFullscreen.setAttribute('aria-label','Exit full screen');
-    exitFullscreen.title='Exit full screen';
-    const icon=svgNode('svg',{viewBox:'0 0 24 24',width:22,height:22,fill:'none',stroke:'currentColor','stroke-width':1.8,'stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':true});
-    icon.append(svgNode('path',{d:'M8 3v5H3m18 0h-5V3M3 16h5v5m8 0v-5h5'}));
-    exitFullscreen.append(icon);
-    fullscreenTarget.prepend(exitFullscreen);
+  if(!embedded)setInterval(updateConnection,1000);
+  window.addEventListener('pagehide',()=>{if(!player)save();});
+  if(!player)director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});
+  if(embedded){
+    let lastActivity=0;
+    const activity=()=>{if(performance.now()-lastActivity>100){lastActivity=performance.now();window.parent.postMessage({type:'player-activity'},location.origin);}};
+    document.addEventListener('pointermove',activity);document.addEventListener('pointerdown',activity);
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')window.parent.postMessage({type:'player-escape'},location.origin);});
   }
-  let fullscreenControlsTimer,wasPlayerFullscreen=false;
-  const hideFullscreenControls=()=>{
-    clearTimeout(fullscreenControlsTimer);
-    $('map-stage').classList.remove('fullscreen-controls-visible');
-  };
-  if(player){
-    const showFullscreenControls=()=>{
-      if(document.fullscreenElement!==fullscreenTarget)return;
-      clearTimeout(fullscreenControlsTimer);
-      fullscreenTarget.classList.add('fullscreen-controls-visible');
-      fullscreenControlsTimer=setTimeout(hideFullscreenControls,1800);
-    };
-    fullscreenTarget.addEventListener('pointermove',showFullscreenControls);
-    fullscreenTarget.addEventListener('pointerdown',showFullscreenControls);
-    fullscreenTarget.addEventListener('pointerleave',hideFullscreenControls);
-    exitFullscreen.addEventListener('click',async()=>{
-      if(document.fullscreenElement)await document.exitFullscreen();
-    });
-    document.addEventListener('keydown',event=>{
-      if(event.key==='Escape'&&document.fullscreenElement===fullscreenTarget){
-        document.exitFullscreen().catch(()=>{ /* The browser may already be leaving fullscreen. */ });
-      }
-    });
-  } else exitFullscreen?.remove();
-  document.addEventListener('fullscreenchange',()=>{
-    $('fullscreen').textContent=document.fullscreenElement ? 'Exit full screen' : 'Full screen';
-    hideFullscreenControls();
-    const active=player&&document.fullscreenElement===fullscreenTarget;
-    if(wasPlayerFullscreen&&!active)$('fullscreen').focus({preventScroll:true});
-    wasPlayerFullscreen=active;
-  });
+  if(!embedded)setupFullscreen({player,announce});
   render(); updateConnection();
-  if (!player) save(); else send({ type: 'hello' });
+  if(player)send({type:'scene-hello'});
   const loadImage = src => new Promise((resolve, reject) => { const image = new Image(); image.onload = resolve; image.onerror = () => reject(new Error('The map artwork could not load. Reload to try again.')); image.src = src; });
   await Promise.all([...Object.values(map.art).map(loadImage), ...PORTRAIT_ASSETS.map(loadImage)]);
-  $('map-loading').hidden = true;
+  $('map-loading').hidden = true;sceneReady=true;reportScene();
   if(!player) {
-    const saveControls=createSaveControls({map,catalog,loadMap,getState:()=>state,getView:()=>({selectedPlace:selected,ruler:structuredClone(ruler)}),announce,
+    const saveControls=createSaveControls({map,catalog,loadMap,getState:()=>state,getView:()=>({selectedPlace:selected,ruler:structuredClone(ruler)}),getProject:()=>project,announce,
       applySave:async(target,restored,data)=>{
-        if(target.id===map.id){restoreEncounter(restored);return;}
+        if(target.id===map.id){restoreEncounter(restored,data.project);return;}
         // Hand off only a validated save. The destination restores it after its art loads.
         try{sessionStorage.setItem(pendingLoadKey,JSON.stringify(data));}
         catch{throw new Error('This browser could not prepare the saved map. Allow browser storage and try again.');}
-        save();const url=new URL(location.href);url.searchParams.set('map',target.id);location.assign(url);
+        save();runtimeReady=false;
+        if(data.project){project=normalizeProject(data.project,catalog,target.id);writeStored(`${sessionKey}:project`,project);}
+        const url=new URL(location.href);url.searchParams.set('map',target.id);location.assign(url);
       }
     });
     let pending;try{pending=sessionStorage.getItem(pendingLoadKey);}catch{}
     if(pending) {
       try {
         const data=parseSave(pending),restored=restoreSave(map,data);
-        restoreEncounter(restored);saveControls.setName(data.name);
+        restoreEncounter(restored,data.project);saveControls.setName(data.name);
       } catch(error){saveControls.showError(error.message);}
       try{sessionStorage.removeItem(pendingLoadKey);}catch{}
     }
   }
+
+  runtimeReady=true;if(!player)save();
 
   // Optional browser-native agent tools use the same state transitions as the visible controls.
   if (document.modelContext?.registerTool) {
@@ -494,4 +490,4 @@ async function start() {
     } });
   }
 }
-start().catch(error => { $('map-loading').textContent = error.message; $('map-loading').hidden = false; $('live-message').textContent = 'The encounter could not start. Reload this page to try again.'; console.error(error); });
+(player&&!embedded?startPlayerDisplay():start()).catch(error => { if(embedded)window.parent.postMessage({type:'scene-error'},location.origin); $('map-loading').textContent = error.message; $('map-loading').hidden = false; $('live-message').textContent = 'The encounter could not start. Reload this page to try again.'; console.error(error); });

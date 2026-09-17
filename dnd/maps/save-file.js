@@ -1,5 +1,6 @@
-import { sanitizeState, validPoint, GRID_COLORS, validEnvironment } from './state.js?v=12';
-import { PORTRAITS, SHAPE_TYPES, SHAPE_COLORS } from './encounter-state.js?v=12';
+import { sanitizeState, validPoint, GRID_COLORS, validEnvironment } from './state.js?v=13';
+import { PORTRAITS, SHAPE_TYPES, SHAPE_COLORS } from './encounter-state.js?v=13';
+import { validProject } from './presentation-state.js?v=13';
 
 export const MAX_SAVE_BYTES = 256 * 1024;
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -22,6 +23,7 @@ export function parseSave(text) {
   check(typeof data.name==='string'&&data.name.trim().length>0&&data.name.length<=120);
   check(typeof data.savedAt==='string'&&Number.isFinite(Date.parse(data.savedAt)));
   check(object(data.state)&&data.state.format===1&&id(data.state.mapId)&&typeof data.state.mapVersion==='string'&&data.state.mapVersion.length<=80);
+  check(data.project===undefined||validProject(data.project),'This save contains invalid session selections.');
   return data;
 }
 
@@ -42,9 +44,10 @@ export function restoreSave(map,data) {
   return {state:sanitizeState(map,{...s,revision:0}),view:{selectedPlace:data.view.selectedPlace,ruler:data.view.ruler.map(p=>[...p])},name:data.name};
 }
 
-export function serializeSave(map,state,name,view,date=new Date()) {
+export function serializeSave(map,state,name,view,date=new Date(),project) {
   check(typeof name==='string'&&name.trim().length>0&&name.trim().length<=120,'Enter a name for your save.');
-  const data={kind:'ullhexa-map-save',version:1,name:name.trim(),savedAt:date.toISOString(),state:{...sanitizeState(map,state),revision:0},view};
+  check(project===undefined||validProject(project),'The session selections could not be saved.');
+  const data={kind:'ullhexa-map-save',version:1,name:name.trim(),savedAt:date.toISOString(),state:{...sanitizeState(map,state),revision:0},view,...(project?{project}: {})};
   // Keep the exported contract identical to the import contract.
   restoreSave(map,data);
   return JSON.stringify(data);

@@ -1,7 +1,7 @@
-import { MAX_SAVE_BYTES, parseSave, restoreSave, serializeSave, saveFilename } from './save-file.js?v=12';
+import { MAX_SAVE_BYTES, parseSave, restoreSave, serializeSave, saveFilename } from './save-file.js?v=13';
 const $=id=>document.getElementById(id);
 
-export function createSaveControls({map,catalog,loadMap,getState,getView,applySave,announce}) {
+export function createSaveControls({map,catalog,loadMap,getState,getView,getProject,applySave,announce}) {
   let lastName=`${map.title} - ${new Date().toLocaleDateString('en-CA')}`;
   function showError(message) {
     $('save-error-message').textContent=message;
@@ -16,7 +16,7 @@ export function createSaveControls({map,catalog,loadMap,getState,getView,applySa
     event.preventDefault();
     try {
       const name=$('save-name').value.trim();
-      const data=serializeSave(map,getState(),name,getView());
+      const data=serializeSave(map,getState(),name,getView(),undefined,getProject?.());
       const filename=saveFilename(name),url=URL.createObjectURL(new Blob([data],{type:'application/json'}));
       const link=document.createElement('a');link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();
       setTimeout(()=>URL.revokeObjectURL(url),60000);
@@ -31,6 +31,7 @@ export function createSaveControls({map,catalog,loadMap,getState,getView,applySa
       if(!/\.ullhexa$/i.test(file.name))throw new Error('Choose a file with the .ullhexa extension.');
       if(file.size>MAX_SAVE_BYTES)throw new Error('This save is too large. Choose an .ullhexa game save under 256 KB.');
       const data=parseSave(await file.text());
+      if(data.project?.maps.some(id=>!catalog.some(item=>item.id===id)))throw new Error('A map in this session’s prepared list is not available here.');
       const entry=catalog.find(item=>item.id===data.state.mapId);
       if(!entry)throw new Error('The map used by this save is not available in this library.');
       const target=entry.id===map.id?map:await loadMap(entry);
