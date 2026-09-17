@@ -1,4 +1,4 @@
-import { PORTRAITS, portraitAsset, SHAPE_TYPES, SHAPE_COLORS, clamp, feetToWorld, setRosterCount, setTokenMode, newShape, resizeShape, rotateShape } from './encounter-state.js?v=3';
+import { PORTRAITS, portraitAsset, SHAPE_TYPES, SHAPE_COLORS, clamp, feetToWorld, setRosterCount, setTokenMode, newShape, resizeShape, rotateShape } from './encounter-state.js?v=4';
 
 const NS='http://www.w3.org/2000/svg';
 const $=id=>document.getElementById(id);
@@ -127,7 +127,7 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
   if(!player){
     for(let count=1;count<=12;count++){const option=document.createElement('option');option.value=count;option.textContent=count;$('player-count').append(option);}
     $('player-count').addEventListener('change',event=>commit(setRosterCount(map,getState(),Number(event.target.value)),'Player count updated.'));
-    for(const mode of ['party','players'])$(`mode-${mode}`).addEventListener('click',()=>{if(getState().tokenMode!==mode)commit(setTokenMode(map,getState(),mode),mode==='party'?'Players gathered into one party marker.':'Players placed around the party position.');});
+    for(const mode of ['party','players'])$(`mode-${mode}`).addEventListener('click',()=>{if(getState().tokenMode!==mode)commit(setTokenMode(map,getState(),mode),mode==='party'?'Party marker shown.':getState().regroupPlayers?'Players placed around the party position.':'Player positions restored.');});
     $('close-portraits').addEventListener('click',()=>$('portrait-dialog').close());
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&selectedShape&&!$('portrait-dialog').open){selectedShape=null;render();}});
     PORTRAITS.forEach((description,index)=>{const button=document.createElement('button');button.type='button';button.className='portrait-option';button.setAttribute('aria-label',description);button.title=description;const face=document.createElement('span');face.className='portrait-thumb';portraitStyle(face,index);button.append(face);button.addEventListener('click',()=>{commit({...getState(),roster:getState().roster.map(p=>p.id===portraitPlayer?{...p,portrait:index}:p)},'Character face updated.');$('portrait-dialog').close();});$('portrait-options').append(button);});

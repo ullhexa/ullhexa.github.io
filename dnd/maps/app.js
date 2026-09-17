@@ -1,6 +1,7 @@
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=3';
-import { createEncounterTools } from './encounter-tools.js?v=3';
-import { playerProjection, formation, PORTRAIT_ASSETS } from './encounter-state.js?v=3';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=4';
+import { createEncounterTools } from './encounter-tools.js?v=4';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=4';
+import { createMapMenu } from './map-menu.js?v=4';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -20,19 +21,42 @@ const fetchJSON = async url => { const response = await fetch(url); if (!respons
 async function start() {
   document.body.classList.toggle('player-mode', player);
   if (player) {
-    document.title = 'The Last Lantern — Player display';
     $('dm-panel').remove();
+    $('open-maps').remove();
+    $('map-dialog').remove();
     $('view-label').textContent = 'PLAYER DISPLAY';
     $('gesture-hint').textContent = 'View follows the DM';
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player map of the Last Lantern crossing');
   }
-  const map = validateMap(await fetchJSON('./maps/last-lantern/map.json?v=3'));
-  const notes = player ? {} : await fetchJSON('./maps/last-lantern/dm-notes.json');
+  const catalog = (await fetchJSON('./maps/catalog.json?v=4')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
   if (!player && !query.has('session')) writeStored('lanternford:last-session', session);
+  const sessionKey = `lanternford:session:${session}`;
+  const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
+  const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
+  const loadMap = async item => {
+    const content=validateMap(await fetchJSON(`${item.manifest}?v=4`));
+    if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
+    return content;
+  };
+  const map = await loadMap(entry);
+  const notes = player ? {} : await fetchJSON(entry.notes);
+  document.title = `${map.title} — ${player ? 'Player display' : 'Interactive map playtest'}`;
+  document.querySelector('.map-name').textContent = `${map.title} · ${entry.subtitle}`;
+  $('map').setAttribute('aria-label', `${player ? 'Player' : 'Interactive'} map of ${map.title}`);
+  $('map').querySelector('title').textContent = `${map.title} encounter map`;
+  if(!player) {
+    document.querySelector('.encounter-heading h1').textContent=map.title;
+    document.querySelector('.encounter-heading .eyebrow').textContent=entry.category.toUpperCase();
+    document.querySelector('.encounter-heading .intro').textContent=entry.description;
+    createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,applyMap:id=>{
+      if(id===map.id){announce(`${map.title} is already in play. Your progress is kept.`);return;}
+      save();const url=new URL(location.href);url.searchParams.set('map',id);location.assign(url);
+    }});
+  }
   const key = `lanternford:${map.id}:${map.version}:${session}`;
   const previousSave = readStored(key) || (map.previousVersions || []).map(version => readStored(`lanternford:${map.id}:${version}:${session}`)).find(Boolean);
   let state = sanitizeState(map, previousSave);
@@ -46,8 +70,8 @@ async function start() {
   let zoomSave;
   let storageWorks = true;
   let channel;
-  try { channel = new BroadcastChannel(key); } catch { /* Storage events also synchronize windows. */ }
-  const send = value => { channel?.postMessage(value); writeStored(`${key}:signal`, { ...value, nonce: crypto.randomUUID() }); };
+  try { channel = new BroadcastChannel(sessionKey); } catch { /* Storage events also synchronize windows. */ }
+  const send = value => { channel?.postMessage(value); writeStored(`${sessionKey}:signal`, { ...value, nonce: crypto.randomUUID() }); };
   const announce = text => { $('live-message').textContent = text; };
   const xy = point => [point[0] * map.width, point[1] * map.height];
   const polygon = points => points.map(point => xy(point).join(',')).join(' ');
@@ -101,7 +125,9 @@ async function start() {
   function save() {
     if (player) return;
     storageWorks = writeStored(key, state);
+    writeStored(`${sessionKey}:map`,map.id);
     $('save-status').textContent = storageWorks ? 'Saved in this browser' : 'Session only · storage unavailable';
+    send({ type: 'map', mapId: map.id });
     send({ type: 'state', state: playerProjection(state) });
     send({ type: 'ruler', points: ruler });
   }
@@ -120,7 +146,7 @@ async function start() {
   function selectPlace(id) {
     selected = id;
     const place = map.places.find(place => place.id === id);
-    $('selected-title').textContent = place.name;
+    $('selected-title').textContent = `${map.places.indexOf(place)+1}. ${place.name}`;
     $('selected-note').textContent = notes[id] || 'Explore this part of the crossing.';
     $('selected-actions').replaceChildren(); actionButtons.clear();
     for (const id of place.actions) {
@@ -205,7 +231,9 @@ async function start() {
   if (!player) {
     for (const [index, place] of map.places.entries()) {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'place-button';
-      const title = document.createElement('span'); title.textContent = place.name;
+      const title = document.createElement('span');
+      const number = document.createElement('b'); number.className='place-number';number.textContent=`${index+1}. `;
+      title.append(number,document.createTextNode(place.name));
       button.append(title, document.createElement('span')); button.addEventListener('click', () => selectPlace(place.id));
       $('places').append(button); placeButtons.set(place.id, button);
       const [x, y] = xy(place.point);
@@ -238,7 +266,7 @@ async function start() {
     $('cancel-reset').addEventListener('click', () => $('reset-dialog').close());
     $('confirm-reset').addEventListener('click', () => { ruler = []; const fresh = initialState(map); const positions = formation(map, fresh.party, state.roster.length); encounter.clearSelection(); commit({ ...fresh, roster: state.roster.map((p,i) => ({...p,position:positions[i]})) }, 'The encounter is ready to begin again.'); $('reset-dialog').close(); });
     $('open-player').addEventListener('click', () => {
-      save(); const url = new URL(location.href); url.search = new URLSearchParams({ view: 'player', session }).toString();
+      save(); const url = new URL(location.href); url.search = new URLSearchParams({ view: 'player', session, map: map.id }).toString();
       const opened = window.open(url, `lanternford-player-${session}`, 'popup,width=1280,height=800');
       if (opened) { opened.focus(); announce('Move the player window to your TV/projector using an extended display.'); }
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
@@ -259,7 +287,7 @@ async function start() {
       const dx = event.clientX-drag.x, dy = event.clientY-drag.y;
       if (Math.hypot(dx, dy) < 4 && !drag.moved) return;
       drag.moved = true;
-      if (drag.token) state = { ...state, party: snapped(pointAt(event)) };
+      if (drag.token) state = moveParty(state, snapped(pointAt(event)));
       else state = { ...state, camera: { x: clamp(drag.camera.x-dx/drag.scale/map.width, 0, 1), y: clamp(drag.camera.y-dy/drag.scale/map.height, 0, 1), zoom: drag.camera.zoom } };
       render();
     });
@@ -283,13 +311,16 @@ async function start() {
     party.addEventListener('keydown', event => {
       const offset = { ArrowLeft: [-1,0], ArrowRight: [1,0], ArrowUp: [0,-1], ArrowDown: [0,1] }[event.key];
       if (!offset) return; event.preventDefault();
-      commit({ ...state, party: snapped([state.party[0]+offset[0]*map.grid.size/map.width, state.party[1]+offset[1]*map.grid.size/map.height]) }, 'Party moved one square.');
+      commit(moveParty(state, snapped([state.party[0]+offset[0]*map.grid.size/map.width, state.party[1]+offset[1]*map.grid.size/map.height])), 'Party moved one square.');
     });
   }
 
   function receive(message) {
     if (!message || typeof message !== 'object') return;
-    if (!player && message.type === 'hello') { lastPeer = Date.now(); send({ type: 'state', state: playerProjection(state) }); send({ type: 'ruler', points: ruler }); updateConnection(); }
+    if (!player && message.type === 'hello') { lastPeer = Date.now(); send({ type: 'map', mapId: map.id }); send({ type: 'state', state: playerProjection(state) }); send({ type: 'ruler', points: ruler }); updateConnection(); }
+    if (player && message.type === 'map' && message.mapId !== map.id && catalog.some(item=>item.id===message.mapId)) {
+      const url=new URL(location.href);url.searchParams.set('map',message.mapId);location.replace(url);return;
+    }
     if (player && message.type === 'ruler' && Array.isArray(message.points) && message.points.length <= 2 && message.points.every(inBounds)) { ruler = message.points; renderRuler(); }
     if (player && message.type === 'state' && message.state?.mapId === map.id && message.state?.mapVersion === map.version) {
       const incoming = playerProjection(sanitizeState(map, message.state));
@@ -300,7 +331,7 @@ async function start() {
   }
   if (channel) channel.onmessage = event => receive(event.data);
   window.addEventListener('storage', event => {
-    if (event.key !== `${key}:signal` || !event.newValue) return;
+    if (event.key !== `${sessionKey}:signal` || !event.newValue) return;
     try { receive(JSON.parse(event.newValue)); } catch { /* Ignore unrelated or invalid storage data. */ }
   });
   function updateConnection() {
