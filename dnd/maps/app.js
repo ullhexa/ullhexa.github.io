@@ -1,4 +1,6 @@
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=2';
+import { createEncounterTools } from './encounter-tools.js?v=2';
+import { playerProjection, formation } from './encounter-state.js?v=2';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -25,14 +27,16 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player map of the Last Lantern crossing');
   }
-  const map = validateMap(await fetchJSON('./maps/last-lantern/map.json'));
+  const map = validateMap(await fetchJSON('./maps/last-lantern/map.json?v=2'));
   const notes = player ? {} : await fetchJSON('./maps/last-lantern/dm-notes.json');
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
   if (!player && !query.has('session')) writeStored('lanternford:last-session', session);
   const key = `lanternford:${map.id}:${map.version}:${session}`;
-  let state = sanitizeState(map, readStored(key));
+  const previousSave = readStored(key) || (map.previousVersions || []).map(version => readStored(`lanternford:${map.id}:${version}:${session}`)).find(Boolean);
+  let state = sanitizeState(map, previousSave);
+  if (player) state = playerProjection(state);
   let selected = map.places[0].id;
   let history = [];
   let lastPeer = 0;
@@ -62,12 +66,12 @@ async function start() {
 
   for (const item of map.interactions) {
     let node;
-    if (item.type === 'roof') {
+    if (item.type === 'roof' || item.type === 'terrain') {
       const clip = svgNode('clipPath', { id: `clip-${item.id}` });
       clip.append(svgNode('polygon', { points: polygon(item.polygon) }));
       defs.append(clip);
-      node = svgNode('image', { ...dimensions, href: map.art.roofs, 'clip-path': `url(#clip-${item.id})`, 'pointer-events': 'none' });
-      $('roof-layers').append(node);
+      node = svgNode('image', { ...dimensions, href: item.type === 'roof' ? map.art.roofs : map.art[item.asset], 'clip-path': `url(#clip-${item.id})`, 'pointer-events': 'none' });
+      $(item.type === 'roof' ? 'roof-layers' : 'terrain-layers').append(node);
     } else if (item.type === 'fog') {
       node = svgNode('polygon', { points: polygon(item.polygon), class: 'fog-shape', 'pointer-events': 'none' });
       $('fog-layers').append(node);
@@ -88,13 +92,17 @@ async function start() {
   party.append(svgNode('text', { 'text-anchor': 'middle', y: 5, fill: '#fff9dc', 'font-size': 14, 'font-weight': 700 }, 'P'));
   party.append(svgNode('text', { class: 'marker-label', 'text-anchor': 'middle', y: 39, 'font-size': 16 }, 'Party'));
   $('party-layer').append(party);
+  const encounter = createEncounterTools({ map, player, getState: () => state, commit, pointAt, announce,
+    preview: next => { state = next; render(); },
+    finishDrag: (before, message) => { history.push(before); if (history.length > 40) history.shift(); state.revision += 1; render(); save(); announce(message); }
+  });
 
   function remember() { history.push(structuredClone(state)); if (history.length > 40) history.shift(); }
   function save() {
     if (player) return;
     storageWorks = writeStored(key, state);
     $('save-status').textContent = storageWorks ? 'Saved in this browser' : 'Session only · storage unavailable';
-    send({ type: 'state', state });
+    send({ type: 'state', state: playerProjection(state) });
     send({ type: 'ruler', points: ruler });
   }
   function commit(next, message, undoable = true) {
@@ -128,7 +136,7 @@ async function start() {
       const button = placeButtons.get(place.id);
       button?.setAttribute('aria-pressed', place.id === selected);
       const count = place.actions.filter(id => isVisible(map, state, id)).length;
-      if (button) button.lastElementChild.textContent = place.actions.length ? `${count}/${place.actions.length} revealed` : 'Crossing';
+      if (button) button.lastElementChild.textContent = place.id === 'bridge' ? (state.active.includes('bridge-broken') ? 'Broken' : 'Intact') : place.actions.length ? `${count}/${place.actions.length} revealed` : 'Crossing';
       const node = hotspots.get(place.id);
       if (node) node.querySelector('circle').setAttribute('fill', place.id === selected ? '#e8ba71' : '#172a21');
     }
@@ -141,11 +149,15 @@ async function start() {
       button.title = button.disabled ? 'Reveal the surrounding area first.' : '';
     }
     $('undo').disabled = history.length === 0;
+    if (selected === 'bridge') $('selected-note').textContent = state.active.includes('bridge-broken') ? 'The bridge has collapsed. The party needs another way across the river; restore it whenever your story calls for a usable crossing.' : notes.bridge;
+    const overview = Math.abs(state.camera.zoom-1)<.001 && Math.abs(state.camera.x-.5)<.001 && Math.abs(state.camera.y-.5)<.001;
+    $('sidebar-overview').disabled = overview;
+    $('fit-map').disabled = overview;
   }
   function render() {
     for (const item of map.interactions) {
       const visible = isVisible(map, state, item.id);
-      layerNodes.get(item.id).style.display = (item.type === 'marker' ? visible : !visible) ? '' : 'none';
+      layerNodes.get(item.id).style.display = (['marker','terrain'].includes(item.type) ? visible : !visible) ? '' : 'none';
     }
     const { x, y, zoom } = state.camera;
     const w = map.width / zoom, h = map.height / zoom;
@@ -156,7 +168,9 @@ async function start() {
     $('grid-overlay').style.display = state.grid ? '' : 'none';
     $('show-grid').checked = state.grid;
     const [px, py] = xy(state.party); party.setAttribute('transform', `translate(${px} ${py})`);
-    renderControls(); renderRuler();
+    $('party-layer').style.display = state.tokenMode === 'party' ? '' : 'none';
+    $('party-hint').textContent = state.tokenMode === 'party' ? 'Drag the party marker to move.' : 'Drag each character to move freely.';
+    encounter.render(); renderControls(); renderRuler();
   }
   function renderRuler(broadcast = false) {
     if (broadcast && !player) send({ type: 'ruler', points: ruler });
@@ -210,6 +224,7 @@ async function start() {
     $('zoom-in').addEventListener('click', () => zoomBy(1.25));
     $('zoom-out').addEventListener('click', () => zoomBy(.8));
     $('fit-map').addEventListener('click', () => commit({ ...state, camera: initialState(map).camera }, 'Showing the whole crossing.', false));
+    $('sidebar-overview').addEventListener('click', () => $('fit-map').click());
     $('show-grid').addEventListener('change', event => commit({ ...state, grid: event.target.checked }, '', false));
     $('measure').addEventListener('click', () => {
       measuring = !measuring; ruler = []; $('measure').setAttribute('aria-pressed', measuring);
@@ -221,7 +236,7 @@ async function start() {
     $('undo').addEventListener('click', () => { if (history.length) { const previous = history.pop(); commit({ ...previous, camera: state.camera, grid: state.grid }, 'Last encounter change undone.', false); } });
     $('reset-session').addEventListener('click', () => $('reset-dialog').showModal());
     $('cancel-reset').addEventListener('click', () => $('reset-dialog').close());
-    $('confirm-reset').addEventListener('click', () => { ruler = []; commit(initialState(map), 'The encounter is ready to begin again.'); $('reset-dialog').close(); });
+    $('confirm-reset').addEventListener('click', () => { ruler = []; const fresh = initialState(map); const positions = formation(map, fresh.party, state.roster.length); encounter.clearSelection(); commit({ ...fresh, roster: state.roster.map((p,i) => ({...p,position:positions[i]})) }, 'The encounter is ready to begin again.'); $('reset-dialog').close(); });
     $('open-player').addEventListener('click', () => {
       save(); const url = new URL(location.href); url.search = new URLSearchParams({ view: 'player', session }).toString();
       const opened = window.open(url, `lanternford-player-${session}`, 'popup,width=1280,height=800');
@@ -274,10 +289,10 @@ async function start() {
 
   function receive(message) {
     if (!message || typeof message !== 'object') return;
-    if (!player && message.type === 'hello') { lastPeer = Date.now(); send({ type: 'state', state }); send({ type: 'ruler', points: ruler }); updateConnection(); }
+    if (!player && message.type === 'hello') { lastPeer = Date.now(); send({ type: 'state', state: playerProjection(state) }); send({ type: 'ruler', points: ruler }); updateConnection(); }
     if (player && message.type === 'ruler' && Array.isArray(message.points) && message.points.length <= 2 && message.points.every(inBounds)) { ruler = message.points; renderRuler(); }
     if (player && message.type === 'state' && message.state?.mapId === map.id && message.state?.mapVersion === map.version) {
-      const incoming = sanitizeState(map, message.state);
+      const incoming = playerProjection(sanitizeState(map, message.state));
       if (incoming.revision >= state.revision) { state = incoming; render(); }
       lastPeer = Date.now(); updateConnection();
       announce('Explore the crossing. The DM controls what appears here.');
@@ -302,7 +317,7 @@ async function start() {
   render(); updateConnection();
   if (!player) save(); else send({ type: 'hello' });
   const loadImage = src => new Promise((resolve, reject) => { const image = new Image(); image.onload = resolve; image.onerror = () => reject(new Error('The map artwork could not load. Reload to try again.')); image.src = src; });
-  await Promise.all([loadImage(map.art.base), loadImage(map.art.roofs)]);
+  await Promise.all([...Object.values(map.art).map(loadImage), loadImage('./assets/portraits.png')]);
   $('map-loading').hidden = true;
 
   // Optional browser-native agent tools use the same state transitions as the visible controls.
@@ -310,7 +325,7 @@ async function start() {
     const lifecycle = new AbortController();
     window.addEventListener('pagehide', () => lifecycle.abort(), { once: true });
     const register = tool => { try { Promise.resolve(document.modelContext.registerTool(tool, { signal: lifecycle.signal })).catch(error => console.warn('Optional browser tool unavailable:', error)); } catch (error) { console.warn('Optional browser tool unavailable:', error); } };
-    register({ name: 'read_map_state', description: 'Read the current Last Lantern encounter state and visible discoveries.', inputSchema: { type: 'object', properties: {} }, annotations: { readOnlyHint: true }, execute: async () => ({ content: [{ type: 'text', text: JSON.stringify({ map: map.title, role: player ? 'player' : 'dm', active: map.interactions.filter(item => isVisible(map,state,item.id)).map(item=>item.id), camera: state.camera, party: state.party }) }] }) });
+    register({ name: 'read_map_state', description: 'Read the current Last Lantern encounter state and visible discoveries.', inputSchema: { type: 'object', properties: {} }, annotations: { readOnlyHint: true }, execute: async () => ({ content: [{ type: 'text', text: JSON.stringify({ map: map.title, role: player ? 'player' : 'dm', active: map.interactions.filter(item => isVisible(map,state,item.id)).map(item=>item.id), camera: state.camera, party: state.party, tokenMode: state.tokenMode, roster: state.roster, shapes: state.shapes }) }] }) });
     if (!player) register({ name: 'set_map_reveal', description: 'Reveal or conceal a map interaction in the DM encounter. The player display follows.', annotations: { readOnlyHint: false }, inputSchema: { type: 'object', properties: { id: { type: 'string', enum: map.interactions.map(item=>item.id) }, revealed: { type: 'boolean' } }, required: ['id','revealed'], additionalProperties: false }, execute: async ({ id, revealed }) => {
       if (!map.interactions.some(item => item.id === id) || typeof revealed !== 'boolean') throw new Error('Invalid reveal request.');
       if (state.active.includes(id) !== revealed) commit(toggleInteraction(map,state,id), 'Encounter reveal updated.');

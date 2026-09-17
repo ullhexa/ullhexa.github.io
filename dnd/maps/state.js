@@ -1,3 +1,4 @@
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=2';
 export function validateMap(map) {
   if (!map || map.schemaVersion !== 1) throw new Error('Unsupported map format.');
   if (![map.id,map.version,map.title,map.grid?.unit].every(s=>typeof s==='string'&&s.length>0)) throw new Error('Missing map identity or units.');
@@ -8,7 +9,8 @@ export function validateMap(map) {
   for(const item of map.interactions){
     if(typeof item.id!=='string'||!/^[-a-zA-Z0-9]+$/.test(item.id)||ids.has(item.id))throw new Error('Interaction IDs must be unique and contain only letters, numbers, and hyphens.');
     ids.add(item.id);
-    if(!['roof','fog','marker'].includes(item.type))throw new Error('Unsupported interaction type.');
+    if(!['roof','fog','marker','terrain'].includes(item.type))throw new Error('Unsupported interaction type.');
+    if(item.type==='terrain'&&(typeof map.art[item.asset]!=='string'||!map.art[item.asset].startsWith('./')||map.art[item.asset].includes('..')))throw new Error('Invalid terrain asset.');
     if(item.type==='marker'&&!validPoint(item.point))throw new Error('Invalid marker point.');
     if(item.type!=='marker'&&(!Array.isArray(item.polygon)||item.polygon.length<3||!item.polygon.every(validPoint)))throw new Error('Invalid polygon.');
   }
@@ -25,13 +27,14 @@ export function validateMap(map) {
   return map;
 }
 export function validPoint(point){return Array.isArray(point)&&point.length===2&&point.every(n=>Number.isFinite(n)&&n>=0&&n<=1);}
-export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],party:[...map.partyStart],grid:true,camera:{x:0.5,y:0.5,zoom:1},revision:0};}
+export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],party:[...map.partyStart],grid:true,tokenMode:'party',roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
 export function sanitizeState(map,input){
   const fresh=initialState(map);
-  if(!input||input.format!==1||input.mapId!==map.id||input.mapVersion!==map.version)return fresh;
+  if(!input||input.format!==1||input.mapId!==map.id||(input.mapVersion!==map.version&&!(map.previousVersions||[]).includes(input.mapVersion)))return fresh;
   const ids=new Set(map.interactions.map(item=>item.id));
   fresh.active=Array.isArray(input.active)?[...new Set(input.active.filter(id=>ids.has(id)))]:[];
   if(validPoint(input.party))fresh.party=[...input.party];
+  Object.assign(fresh,normalizeEncounter(map,input,fresh.party));
   fresh.grid=typeof input.grid==='boolean'?input.grid:true;
   if(input.camera&&validPoint([input.camera.x,input.camera.y])&&Number.isFinite(input.camera.zoom))fresh.camera={x:input.camera.x,y:input.camera.y,zoom:Math.max(1,Math.min(4,input.camera.zoom))};
   fresh.revision=Number.isSafeInteger(input.revision)&&input.revision>=0?input.revision:0;

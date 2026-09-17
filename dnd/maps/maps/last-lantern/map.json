@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "last-lantern",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "title": "The Last Lantern",
   "width": 1536,
   "height": 1024,
@@ -12,7 +12,8 @@
   },
   "art": {
     "base": "./maps/last-lantern/interior.png",
-    "roofs": "./maps/last-lantern/roofs.png"
+    "roofs": "./maps/last-lantern/roofs.png",
+    "brokenBridge": "./maps/last-lantern/bridge-broken.png"
   },
   "places": [
     {
@@ -49,7 +50,9 @@
         0.53125
       ],
       "focusZoom": 1.8,
-      "actions": []
+      "actions": [
+        "bridge-broken"
+      ]
     },
     {
       "id": "camp",
@@ -209,10 +212,67 @@
       "requires": [
         "camp-fog"
       ]
+    },
+    {
+      "id": "bridge-broken",
+      "type": "terrain",
+      "label": "Break the bridge",
+      "activeLabel": "Restore the bridge",
+      "placeId": "bridge",
+      "asset": "brokenBridge",
+      "polygon": [
+        [
+          0.55599,
+          0.451172
+        ],
+        [
+          0.598307,
+          0.436523
+        ],
+        [
+          0.644531,
+          0.433594
+        ],
+        [
+          0.695313,
+          0.446289
+        ],
+        [
+          0.733073,
+          0.454102
+        ],
+        [
+          0.738281,
+          0.532227
+        ],
+        [
+          0.731771,
+          0.599609
+        ],
+        [
+          0.692057,
+          0.648438
+        ],
+        [
+          0.620443,
+          0.658203
+        ],
+        [
+          0.580729,
+          0.625
+        ],
+        [
+          0.555339,
+          0.566406
+        ]
+      ]
     }
   ],
   "partyStart": [
     0.484375,
     0.6328125
+  ],
+  "previousVersions": [
+    "0.1.0"
   ]
 }
