@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "blighted-farm",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "title": "The Blighted Farm",
   "width": 2304,
   "height": 1536,
@@ -13,7 +13,8 @@
   },
   "art": {
     "base": "./maps/blighted-farm/interior.png",
-    "roofs": "./maps/blighted-farm/roofs.png"
+    "roofs": "./maps/blighted-farm/roofs.png",
+    "closedCellar": "./maps/blighted-farm/cellar-closed.png"
   },
   "places": [
     {
@@ -170,15 +171,36 @@
     {
       "id": "barn-cellar",
       "type": "marker",
-      "label": "Mark cellar entrance",
-      "activeLabel": "Hide cellar marker",
+      "label": "Open cellar doors",
+      "activeLabel": "Close cellar doors",
       "placeId": "barn",
       "point": [
         0.28776,
         0.080078
       ],
       "symbol": "↓",
-      "publicLabel": "Storage cellar"
+      "publicLabel": "Storage cellar",
+      "cover": {
+        "asset": "closedCellar",
+        "polygon": [
+          [
+            0.255208,
+            0.052734
+          ],
+          [
+            0.31901,
+            0.052734
+          ],
+          [
+            0.31901,
+            0.121094
+          ],
+          [
+            0.255208,
+            0.121094
+          ]
+        ]
+      }
     }
   ],
   "partyStart": [
@@ -402,5 +424,8 @@
         ]
       }
     ]
-  }
+  },
+  "previousVersions": [
+    "0.1.0"
+  ]
 }

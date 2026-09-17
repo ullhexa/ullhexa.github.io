@@ -1,12 +1,18 @@
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=8';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=10';
 export const GRID_COLORS = ['map','black','white'];
-export const defaultEnvironment = () => ({timeOfDay:'day',darkness:78});
-export const validEnvironment = value => !!value && ['day','night'].includes(value.timeOfDay) && Number.isInteger(value.darkness) && value.darkness>=40 && value.darkness<=95;
+export const defaultEnvironment = () => ({darkness:0});
+export const validEnvironment = value => {
+  if(!value || !Number.isInteger(value.darkness))return false;
+  const legacy=value.timeOfDay!==undefined;
+  return (!legacy || ['day','night'].includes(value.timeOfDay)) && value.darkness>=(legacy?40:0) && value.darkness<=95;
+};
 export function sanitizeEnvironment(value){
-  const fresh=defaultEnvironment();
-  if(value?.timeOfDay==='night')fresh.timeOfDay='night';
-  if(Number.isFinite(value?.darkness))fresh.darkness=Math.max(40,Math.min(95,Math.round(value.darkness)));
-  return fresh;
+  // Legacy daytime saves kept an unused night strength; their visible state was fully light.
+  if(value?.timeOfDay==='day')return defaultEnvironment();
+  if(value?.timeOfDay!==undefined && value.timeOfDay!=='night')return defaultEnvironment();
+  const legacy=value?.timeOfDay==='night';
+  const darkness=Number.isFinite(value?.darkness)?Math.round(value.darkness):(legacy?78:0);
+  return {darkness:Math.max(legacy?40:0,Math.min(95,darkness))};
 }
 export function validateMap(map) {
   if (!map || map.schemaVersion !== 1) throw new Error('Unsupported map format.');
@@ -22,6 +28,10 @@ export function validateMap(map) {
     if(!['roof','fog','marker','terrain'].includes(item.type))throw new Error('Unsupported interaction type.');
     if(item.type==='terrain'&&(typeof map.art[item.asset]!=='string'||!map.art[item.asset].startsWith('./')||map.art[item.asset].includes('..')))throw new Error('Invalid terrain asset.');
     if(item.type==='marker'&&!validPoint(item.point))throw new Error('Invalid marker point.');
+    if(item.cover!==undefined){
+      const cover=item.cover,asset=map.art[cover?.asset];
+      if(item.type!=='marker'||!cover||typeof asset!=='string'||!asset.startsWith('./')||asset.includes('..')||!Array.isArray(cover.polygon)||cover.polygon.length<3||!cover.polygon.every(validPoint))throw new Error('Invalid discovery cover.');
+    }
     if(item.type!=='marker'&&(!Array.isArray(item.polygon)||item.polygon.length<3||!item.polygon.every(validPoint)))throw new Error('Invalid polygon.');
   }
   for(const item of map.interactions)if(!Array.isArray(item.requires||[])||(item.requires||[]).some(id=>!ids.has(id)||id===item.id))throw new Error('Invalid interaction dependency.');

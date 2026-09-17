@@ -10,24 +10,13 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
     environment={...getEnvironment(map)};
     const section=document.createElement('section');section.className='map-environment';section.setAttribute('aria-label','Map environment');
     section.append(textNode('h4','Environment'));
-    const modes=document.createElement('div');modes.className='environment-modes';modes.setAttribute('role','group');modes.setAttribute('aria-label','Time of day');
-    const choices=[];
-    const label=document.createElement('label');label.className='night-darkness-label';label.htmlFor='night-darkness-control';
-    const output=document.createElement('output');output.htmlFor='night-darkness-control';
-    label.append(textNode('span','Night darkness'),output);
-    const slider=document.createElement('input');slider.id='night-darkness-control';slider.type='range';slider.min='40';slider.max='95';slider.step='1';slider.value=environment.darkness;
-    const update=()=>{
-      for(const [mode,button] of choices)button.setAttribute('aria-pressed',mode===environment.timeOfDay);
-      slider.disabled=environment.timeOfDay!=='night';label.classList.toggle('inactive',slider.disabled);
-      output.value=`${environment.darkness}%`;slider.setAttribute('aria-valuetext',`${environment.darkness}% darkness`);
-    };
-    for(const [mode,symbol,title] of [['day','☀','Day'],['night','☾','Night']]){
-      const button=document.createElement('button');button.type='button';
-      const icon=textNode('span',symbol);icon.setAttribute('aria-hidden','true');button.append(icon,document.createTextNode(title));
-      button.addEventListener('click',()=>{environment.timeOfDay=mode;update();});modes.append(button);choices.push([mode,button]);
-    }
+    const label=document.createElement('label');label.className='lighting-label';label.htmlFor='map-light-level';
+    const output=document.createElement('output');output.htmlFor='map-light-level';
+    label.append(textNode('span','Light ↔ Dark'),output);
+    const slider=document.createElement('input');slider.id='map-light-level';slider.type='range';slider.min='0';slider.max='95';slider.step='1';slider.value=environment.darkness;slider.setAttribute('aria-label','Light to dark');
+    const update=()=>{output.value=`${environment.darkness}%`;slider.setAttribute('aria-valuetext',`${environment.darkness}% darkness`);};
     slider.addEventListener('input',()=>{environment.darkness=Number(slider.value);update();});
-    section.append(modes,label,slider,textNode('p','Night keeps the ground dark and the fires, candles, and windows warm. Apply below to use these settings.','environment-hint'));
+    section.append(label,slider,textNode('p','Darken the map gradually. Fires, candles, and windows keep their light. Apply below to use this setting.','environment-hint'));
     update();return section;
   }
 

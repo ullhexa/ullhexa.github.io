@@ -1,10 +1,10 @@
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=8';
-import { createEncounterTools } from './encounter-tools.js?v=8';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=8';
-import { createMapMenu } from './map-menu.js?v=8';
-import { createSaveControls } from './save-controls.js?v=8';
-import { parseSave, restoreSave } from './save-file.js?v=8';
-import { createLighting } from './lighting.js?v=8';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=10';
+import { createEncounterTools } from './encounter-tools.js?v=10';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=10';
+import { createMapMenu } from './map-menu.js?v=10';
+import { createSaveControls } from './save-controls.js?v=10';
+import { parseSave, restoreSave } from './save-file.js?v=10';
+import { createLighting } from './lighting.js?v=10';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -33,7 +33,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=8')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=10')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -43,12 +43,12 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(await fetchJSON(`${item.manifest}?v=8`));
+    const content=validateMap(await fetchJSON(`${item.manifest}?v=10`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
   const map = await loadMap(entry);
-  const notes = player ? {} : await fetchJSON(entry.notes);
+  const notes = player ? {} : await fetchJSON(`${entry.notes}?v=10`);
   $('map-identity').textContent = entry.identity || map.title;
   document.querySelector('.edition').textContent = entry.edition || 'FIELD TEST';
   document.querySelector('.brand').setAttribute('aria-label', `${entry.identity || map.title} home`);
@@ -63,7 +63,7 @@ async function start() {
     document.querySelector('.playtest-guide ol').replaceChildren(...(entry.playtest || []).map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
     createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,getEnvironment:target=>target.id===map.id?state.environment:readMapState(target).environment,applyMap:(target,environment)=>{
       if(target.id===map.id){
-        if(environment.timeOfDay!==state.environment.timeOfDay||environment.darkness!==state.environment.darkness)commit({...state,environment},`${map.title}: ${environment.timeOfDay==='night'?'night':'day'}.`);
+        if(environment.darkness!==state.environment.darkness)commit({...state,environment},`Map darkness: ${environment.darkness}%.`);
         else announce(`${map.title} is already in play. Your progress is kept.`);
         return;
       }
@@ -96,6 +96,7 @@ async function start() {
   const defs = $('map').querySelector('defs');
   const dimensions = { width: map.width, height: map.height };
   const layerNodes = new Map();
+  const coverNodes = new Map();
   const placeButtons = new Map();
   const actionButtons = new Map();
   const hotspots = new Map();
@@ -129,10 +130,16 @@ async function start() {
       node.append(svgNode('text', { class: 'marker-label', 'text-anchor': 'middle', y: 37, 'font-size': 16 }, item.publicLabel));
       $('discovery-markers').append(node);
     }
+    if(item.cover){
+      const clip=svgNode('clipPath',{id:`clip-cover-${item.id}`});
+      clip.append(svgNode('polygon',{points:polygon(item.cover.polygon)}));defs.append(clip);
+      const cover=svgNode('image',{...dimensions,href:map.art[item.cover.asset],'clip-path':`url(#clip-cover-${item.id})`,'pointer-events':'none'});
+      $('terrain-layers').append(cover);coverNodes.set(item.id,cover);
+    }
     layerNodes.set(item.id, node);
   }
 
-  const party = svgNode('g', { class: 'party-token', ...(player ? {} : { role: 'button', tabindex: 0, 'aria-label': 'Party marker. Drag or use arrow keys to move one square.' }) });
+  const party = svgNode('g', { class: 'party-token', ...(player ? {} : { role: 'button', tabindex: 0, 'aria-label': 'Party marker. Drag freely or use arrow keys to move one square.' }) });
   party.append(svgNode('circle', { r: 21, fill: '#203d48', stroke: '#e9e7bb', 'stroke-width': 3 }));
   party.append(svgNode('circle', { r: 12, fill: '#84c5d6', opacity: .28 }));
   party.append(svgNode('text', { 'text-anchor': 'middle', y: 5, fill: '#fff9dc', 'font-size': 14, 'font-weight': 700 }, 'P'));
@@ -213,12 +220,14 @@ async function start() {
   }
   function render() {
     renderLighting(state);
-    document.querySelector('.map-name').textContent=`${map.title} · ${entry.subtitle}${state.environment.timeOfDay==='night'?' · Night':''}`;
-    $('time-day').setAttribute('aria-pressed',state.environment.timeOfDay==='day');
-    $('time-night').setAttribute('aria-pressed',state.environment.timeOfDay==='night');
+    document.querySelector('.map-name').textContent=`${map.title} · ${entry.subtitle}`;
+    $('light-level').value=state.environment.darkness;
+    $('light-level').setAttribute('aria-valuetext',`${state.environment.darkness}% darkness`);
+    $('light-level-value').value=`${state.environment.darkness}%`;
     for (const item of map.interactions) {
       const visible = isVisible(map, state, item.id);
       layerNodes.get(item.id).style.display = (['marker','terrain'].includes(item.type) ? visible : !visible) ? '' : 'none';
+      if(coverNodes.has(item.id))coverNodes.get(item.id).style.display=visible?'none':'';
     }
     const { x, y, zoom } = state.camera;
     const w = map.width / zoom, h = map.height / zoom;
@@ -233,7 +242,7 @@ async function start() {
     for(const button of gridColorButtons)button.setAttribute('aria-pressed',button.dataset.gridColor===state.gridColor);
     const [px, py] = xy(state.party); party.setAttribute('transform', `translate(${px} ${py})`);
     $('party-layer').style.display = state.tokenMode === 'party' ? '' : 'none';
-    $('party-hint').textContent = state.tokenMode === 'party' ? 'Drag the party marker to move.' : 'Drag each character to move freely.';
+    $('party-hint').textContent = state.tokenMode === 'party' ? 'Drag the party marker to move freely.' : 'Drag each character to move freely.';
     encounter.render(); renderControls(); renderRuler();
   }
   function renderRuler(broadcast = false) {
@@ -256,7 +265,6 @@ async function start() {
     return [p.x/map.width, p.y/map.height];
   }
   const inBounds = p => p && p.every(n => n >= 0 && n <= 1);
-  function snapped(p) { return p.map((n, index) => { const size = index ? map.height : map.width; return clamp((Math.floor(n * size / map.grid.size) + .5) * map.grid.size / size, map.grid.size/size/2, 1-map.grid.size/size/2); }); }
   function zoomBy(factor, anchor) {
     const before = state.camera;
     const zoom = clamp(before.zoom * factor, 1, 4);
@@ -293,9 +301,15 @@ async function start() {
     $('sidebar-overview').addEventListener('click', () => $('fit-map').click());
     $('show-grid').addEventListener('change', event => commit({ ...state, grid: event.target.checked }, '', false));
     for(const button of gridColorButtons)button.addEventListener('click',()=>commit({...state,gridColor:button.dataset.gridColor},'',false));
-    for(const timeOfDay of ['day','night'])$(`time-${timeOfDay}`).addEventListener('click',()=>{
-      if(state.environment.timeOfDay!==timeOfDay)commit({...state,environment:{...state.environment,timeOfDay}},`${timeOfDay==='night'?'Night falls over':'Day returns to'} ${map.title}.`);
+    let adjustingLighting=false;
+    $('light-level').addEventListener('input',event=>{
+      const darkness=clamp(Math.round(Number(event.target.value)),0,95);
+      if(darkness===state.environment.darkness)return;
+      if(!adjustingLighting){remember();adjustingLighting=true;}
+      commit({...state,environment:{darkness}},'',false);
     });
+    $('light-level').addEventListener('change',()=>{adjustingLighting=false;announce(`Map darkness: ${state.environment.darkness}%.`);});
+    $('light-level').addEventListener('blur',()=>{adjustingLighting=false;});
     $('measure').addEventListener('click', () => {
       measuring = !measuring; ruler = []; $('measure').setAttribute('aria-pressed', measuring);
       $('map').style.cursor = measuring ? 'crosshair' : '';
@@ -326,16 +340,20 @@ async function start() {
       if (measuring) { if (inBounds(p)) { if (ruler.length === 2) ruler = []; ruler.push(p); renderRuler(true); if (ruler.length === 2) announce(`Straight-line distance: ${distanceBetween(map, ...ruler).toFixed(1)} ${map.grid.unit}.`); } return; }
       const token = party.contains(event.target);
       const ctm = $('map').getScreenCTM();
-      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, camera: { ...state.camera }, scale: ctm.a, start: structuredClone(state), token, moved: false, hotspot: !!event.target.closest('.hotspot') };
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, camera: { ...state.camera }, scale: ctm.a, point: p, start: structuredClone(state), token, moved: false, hotspot: !!event.target.closest('.hotspot') };
       if (token) event.preventDefault();
       $('map').setPointerCapture(event.pointerId);
     });
     $('map').addEventListener('pointermove', event => {
       if (!drag || drag.id !== event.pointerId) return;
       const dx = event.clientX-drag.x, dy = event.clientY-drag.y;
-      if (Math.hypot(dx, dy) < 4 && !drag.moved) return;
+      if (Math.hypot(dx, dy) < (drag.token ? 3 : 4) && !drag.moved) return;
       drag.moved = true;
-      if (drag.token) state = moveParty(state, snapped(pointAt(event)));
+      if (drag.token) {
+        const p = pointAt(event);
+        if (!p) return;
+        state = moveParty(state, drag.start.party.map((n, axis) => clamp(n + p[axis] - drag.point[axis], 0, 1)));
+      }
       else state = { ...state, camera: { x: clamp(drag.camera.x-dx/drag.scale/map.width, 0, 1), y: clamp(drag.camera.y-dy/drag.scale/map.height, 0, 1), zoom: drag.camera.zoom } };
       render();
     });
@@ -345,7 +363,7 @@ async function start() {
       if (finished.moved) {
         if (finished.token) { history.push(finished.start); if (history.length > 40) history.shift(); }
         state.revision += 1; render(); save();
-        if (finished.token) announce('Party moved to the selected square.');
+        if (finished.token) announce('Party moved.');
       }
       // Pointer capture redirects click; handle a stationary building click explicitly.
       if (!finished.moved && finished.hotspot) {
@@ -359,7 +377,7 @@ async function start() {
     party.addEventListener('keydown', event => {
       const offset = { ArrowLeft: [-1,0], ArrowRight: [1,0], ArrowUp: [0,-1], ArrowDown: [0,1] }[event.key];
       if (!offset) return; event.preventDefault();
-      commit(moveParty(state, snapped([state.party[0]+offset[0]*map.grid.size/map.width, state.party[1]+offset[1]*map.grid.size/map.height])), 'Party moved one square.');
+      commit(moveParty(state, state.party.map((n, axis) => clamp(n + offset[axis] * map.grid.size / (axis ? map.height : map.width), 0, 1))), 'Party moved one square.');
     });
   }
 
