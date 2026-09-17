@@ -1,9 +1,34 @@
 const $ = id => document.getElementById(id);
 
-export function createMapMenu({catalog,activeId,activeMap,loadMap,applyMap}) {
+export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap}) {
   const dialog=$('map-dialog'),cache=new Map([[activeId,activeMap]]),buttons=new Map();
-  let selected=null,request=0;
+  let selected=null,request=0,environment=null;
   const textNode=(tag,text,className)=>{const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node;};
+
+  function environmentControls(map){
+    environment={...getEnvironment(map)};
+    const section=document.createElement('section');section.className='map-environment';section.setAttribute('aria-label','Map environment');
+    section.append(textNode('h4','Environment'));
+    const modes=document.createElement('div');modes.className='environment-modes';modes.setAttribute('role','group');modes.setAttribute('aria-label','Time of day');
+    const choices=[];
+    const label=document.createElement('label');label.className='night-darkness-label';label.htmlFor='night-darkness-control';
+    const output=document.createElement('output');output.htmlFor='night-darkness-control';
+    label.append(textNode('span','Night darkness'),output);
+    const slider=document.createElement('input');slider.id='night-darkness-control';slider.type='range';slider.min='40';slider.max='95';slider.step='1';slider.value=environment.darkness;
+    const update=()=>{
+      for(const [mode,button] of choices)button.setAttribute('aria-pressed',mode===environment.timeOfDay);
+      slider.disabled=environment.timeOfDay!=='night';label.classList.toggle('inactive',slider.disabled);
+      output.value=`${environment.darkness}%`;slider.setAttribute('aria-valuetext',`${environment.darkness}% darkness`);
+    };
+    for(const [mode,symbol,title] of [['day','☀','Day'],['night','☾','Night']]){
+      const button=document.createElement('button');button.type='button';
+      const icon=textNode('span',symbol);icon.setAttribute('aria-hidden','true');button.append(icon,document.createTextNode(title));
+      button.addEventListener('click',()=>{environment.timeOfDay=mode;update();});modes.append(button);choices.push([mode,button]);
+    }
+    slider.addEventListener('input',()=>{environment.darkness=Number(slider.value);update();});
+    section.append(modes,label,slider,textNode('p','Night keeps the ground dark and the fires, candles, and windows warm. Apply below to use these settings.','environment-hint'));
+    update();return section;
+  }
 
   async function select(entry) {
     selected=entry.id;const current=++request;
@@ -25,7 +50,7 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,applyMap}) {
         const count=map.interactions.filter(item=>item.type===type).length;
         if(count)features.append(textNode('li',`${count} ${count===1?singular:plural}`));
       }
-      details.append(features);
+      details.append(features,environmentControls(map));
       if(entry.id===activeId)details.append(textNode('p','Currently in play. Your encounter progress will be kept.','map-menu-hint'));
       $('apply-map').disabled=false;
     } catch {
@@ -40,9 +65,9 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,applyMap}) {
     button.addEventListener('click',()=>select(entry));buttons.set(entry.id,button);$('map-grid-menu').append(button);
   }
   $('open-maps').addEventListener('click',()=>{
-    request++;selected=null;for(const button of buttons.values())button.setAttribute('aria-pressed','false');
+    request++;selected=null;environment=null;for(const button of buttons.values())button.setAttribute('aria-pressed','false');
     $('map-details').replaceChildren(textNode('p','Select a map to see its details.','map-menu-hint'));$('apply-map').disabled=true;dialog.showModal();
   });
   for(const id of ['close-maps','cancel-map'])$(id).addEventListener('click',()=>dialog.close());
-  $('apply-map').addEventListener('click',()=>{if(selected&&!$('apply-map').disabled){dialog.close();applyMap(selected);}});
+  $('apply-map').addEventListener('click',()=>{if(selected&&environment&&!$('apply-map').disabled){dialog.close();applyMap(cache.get(selected),{...environment});}});
 }

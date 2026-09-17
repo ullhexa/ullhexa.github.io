@@ -1,5 +1,13 @@
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=6';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=7';
 export const GRID_COLORS = ['map','black','white'];
+export const defaultEnvironment = () => ({timeOfDay:'day',darkness:78});
+export const validEnvironment = value => !!value && ['day','night'].includes(value.timeOfDay) && Number.isInteger(value.darkness) && value.darkness>=40 && value.darkness<=95;
+export function sanitizeEnvironment(value){
+  const fresh=defaultEnvironment();
+  if(value?.timeOfDay==='night')fresh.timeOfDay='night';
+  if(Number.isFinite(value?.darkness))fresh.darkness=Math.max(40,Math.min(95,Math.round(value.darkness)));
+  return fresh;
+}
 export function validateMap(map) {
   if (!map || map.schemaVersion !== 1) throw new Error('Unsupported map format.');
   if (![map.id,map.version,map.title,map.grid?.unit].every(s=>typeof s==='string'&&s.length>0)) throw new Error('Missing map identity or units.');
@@ -26,10 +34,19 @@ export function validateMap(map) {
   }
   if(map.interactions.some(item=>!placeIds.has(item.placeId)))throw new Error('Unknown interaction place.');
   if(!validPoint(map.partyStart))throw new Error('Invalid party starting point.');
+  if(map.lighting!==undefined){
+    const polygon=value=>Array.isArray(value)&&value.length>=3&&value.every(validPoint);
+    const lighting=map.lighting,lightIds=new Set();
+    if(!lighting||!Array.isArray(lighting.occluders)||!lighting.occluders.every(polygon)||!Array.isArray(lighting.lights)||lighting.lights.length>64)throw new Error('Invalid map lighting.');
+    for(const light of lighting.lights){
+      if(!light||typeof light.id!=='string'||!/^[-a-zA-Z0-9]+$/.test(light.id)||lightIds.has(light.id)||!validPoint(light.point)||!Number.isFinite(light.radius)||light.radius<=0||light.radius>100||(light.clip!==undefined&&!polygon(light.clip))||!Array.isArray(light.requires||[])||(light.requires||[]).some(id=>!ids.has(id)))throw new Error('Invalid map light.');
+      lightIds.add(light.id);
+    }
+  }
   return map;
 }
 export function validPoint(point){return Array.isArray(point)&&point.length===2&&point.every(n=>Number.isFinite(n)&&n>=0&&n<=1);}
-export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],party:[...map.partyStart],grid:true,gridColor:'map',tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
+export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],party:[...map.partyStart],grid:true,gridColor:'map',environment:defaultEnvironment(),tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
 export function sanitizeState(map,input){
   const fresh=initialState(map);
   if(!input||input.format!==1||input.mapId!==map.id||(input.mapVersion!==map.version&&!(map.previousVersions||[]).includes(input.mapVersion)))return fresh;
@@ -39,6 +56,7 @@ export function sanitizeState(map,input){
   Object.assign(fresh,normalizeEncounter(map,input,fresh.party));
   fresh.grid=typeof input.grid==='boolean'?input.grid:true;
   fresh.gridColor=GRID_COLORS.includes(input.gridColor)?input.gridColor:'map';
+  fresh.environment=sanitizeEnvironment(input.environment);
   if(input.camera&&validPoint([input.camera.x,input.camera.y])&&Number.isFinite(input.camera.zoom))fresh.camera={x:input.camera.x,y:input.camera.y,zoom:Math.max(1,Math.min(4,input.camera.zoom))};
   fresh.revision=Number.isSafeInteger(input.revision)&&input.revision>=0?input.revision:0;
   return fresh;
