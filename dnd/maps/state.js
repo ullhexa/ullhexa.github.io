@@ -1,4 +1,4 @@
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=2';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=3';
 export function validateMap(map) {
   if (!map || map.schemaVersion !== 1) throw new Error('Unsupported map format.');
   if (![map.id,map.version,map.title,map.grid?.unit].every(s=>typeof s==='string'&&s.length>0)) throw new Error('Missing map identity or units.');

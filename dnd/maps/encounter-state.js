@@ -1,4 +1,11 @@
-export const PORTRAITS = ['Human warrior','Silver-haired elf','Dwarven adventurer','Halfling ranger','Half-orc guardian','Human wizard','Tiefling wanderer','Elven mage','Dragonborn'];
+export const PORTRAITS = ['Human warrior','Silver-haired elf','Dwarven adventurer','Halfling ranger','Half-orc guardian','Human wizard','Tiefling wanderer','Elven mage','Dragonborn',
+  'Copper-haired elf','Human paladin','Dwarven shieldmaiden','Halfling bard','Half-orc veteran','Violet tiefling','Blue dragonborn','Gnome tinkerer',
+  'Human cleric','Human monk','Elven scholar','Feline ranger','Lizardfolk druid','Veteran knight','Human rogue','Dwarven cleric'];
+export const PORTRAIT_ASSETS = ['./assets/portraits.png','./assets/portraits-additional.png'];
+export function portraitAsset(index) {
+  const original=index<9,columns=original?3:4,cell=original?index:index-9;
+  return {url:PORTRAIT_ASSETS[original?0:1],columns,column:cell%columns,row:Math.floor(cell/columns)};
+}
 export const SHAPE_TYPES = ['circle','square','triangle'];
 export const SHAPE_COLORS = ['#e8ba71','#ec6d62','#70bce8','#a98ce5','#78cba2','#ef91be'];
 export const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
