@@ -1,6 +1,6 @@
-import { setupFullscreen } from './fullscreen.js?v=14';
-import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=14';
-import { validPresentation, sceneCanShow } from './presentation-state.js?v=14';
+import { setupFullscreen } from './fullscreen.js?v=15';
+import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=15';
+import { validPresentation, sceneCanShow } from './presentation-state.js?v=15';
 const $=id=>document.getElementById(id);
 const read=key=>{try{return JSON.parse(localStorage.getItem(key));}catch{return null;}};
 
@@ -16,7 +16,7 @@ export async function startPlayerDisplay(){
   const canvas=document.createElement('canvas');canvas.id='story-screen';canvas.className='story-screen';canvas.setAttribute('aria-label','Abstract storytelling atmosphere');stage.append(canvas);
   const animation=createStoryAnimation(canvas);
   const fullscreen=setupFullscreen({player:true,announce:text=>$('live-message').textContent=text});
-  const response=await fetch('./maps/catalog.json?v=14');if(!response.ok)throw new Error('The map library could not load. Reload to try again.');
+  const response=await fetch('./maps/catalog.json?v=15');if(!response.ok)throw new Error('The map library could not load. Reload to try again.');
   const catalog=(await response.json()).maps;
   const stored=read(`${sessionKey}:presentation`);
   const initialMap=catalog.find(entry=>entry.id===query.get('map'))||catalog[0];
@@ -47,16 +47,21 @@ export async function startPlayerDisplay(){
     if(pending?.mapId===presentation.mapId){update();return;}
     pending?.frame.remove();
     const frame=document.createElement('iframe');frame.className='player-scene';frame.title='Battle map';frame.setAttribute('aria-hidden','true');frame.tabIndex=-1;
-    const url=new URL(location.href);url.search=new URLSearchParams({view:'player',scene:'1',session,map:presentation.mapId,build:'14'}).toString();frame.src=url;
+    const url=new URL(location.href);url.search=new URLSearchParams({view:'player',scene:'1',session,map:presentation.mapId,build:'15'}).toString();frame.src=url;
     pending={frame,mapId:presentation.mapId,revision:-1,ready:false};stage.prepend(frame);update();
+  }
+  async function closeDisplay(){
+    if(closing)return;
+    // Never close a manually opened tab, an embedded frame, or the DM window.
+    if(query.get('popup')!=='1'||window.top!==window||!window.opener){send({type:'close-blocked'});return;}
+    closing=true;
+    try{if(document.fullscreenElement)await document.exitFullscreen();}catch{}
+    send({type:'bye',playerId});window.close();
+    setTimeout(()=>{closing=false;send({type:'hello',playerId});send({type:'close-blocked'});},500);
   }
   function receive(message){
     if(!message||typeof message!=='object')return;
-    if(message.type==='close-player'){
-      closing=true;send({type:'bye',playerId});window.close();
-      // Some manually opened tabs cannot be closed by script; keep their state honest.
-      setTimeout(()=>{closing=false;send({type:'hello',playerId});send({type:'close-blocked'});},500);return;
-    }
+    if(message.type==='close-player'){void closeDisplay();return;}
     if(message.type==='presentation'&&validPresentation(message.presentation,catalog)){
       lastDM=Date.now();
       if(message.presentation.revision<=presentation.revision)return;

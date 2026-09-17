@@ -51,3 +51,19 @@
 @media(max-width:1050px){.topbar{grid-template-columns:1fr 1fr;padding:12px 16px}.presentation-modes{grid-row:2;grid-column:1/-1;justify-self:center}.top-actions{grid-row:1;grid-column:2}.site-identity{grid-row:1;grid-column:1}.player-mode .topbar{grid-template-columns:1fr auto}.story-menu-layout{gap:15px}}
 @media(max-width:600px){.story-menu-layout{grid-template-columns:1fr}.topbar{gap:10px}.top-actions .status{display:none}.site-identity .edition{display:none}.site-identity .brand{font-size:.72rem}.story-details canvas{height:145px}}
 @media(prefers-reduced-motion:reduce){.story-screen{transition:none}}
+
+/* Tokens move on their own composited layer; map artwork is not repainted on drag. */
+#character-tokens{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+#character-tokens .character-token{position:absolute;left:0;top:0;display:block;width:50px;height:50px;min-height:0;margin:0;padding:0;background:#162822;border:3px solid #e8ba71;border-radius:50%;transform-origin:0 0;pointer-events:auto;touch-action:none;user-select:none;cursor:move;box-shadow:none;isolation:isolate}
+#character-tokens .character-token:hover{background:#162822;border-color:#fff0c3}
+#character-tokens .character-token:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#character-tokens .character-token.is-dragging{will-change:transform;z-index:2}
+.token-face{display:block;width:44px;height:44px;pointer-events:none}
+.token-label{position:absolute;top:56px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:16px;font-weight:600;line-height:1.2;color:white;text-shadow:0 1px 3px #10201a,0 -1px 3px #10201a,1px 0 3px #10201a;pointer-events:none}
+.player-mode #character-tokens .character-token,.is-measuring #character-tokens .character-token{pointer-events:none}
+.map-caption{z-index:2}.map-loading{z-index:3}
+
+/* The DM's fullscreen document survives map changes and all menu dialogs. */
+.dm-shell{height:100dvh;overflow:hidden}.dm-shell #dm-workspace{display:block;width:100%;height:100dvh;border:0;background:var(--bg)}
+
+#shape-handle-overlay{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:hidden}

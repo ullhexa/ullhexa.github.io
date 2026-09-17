@@ -1,4 +1,4 @@
-import { renderSequence } from './director.js?v=14';
+import { renderSequence } from './director.js?v=15';
 const $ = id => document.getElementById(id);
 
 export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject}) {
@@ -35,7 +35,7 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
       const map=cache.get(entry.id)||await loadMap(entry);
       cache.set(entry.id,map);
       if(current!==request)return;
-      const details=$('map-details');details.replaceChildren(textNode('p',entry.category,'eyebrow'),textNode('h3',map.title),textNode('p',entry.description,'map-description'));
+      const details=$('map-details');details.replaceChildren(textNode('p',entry.category,'eyebrow'),textNode('h3',map.title));
       const stats=document.createElement('dl');stats.className='map-stats';
       for(const [label,value] of [['Interactive elements',map.interactions.length],['Places',map.places.length],['Grid square',`${map.grid.distance} ${map.grid.unit}`]]) {
         const stat=document.createElement('div');stat.append(textNode('dt',label),textNode('dd',value));stats.append(stat);
