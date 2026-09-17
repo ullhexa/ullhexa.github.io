@@ -1,6 +1,6 @@
-import { setupFullscreen } from './fullscreen.js?v=13';
-import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=13';
-import { validPresentation, sceneCanShow } from './presentation-state.js?v=13';
+import { setupFullscreen } from './fullscreen.js?v=14';
+import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=14';
+import { validPresentation, sceneCanShow } from './presentation-state.js?v=14';
 const $=id=>document.getElementById(id);
 const read=key=>{try{return JSON.parse(localStorage.getItem(key));}catch{return null;}};
 
@@ -16,7 +16,7 @@ export async function startPlayerDisplay(){
   const canvas=document.createElement('canvas');canvas.id='story-screen';canvas.className='story-screen';canvas.setAttribute('aria-label','Abstract storytelling atmosphere');stage.append(canvas);
   const animation=createStoryAnimation(canvas);
   const fullscreen=setupFullscreen({player:true,announce:text=>$('live-message').textContent=text});
-  const response=await fetch('./maps/catalog.json?v=13');if(!response.ok)throw new Error('The map library could not load. Reload to try again.');
+  const response=await fetch('./maps/catalog.json?v=14');if(!response.ok)throw new Error('The map library could not load. Reload to try again.');
   const catalog=(await response.json()).maps;
   const stored=read(`${sessionKey}:presentation`);
   const initialMap=catalog.find(entry=>entry.id===query.get('map'))||catalog[0];
@@ -47,7 +47,7 @@ export async function startPlayerDisplay(){
     if(pending?.mapId===presentation.mapId){update();return;}
     pending?.frame.remove();
     const frame=document.createElement('iframe');frame.className='player-scene';frame.title='Battle map';frame.setAttribute('aria-hidden','true');frame.tabIndex=-1;
-    const url=new URL(location.href);url.search=new URLSearchParams({view:'player',scene:'1',session,map:presentation.mapId,build:'13'}).toString();frame.src=url;
+    const url=new URL(location.href);url.search=new URLSearchParams({view:'player',scene:'1',session,map:presentation.mapId,build:'14'}).toString();frame.src=url;
     pending={frame,mapId:presentation.mapId,revision:-1,ready:false};stage.prepend(frame);update();
   }
   function receive(message){
