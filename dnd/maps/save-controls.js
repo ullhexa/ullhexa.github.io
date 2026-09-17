@@ -1,4 +1,4 @@
-import { MAX_SAVE_BYTES, parseSave, restoreSave, serializeSave, saveFilename } from './save-file.js?v=10';
+import { MAX_SAVE_BYTES, parseSave, restoreSave, serializeSave, saveFilename } from './save-file.js?v=11';
 const $=id=>document.getElementById(id);
 
 export function createSaveControls({map,catalog,loadMap,getState,getView,applySave,announce}) {
