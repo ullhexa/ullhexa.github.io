@@ -1,0 +1,406 @@
+{
+  "schemaVersion": 1,
+  "id": "blighted-farm",
+  "version": "0.1.0",
+  "title": "The Blighted Farm",
+  "width": 2304,
+  "height": 1536,
+  "grid": {
+    "size": 48,
+    "distance": 5,
+    "unit": "ft",
+    "color": "#dcd5bb"
+  },
+  "art": {
+    "base": "./maps/blighted-farm/interior.png",
+    "roofs": "./maps/blighted-farm/roofs.png"
+  },
+  "places": [
+    {
+      "id": "barn",
+      "name": "The big barn",
+      "point": [
+        0.303385,
+        0.228516
+      ],
+      "focusZoom": 2,
+      "actions": [
+        "barn-roof",
+        "barn-cellar"
+      ]
+    },
+    {
+      "id": "farmhouse",
+      "name": "The farmhouse",
+      "point": [
+        0.716146,
+        0.248047
+      ],
+      "focusZoom": 3,
+      "actions": [
+        "farmhouse-roof"
+      ]
+    },
+    {
+      "id": "workshop",
+      "name": "The work garage",
+      "point": [
+        0.215495,
+        0.665039
+      ],
+      "focusZoom": 3.4,
+      "actions": [
+        "workshop-roof"
+      ]
+    },
+    {
+      "id": "store",
+      "name": "The food store",
+      "point": [
+        0.74349,
+        0.696289
+      ],
+      "focusZoom": 3.4,
+      "actions": [
+        "store-roof"
+      ]
+    }
+  ],
+  "interactions": [
+    {
+      "id": "barn-roof",
+      "type": "roof",
+      "label": "Remove barn roof",
+      "activeLabel": "Replace barn roof",
+      "placeId": "barn",
+      "polygon": [
+        [
+          0.10026,
+          0.112305
+        ],
+        [
+          0.498698,
+          0.112305
+        ],
+        [
+          0.498698,
+          0.34082
+        ],
+        [
+          0.10026,
+          0.34082
+        ]
+      ]
+    },
+    {
+      "id": "farmhouse-roof",
+      "type": "roof",
+      "label": "Remove farmhouse roof",
+      "activeLabel": "Replace farmhouse roof",
+      "placeId": "farmhouse",
+      "polygon": [
+        [
+          0.623047,
+          0.147461
+        ],
+        [
+          0.813802,
+          0.147461
+        ],
+        [
+          0.813802,
+          0.357422
+        ],
+        [
+          0.623047,
+          0.357422
+        ]
+      ]
+    },
+    {
+      "id": "workshop-roof",
+      "type": "roof",
+      "label": "Remove work garage roof",
+      "activeLabel": "Replace work garage roof",
+      "placeId": "workshop",
+      "polygon": [
+        [
+          0.169271,
+          0.538086
+        ],
+        [
+          0.30599,
+          0.597656
+        ],
+        [
+          0.271484,
+          0.791016
+        ],
+        [
+          0.13151,
+          0.731445
+        ]
+      ]
+    },
+    {
+      "id": "store-roof",
+      "type": "roof",
+      "label": "Remove food store roof",
+      "activeLabel": "Replace food store roof",
+      "placeId": "store",
+      "polygon": [
+        [
+          0.667318,
+          0.612305
+        ],
+        [
+          0.819661,
+          0.612305
+        ],
+        [
+          0.819661,
+          0.786133
+        ],
+        [
+          0.667318,
+          0.786133
+        ]
+      ]
+    },
+    {
+      "id": "barn-cellar",
+      "type": "marker",
+      "label": "Mark cellar entrance",
+      "activeLabel": "Hide cellar marker",
+      "placeId": "barn",
+      "point": [
+        0.28776,
+        0.080078
+      ],
+      "symbol": "↓",
+      "publicLabel": "Storage cellar"
+    }
+  ],
+  "partyStart": [
+    0.508464,
+    0.908203
+  ],
+  "lighting": {
+    "occluders": [
+      [
+        [
+          0.10026,
+          0.112305
+        ],
+        [
+          0.498698,
+          0.112305
+        ],
+        [
+          0.498698,
+          0.34082
+        ],
+        [
+          0.10026,
+          0.34082
+        ]
+      ],
+      [
+        [
+          0.623047,
+          0.147461
+        ],
+        [
+          0.813802,
+          0.147461
+        ],
+        [
+          0.813802,
+          0.357422
+        ],
+        [
+          0.623047,
+          0.357422
+        ]
+      ],
+      [
+        [
+          0.169271,
+          0.538086
+        ],
+        [
+          0.30599,
+          0.597656
+        ],
+        [
+          0.271484,
+          0.791016
+        ],
+        [
+          0.13151,
+          0.731445
+        ]
+      ],
+      [
+        [
+          0.667318,
+          0.612305
+        ],
+        [
+          0.819661,
+          0.612305
+        ],
+        [
+          0.819661,
+          0.786133
+        ],
+        [
+          0.667318,
+          0.786133
+        ]
+      ]
+    ],
+    "lights": [
+      {
+        "id": "farmhouse-door",
+        "point": [
+          0.711589,
+          0.350586
+        ],
+        "radius": 8
+      },
+      {
+        "id": "farmhouse-kitchen-window",
+        "point": [
+          0.626302,
+          0.305664
+        ],
+        "radius": 6
+      },
+      {
+        "id": "store-door",
+        "point": [
+          0.738932,
+          0.620117
+        ],
+        "radius": 6
+      },
+      {
+        "id": "farmhouse-hearth",
+        "point": [
+          0.707682,
+          0.189453
+        ],
+        "radius": 11,
+        "clip": [
+          [
+            0.671875,
+            0.166992
+          ],
+          [
+            0.751953,
+            0.166992
+          ],
+          [
+            0.751953,
+            0.335938
+          ],
+          [
+            0.671875,
+            0.335938
+          ]
+        ],
+        "requires": [
+          "farmhouse-roof"
+        ]
+      },
+      {
+        "id": "farmhouse-table",
+        "point": [
+          0.714844,
+          0.240234
+        ],
+        "radius": 6,
+        "clip": [
+          [
+            0.671875,
+            0.166992
+          ],
+          [
+            0.751953,
+            0.166992
+          ],
+          [
+            0.751953,
+            0.335938
+          ],
+          [
+            0.671875,
+            0.335938
+          ]
+        ],
+        "requires": [
+          "farmhouse-roof"
+        ]
+      },
+      {
+        "id": "farmhouse-kitchen",
+        "point": [
+          0.645833,
+          0.305664
+        ],
+        "radius": 5,
+        "clip": [
+          [
+            0.635417,
+            0.275391
+          ],
+          [
+            0.669271,
+            0.275391
+          ],
+          [
+            0.669271,
+            0.331055
+          ],
+          [
+            0.635417,
+            0.331055
+          ]
+        ],
+        "requires": [
+          "farmhouse-roof"
+        ]
+      },
+      {
+        "id": "store-candle",
+        "point": [
+          0.742188,
+          0.719727
+        ],
+        "radius": 8,
+        "clip": [
+          [
+            0.677734,
+            0.634766
+          ],
+          [
+            0.807292,
+            0.634766
+          ],
+          [
+            0.807292,
+            0.758789
+          ],
+          [
+            0.677734,
+            0.758789
+          ]
+        ],
+        "requires": [
+          "store-roof"
+        ]
+      }
+    ]
+  }
+}

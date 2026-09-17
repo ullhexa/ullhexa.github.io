@@ -1,10 +1,10 @@
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=7';
-import { createEncounterTools } from './encounter-tools.js?v=7';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=7';
-import { createMapMenu } from './map-menu.js?v=7';
-import { createSaveControls } from './save-controls.js?v=7';
-import { parseSave, restoreSave } from './save-file.js?v=7';
-import { createLighting } from './lighting.js?v=7';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=8';
+import { createEncounterTools } from './encounter-tools.js?v=8';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=8';
+import { createMapMenu } from './map-menu.js?v=8';
+import { createSaveControls } from './save-controls.js?v=8';
+import { parseSave, restoreSave } from './save-file.js?v=8';
+import { createLighting } from './lighting.js?v=8';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -31,9 +31,9 @@ async function start() {
     $('view-label').textContent = 'PLAYER DISPLAY';
     $('gesture-hint').textContent = 'View follows the DM';
     $('live-message').textContent = 'Waiting for the DM…';
-    $('map').setAttribute('aria-label', 'Player map of the Last Lantern crossing');
+    $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=7')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=8')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -43,12 +43,15 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(await fetchJSON(`${item.manifest}?v=7`));
+    const content=validateMap(await fetchJSON(`${item.manifest}?v=8`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
   const map = await loadMap(entry);
   const notes = player ? {} : await fetchJSON(entry.notes);
+  $('map-identity').textContent = entry.identity || map.title;
+  document.querySelector('.edition').textContent = entry.edition || 'FIELD TEST';
+  document.querySelector('.brand').setAttribute('aria-label', `${entry.identity || map.title} home`);
   document.title = `${map.title} — ${player ? 'Player display' : 'Interactive map playtest'}`;
   document.querySelector('.map-name').textContent = `${map.title} · ${entry.subtitle}`;
   $('map').setAttribute('aria-label', `${player ? 'Player' : 'Interactive'} map of ${map.title}`);
@@ -57,6 +60,7 @@ async function start() {
     document.querySelector('.encounter-heading h1').textContent=map.title;
     document.querySelector('.encounter-heading .eyebrow').textContent=entry.category.toUpperCase();
     document.querySelector('.encounter-heading .intro').textContent=entry.description;
+    document.querySelector('.playtest-guide ol').replaceChildren(...(entry.playtest || []).map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
     createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,getEnvironment:target=>target.id===map.id?state.environment:readMapState(target).environment,applyMap:(target,environment)=>{
       if(target.id===map.id){
         if(environment.timeOfDay!==state.environment.timeOfDay||environment.darkness!==state.environment.darkness)commit({...state,environment},`${map.title}: ${environment.timeOfDay==='night'?'night':'day'}.`);
@@ -174,7 +178,7 @@ async function start() {
     selected = id;
     const place = map.places.find(place => place.id === id);
     $('selected-title').textContent = `${map.places.indexOf(place)+1}. ${place.name}`;
-    $('selected-note').textContent = notes[id] || 'Explore this part of the crossing.';
+    $('selected-note').textContent = notes[id] || 'Explore this part of the map.';
     $('selected-actions').replaceChildren(); actionButtons.clear();
     for (const id of place.actions) {
       const button = document.createElement('button'); button.type = 'button';
@@ -285,12 +289,12 @@ async function start() {
     $('focus-place').addEventListener('click', () => { const place = map.places.find(place => place.id === selected); commit({ ...state, camera: { x: place.point[0], y: place.point[1], zoom: place.focusZoom } }, `Focused on ${place.name.toLowerCase()}.`, false); });
     $('zoom-in').addEventListener('click', () => zoomBy(1.25));
     $('zoom-out').addEventListener('click', () => zoomBy(.8));
-    $('fit-map').addEventListener('click', () => commit({ ...state, camera: initialState(map).camera }, 'Showing the whole crossing.', false));
+    $('fit-map').addEventListener('click', () => commit({ ...state, camera: initialState(map).camera }, 'Showing the whole map.', false));
     $('sidebar-overview').addEventListener('click', () => $('fit-map').click());
     $('show-grid').addEventListener('change', event => commit({ ...state, grid: event.target.checked }, '', false));
     for(const button of gridColorButtons)button.addEventListener('click',()=>commit({...state,gridColor:button.dataset.gridColor},'',false));
     for(const timeOfDay of ['day','night'])$(`time-${timeOfDay}`).addEventListener('click',()=>{
-      if(state.environment.timeOfDay!==timeOfDay)commit({...state,environment:{...state.environment,timeOfDay}},`${timeOfDay==='night'?'Night falls over':'Day returns to'} the crossing.`);
+      if(state.environment.timeOfDay!==timeOfDay)commit({...state,environment:{...state.environment,timeOfDay}},`${timeOfDay==='night'?'Night falls over':'Day returns to'} ${map.title}.`);
     });
     $('measure').addEventListener('click', () => {
       measuring = !measuring; ruler = []; $('measure').setAttribute('aria-pressed', measuring);
@@ -370,7 +374,7 @@ async function start() {
       const incoming = playerProjection(sanitizeState(map, message.state));
       if (incoming.revision >= state.revision) { state = incoming; render(); }
       lastPeer = Date.now(); updateConnection();
-      announce('Explore the crossing. The DM controls what appears here.');
+      announce('Explore the map. The DM controls what appears here.');
     }
   }
   if (channel) channel.onmessage = event => receive(event.data);
@@ -419,7 +423,7 @@ async function start() {
     const lifecycle = new AbortController();
     window.addEventListener('pagehide', () => lifecycle.abort(), { once: true });
     const register = tool => { try { Promise.resolve(document.modelContext.registerTool(tool, { signal: lifecycle.signal })).catch(error => console.warn('Optional browser tool unavailable:', error)); } catch (error) { console.warn('Optional browser tool unavailable:', error); } };
-    register({ name: 'read_map_state', description: 'Read the current Last Lantern encounter state and visible discoveries.', inputSchema: { type: 'object', properties: {} }, annotations: { readOnlyHint: true }, execute: async () => ({ content: [{ type: 'text', text: JSON.stringify({ map: map.title, role: player ? 'player' : 'dm', active: map.interactions.filter(item => isVisible(map,state,item.id)).map(item=>item.id), camera: state.camera, party: state.party, tokenMode: state.tokenMode, roster: state.roster, shapes: state.shapes }) }] }) });
+    register({ name: 'read_map_state', description: 'Read the current encounter state and visible discoveries.', inputSchema: { type: 'object', properties: {} }, annotations: { readOnlyHint: true }, execute: async () => ({ content: [{ type: 'text', text: JSON.stringify({ map: map.title, role: player ? 'player' : 'dm', active: map.interactions.filter(item => isVisible(map,state,item.id)).map(item=>item.id), camera: state.camera, party: state.party, tokenMode: state.tokenMode, roster: state.roster, shapes: state.shapes }) }] }) });
     if (!player) register({ name: 'set_map_reveal', description: 'Reveal or conceal a map interaction in the DM encounter. The player display follows.', annotations: { readOnlyHint: false }, inputSchema: { type: 'object', properties: { id: { type: 'string', enum: map.interactions.map(item=>item.id) }, revealed: { type: 'boolean' } }, required: ['id','revealed'], additionalProperties: false }, execute: async ({ id, revealed }) => {
       if (!map.interactions.some(item => item.id === id) || typeof revealed !== 'boolean') throw new Error('Invalid reveal request.');
       if (state.active.includes(id) !== revealed) commit(toggleInteraction(map,state,id), 'Encounter reveal updated.');

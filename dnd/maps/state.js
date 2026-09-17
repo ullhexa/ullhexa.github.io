@@ -1,4 +1,4 @@
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=7';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=8';
 export const GRID_COLORS = ['map','black','white'];
 export const defaultEnvironment = () => ({timeOfDay:'day',darkness:78});
 export const validEnvironment = value => !!value && ['day','night'].includes(value.timeOfDay) && Number.isInteger(value.darkness) && value.darkness>=40 && value.darkness<=95;

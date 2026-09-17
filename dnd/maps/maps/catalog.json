@@ -8,7 +8,33 @@
       "description": "An inn at the crossing. A missing courier. Something stirring beyond the river.",
       "thumbnail": "./maps/last-lantern/roofs.png",
       "manifest": "./maps/last-lantern/map.json",
-      "notes": "./maps/last-lantern/dm-notes.json"
+      "notes": "./maps/last-lantern/dm-notes.json",
+      "identity": "LANTERNFORD",
+      "edition": "FIELD TEST 01",
+      "playtest": [
+        "Let the party explore the crossing.",
+        "Enter the inn and remove its roof.",
+        "Follow the clues beyond the bridge.",
+        "Reveal the hidden campsite."
+      ]
+    },
+    {
+      "id": "blighted-farm",
+      "title": "The Blighted Farm",
+      "identity": "BLIGHTED FARM",
+      "edition": "FIELD TEST 02",
+      "category": "Blighted farmstead",
+      "subtitle": "Purple blight",
+      "description": "A farm veiled in thin mist. Purple mold touches wood, stone, and crops. For years, no troops sent here have returned.",
+      "thumbnail": "./maps/blighted-farm/roofs.png",
+      "manifest": "./maps/blighted-farm/map.json",
+      "notes": "./maps/blighted-farm/dm-notes.json",
+      "playtest": [
+        "Approach through the southern farm gate.",
+        "Investigate the four buildings and lift their roofs as the party enters.",
+        "Follow the path behind the barn to its exterior cellar entrance.",
+        "Switch between day and night, and let the DM’s storyline explain what the party finds."
+      ]
     }
   ]
 }

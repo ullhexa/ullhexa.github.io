@@ -1,6 +1,7 @@
 const $ = id => document.getElementById(id);
 
 export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap}) {
+  const formatSize=value=>new Intl.NumberFormat('en',{maximumFractionDigits:1}).format(value);
   const dialog=$('map-dialog'),cache=new Map([[activeId,activeMap]]),buttons=new Map();
   let selected=null,request=0,environment=null;
   const textNode=(tag,text,className)=>{const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node;};
@@ -44,7 +45,7 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
       for(const [label,value] of [['Interactive elements',map.interactions.length],['Places',map.places.length],['Grid square',`${map.grid.distance} ${map.grid.unit}`]]) {
         const stat=document.createElement('div');stat.append(textNode('dt',label),textNode('dd',value));stats.append(stat);
       }
-      details.append(stats);
+      details.append(stats,textNode('p',`${formatSize(map.width / map.grid.size * map.grid.distance)} × ${formatSize(map.height / map.grid.size * map.grid.distance)} ${map.grid.unit} · ${formatSize(map.width / map.grid.size)} × ${formatSize(map.height / map.grid.size)} squares`,'map-menu-hint'));
       const features=document.createElement('ul');features.className='map-features';
       for(const [type,singular,plural] of [['roof','removable roof','removable roofs'],['marker','discovery','discoveries'],['fog','concealed area','concealed areas'],['terrain','terrain change','terrain changes']]) {
         const count=map.interactions.filter(item=>item.type===type).length;
