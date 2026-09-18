@@ -59,7 +59,9 @@
 #character-tokens .character-token:focus-visible{outline:2px solid #fff;outline-offset:2px}
 #character-tokens .character-token.is-dragging{will-change:transform;z-index:2}
 .token-face{display:block;width:44px;height:44px;pointer-events:none}
-.token-label{position:absolute;top:56px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:16px;font-weight:600;line-height:1.2;color:white;text-shadow:0 1px 3px #10201a,0 -1px 3px #10201a,1px 0 3px #10201a;pointer-events:none}
+.token-label,.map-party-label{position:absolute;white-space:nowrap;font-size:12px;font-weight:600;line-height:1.25;padding:3px 7px;border-radius:5px;color:white;text-shadow:0 1px 3px #10201a,0 -1px 3px #10201a,1px 0 3px #10201a;pointer-events:none}
+.token-label{top:calc(100% + 3px + var(--label-gap,6px));left:50%;transform:translateX(-50%) scale(var(--label-scale,1));transform-origin:50% 0}
+.map-party-label{top:0;left:0}
 .player-mode #character-tokens .character-token,.is-measuring #character-tokens .character-token{pointer-events:none}
 .map-caption{z-index:2}.map-loading{z-index:3}
 

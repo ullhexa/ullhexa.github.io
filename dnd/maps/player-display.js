@@ -49,7 +49,7 @@ export async function startPlayerDisplay(){
     if(pending?.mapId===presentation.mapId){update();return;}
     pending?.frame.remove();
     const frame=document.createElement('iframe');frame.className='player-scene';frame.title='Battle map';frame.setAttribute('aria-hidden','true');frame.tabIndex=-1;
-    const url=new URL(location.href);url.search=new URLSearchParams({view:'player',scene:'1',session,map:presentation.mapId,build:'20'}).toString();frame.src=url;
+    const url=new URL(location.href);url.search=new URLSearchParams({view:'player',scene:'1',session,map:presentation.mapId,build:'22'}).toString();frame.src=url;
     pending={frame,mapId:presentation.mapId,revision:-1,ready:false};stage.prepend(frame);update();
   }
   async function closeDisplay(){

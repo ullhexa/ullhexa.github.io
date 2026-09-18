@@ -9,14 +9,14 @@ import {createSessionBundle} from './session-bundle.js?v=20';
 import { startDMShell } from './dm-shell.js?v=20';
 import { openPlayerWindow } from './display-window.js?v=20';
 import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=20';
-import { createEncounterTools } from './encounter-tools.js?v=20';
+import { createEncounterTools } from './encounter-tools.js?v=22';
 import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=20';
 import { createMapMenu } from './map-menu.js?v=20';
 import { createSaveControls } from './save-controls.js?v=20';
 import { parseSave, restoreSave } from './save-file.js?v=20';
 import { createLighting } from './lighting.js?v=20';
 import { setupFullscreen } from './fullscreen.js?v=20';
-import { startPlayerDisplay } from './player-display.js?v=20';
+import { startPlayerDisplay } from './player-display.js?v=22';
 import { createDirector } from './director.js?v=20';
 import { normalizeProject } from './presentation-state.js?v=20';
 
@@ -125,7 +125,7 @@ async function start() {
   let measuring = false;
   let drag = null;
   let zoomSave,partyFrame=0;
-  function paintParty(){partyFrame=0;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);livePositions();}
+  function paintParty(){partyFrame=0;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);encounter.renderPartyPosition();livePositions();}
   let storageWorks = true;
   let channel;
   try { channel = new BroadcastChannel(sessionKey); } catch { /* Storage events also synchronize windows. */ }
@@ -185,7 +185,6 @@ async function start() {
   party.append(svgNode('circle', { r: 21, fill: '#203d48', stroke: '#e9e7bb', 'stroke-width': 3 }));
   party.append(svgNode('circle', { r: 12, fill: '#84c5d6', opacity: .28 }));
   party.append(svgNode('text', { 'text-anchor': 'middle', y: 5, fill: '#fff9dc', 'font-size': 14, 'font-weight': 700 }, 'P'));
-  party.append(svgNode('text', { class: 'marker-label', 'text-anchor': 'middle', y: 39, 'font-size': 16 }, 'Party'));
   $('party-layer').append(party);
   function finishDrag(before,message){history.push(before);if(history.length>40)history.shift();state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
   function preview(next,mode=false){state=next;if(mode===true)encounter.renderCharacterPositions();else if(mode==='fog')fog?.render();else render();}
@@ -420,7 +419,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'20',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'22',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
