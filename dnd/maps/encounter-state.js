@@ -1,13 +1,14 @@
+import {normalizeMembers, normalizeCampaign, syncCampaign, fiveFeet, initiativeOrder} from './combat-state.js?v=16';
 export const PORTRAITS = ['Human warrior','Silver-haired elf','Dwarven adventurer','Halfling ranger','Half-orc guardian','Human wizard','Tiefling wanderer','Elven mage','Dragonborn',
   'Copper-haired elf','Human paladin','Dwarven shieldmaiden','Halfling bard','Half-orc veteran','Violet tiefling','Blue dragonborn','Gnome tinkerer',
-  'Human cleric','Human monk','Elven scholar','Feline ranger','Lizardfolk druid','Veteran knight','Human rogue','Dwarven cleric'];
-export const PORTRAIT_ASSETS = ['./assets/portraits.png','./assets/portraits-additional.png'];
-export function portraitAsset(index) {
-  const original=index<9,columns=original?3:4,cell=original?index:index-9;
-  return {url:PORTRAIT_ASSETS[original?0:1],columns,column:cell%columns,row:Math.floor(cell/columns)};
+  'Human cleric','Human monk','Elven scholar','Feline ranger','Lizardfolk druid','Veteran knight','Human rogue','Dwarven cleric','Human druid','Elder sorcerer','Golden dragonborn','Gnome scout','Orc fighter'];
+export const PORTRAIT_ASSETS = ['./assets/portraits.png','./assets/portraits-additional.png','./assets/portraits-extra.png','./assets/monsters.png'];
+export function portraitAsset(index,monster=false) {
+  const sheet=monster?3:index<9?0:index<25?1:2,columns=[3,4,3,5][sheet],rows=[3,4,2,6][sheet],cell=monster?index:index-[0,9,25][sheet];
+  return {url:PORTRAIT_ASSETS[sheet],columns,rows,column:cell%columns,row:Math.floor(cell/columns)};
 }
-export const SHAPE_TYPES = ['circle','square','triangle'];
-export const SHAPE_COLORS = ['#e8ba71','#ec6d62','#70bce8','#a98ce5','#78cba2','#ef91be'];
+export const SHAPE_TYPES = ['circle','square','cone'];
+export const SHAPE_COLORS = ['#58a9e0','#9a6d47','#e76660','#eea348','#111111','#ffffff','#6fb980'];
 export const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 export const boundedPoint = p => Array.isArray(p) && p.length === 2 && p.every(n=>Number.isFinite(n)&&n>=0&&n<=1);
 export const feetToWorld = (map,n) => n/map.grid.distance*map.grid.size;
@@ -26,12 +27,12 @@ export function defaultRoster(map, anchor=map.partyStart) {
   return formation(map,anchor,4).map((position,index)=>({id:`player-${index+1}`,name:`Player ${index+1}`,portrait:index,position}));
 }
 export function normalizeEncounter(map,input,party) {
-  const used=new Set();
-  const roster=Array.isArray(input.roster)?input.roster.slice(0,12).filter(p=>p&&typeof p.id==='string'&&/^[-a-zA-Z0-9]+$/.test(p.id)&&!used.has(p.id)&&used.add(p.id)).map((p,i)=>({id:p.id,name:typeof p.name==='string'?p.name.trim().slice(0,32)||`Player ${i+1}`:`Player ${i+1}`,portrait:Number.isInteger(p.portrait)?clamp(p.portrait,0,PORTRAITS.length-1):i%PORTRAITS.length,position:boundedPoint(p.position)?[...p.position]:formation(map,party,12)[i]})):[];
+  const roster=normalizeMembers(Array.isArray(input.roster)?input.roster:defaultRoster(map,party));
   const shapeIds=new Set();
-  const shapes=Array.isArray(input.shapes)?input.shapes.slice(0,32).filter(s=>s&&typeof s.id==='string'&&/^[-a-zA-Z0-9]+$/.test(s.id)&&!shapeIds.has(s.id)&&shapeIds.add(s.id)&&SHAPE_TYPES.includes(s.type)&&boundedPoint(s.center)&&[s.width,s.height,s.rotation].every(Number.isFinite)).map(s=>({id:s.id,type:s.type,center:[...s.center],width:clamp(Math.round(s.width),1,200),height:clamp(Math.round(s.height),1,200),rotation:((s.rotation%360)+360)%360,color:SHAPE_COLORS.includes(s.color)?s.color:SHAPE_COLORS[0],visible:s.visible===true})):[];
-  return {roster:roster.length?roster:defaultRoster(map,party),tokenMode:input.tokenMode==='players'?'players':'party',regroupPlayers:typeof input.regroupPlayers==='boolean'?input.regroupPlayers:input.tokenMode!=='players',shapes};
+  const shapes=(Array.isArray(input.shapes)?input.shapes:[]).slice(0,32).filter(s=>s&&typeof s.id==='string'&&/^[-a-zA-Z0-9]+$/.test(s.id)&&!shapeIds.has(s.id)&&shapeIds.add(s.id)&&[...SHAPE_TYPES,'triangle'].includes(s.type)&&boundedPoint(s.center)&&[s.width,s.height,s.rotation].every(Number.isFinite)).map(s=>{const type=s.type==='triangle'?'cone':s.type,size=fiveFeet(s.size??(type==='circle'?Math.max(s.width,s.height)/2:Math.max(s.width,s.height)));return {id:s.id,type,size,width:type==='circle'?size*2:size,height:type==='circle'?size*2:size,center:[...s.center],rotation:((s.rotation%360)+360)%360,color:SHAPE_COLORS.includes(s.color)?s.color:({'#e8ba71':'#eea348','#ec6d62':'#e76660','#70bce8':'#58a9e0','#a98ce5':'#58a9e0','#78cba2':'#6fb980','#ef91be':'#e76660'}[s.color]||SHAPE_COLORS[0]),visible:s.visible===true};});
+  return {roster,monsters:normalizeMembers(input.monsters,true),...(input.public?{public:true}:{campaign:normalizeCampaign(input.campaign,roster)}),tokenMode:input.tokenMode==='players'?'players':'party',regroupPlayers:typeof input.regroupPlayers==='boolean'?input.regroupPlayers:input.tokenMode!=='players',shapes};
 }
+
 export function moveParty(state,position) {
   if(position.every((n,axis)=>n===state.party[axis]))return state;
   return {...state,party:[...position],regroupPlayers:true};
@@ -44,7 +45,7 @@ export function setTokenMode(map,state,mode) {
     const points=formation(map,state.party,state.roster.length);
     return {...state,tokenMode:mode,regroupPlayers:false,roster:state.roster.map((p,i)=>({...p,position:points[i]}))};
   }
-  const party=[0,1].map(axis=>state.roster.reduce((sum,p)=>sum+p.position[axis],0)/state.roster.length);
+  const party=state.roster.length?[0,1].map(axis=>state.roster.reduce((sum,p)=>sum+p.position[axis],0)/state.roster.length):state.party;
   return {...state,tokenMode:mode,party,regroupPlayers:false};
 }
 export function setRosterCount(map,state,count) {
@@ -60,24 +61,22 @@ export function setRosterCount(map,state,count) {
 }
 export function newShape(type,center,id) {
   if(!SHAPE_TYPES.includes(type)||!boundedPoint(center))throw new Error('Invalid shape.');
-  return {id,type,center:[...center],width:20,height:20,rotation:0,color:SHAPE_COLORS[0],visible:false};
+  return {id,type,center:[...center],size:20,width:type==='circle'?40:20,height:type==='circle'?40:20,rotation:0,color:SHAPE_COLORS[0],visible:false};
 }
 export function shapeLocalPoint(map,shape,point) {
-  const x=(point[0]-shape.center[0])*map.width,y=(point[1]-shape.center[1])*map.height;
-  const angle=-shape.rotation*Math.PI/180;
+  const x=(point[0]-shape.center[0])*map.width,y=(point[1]-shape.center[1])*map.height,angle=-shape.rotation*Math.PI/180;
   return [x*Math.cos(angle)-y*Math.sin(angle),x*Math.sin(angle)+y*Math.cos(angle)];
 }
-export function resizeShape(map,shape,point,handle) {
-  const [x,y]=shapeLocalPoint(map,shape,point);
-  const next={...shape};
-  if(handle==='width'||handle==='size')next.width=clamp(Math.round(worldToFeet(map,Math.abs(x)*2)),1,200);
-  if(handle==='height'||handle==='size')next.height=clamp(Math.round(worldToFeet(map,Math.abs(y)*2)),1,200);
-  return next;
+export function resizeShape(map,shape,point) {
+  const [x,y]=shapeLocalPoint(map,shape,point),size=fiveFeet(worldToFeet(map,shape.type==='square'?Math.max(Math.abs(x),Math.abs(y))*2:Math.hypot(x,y)));
+  return {...shape,size,width:shape.type==='circle'?size*2:size,height:shape.type==='circle'?size*2:size};
 }
-export function rotateShape(map,shape,point) {
-  const angle=Math.atan2((point[1]-shape.center[1])*map.height,(point[0]-shape.center[0])*map.width)*180/Math.PI+90;
-  return {...shape,rotation:(Math.round(angle/5)*5+360)%360};
+export function rotateShape(map,shape,point,offset=0) {
+  const angle=Math.atan2((point[1]-shape.center[1])*map.height,(point[0]-shape.center[0])*map.width)*180/Math.PI+90-offset;
+  return {...shape,rotation:(angle+720)%360};
 }
 export function playerProjection(state) {
-  return {...state,shapes:state.shapes.filter(s=>s.visible)};
+  const {campaign,...rest}=state;
+  const publicMember=m=>{const {hp,maxHp,statCard,...safe}=m;return safe;};
+  return {...rest,public:true,turnId:state.public?state.turnId:initiativeOrder(state).some(m=>m.id===state.turnId)?state.turnId:initiativeOrder(state)[0]?.id||null,roster:state.roster.map(publicMember),monsters:(state.monsters||[]).filter(m=>m.visible).map(m=>({...publicMember(m),initiative:null})),shapes:state.shapes.filter(s=>s.visible)};
 }

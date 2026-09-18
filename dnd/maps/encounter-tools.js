@@ -1,209 +1,52 @@
-import { tokenPortrait } from './token-portraits.js?v=15';
-import { PORTRAITS, portraitAsset, SHAPE_TYPES, SHAPE_COLORS, clamp, feetToWorld, setRosterCount, setTokenMode, newShape, resizeShape, rotateShape } from './encounter-state.js?v=15';
-
-const NS='http://www.w3.org/2000/svg';
-const $=id=>document.getElementById(id);
-const node=(tag,attrs={},text)=>{const el=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))el.setAttribute(k,v);if(text!==undefined)el.textContent=text;return el;};
-const pretty=type=>type[0].toUpperCase()+type.slice(1);
-const colorNames=['Gold','Red','Blue','Purple','Green','Pink'];
-
-export function createEncounterTools({map,player,getState,commit,preview,finishDrag,pointAt,announce}) {
-  let selectedShape=null,drag=null,portraitPlayer=null,scaleStart=null;
-  const svg=$('map'),stage=$('map-stage');
-  const tokenLayer=document.createElement('div');tokenLayer.id='character-tokens';stage.append(tokenLayer);
-  const handleOverlay=node('svg',{id:'shape-handle-overlay','aria-label':'Spell area handles'});if(!player){handleOverlay.append($('shape-handles'));stage.append(handleOverlay);}
-  let tokenGeometry=null,pendingPreview=null,dragFrame=0;
-  function flushPreview(){cancelAnimationFrame(dragFrame);dragFrame=0;if(pendingPreview){const {state,characters}=pendingPreview;pendingPreview=null;preview(state,characters);}}
-  function queuePreview(state,characters=false){pendingPreview={state,characters};if(!dragFrame)dragFrame=requestAnimationFrame(flushPreview);}
-  function positionCharacters(state){
-    if(!tokenGeometry)return;
-    const {matrix,left,top}=tokenGeometry;
-    for(const member of state.roster){
-      const el=characterNodes.get(member.id);if(!el)continue;
-      const [x,y]=world(member.position),size=Math.hypot(matrix.a,matrix.b);
-      const transform=`translate3d(${matrix.a*x+matrix.c*y+matrix.e-left-25*size}px,${matrix.b*x+matrix.d*y+matrix.f-top-25*size}px,0) scale(${size})`;
-      if(el.style.transform!==transform)el.style.transform=transform;
-    }
-  }
-  function updateTokenGeometry(){const matrix=svg.getScreenCTM(),rect=stage.getBoundingClientRect();if(matrix)tokenGeometry={matrix,left:rect.left+stage.clientLeft,top:rect.top+stage.clientTop};positionCharacters(getState());}
-  const tokenObserver=new ResizeObserver(updateTokenGeometry);tokenObserver.observe(stage);
-  window.addEventListener('pagehide',()=>{tokenObserver.disconnect();cancelAnimationFrame(dragFrame);},{once:true});
-  const characterNodes=new Map(),shapeNodes=new Map(),shapeButtons=new Map(),rosterRows=new Map();
+import {setFace} from './token-portraits.js?v=16';
+import {SHAPE_COLORS,clamp,feetToWorld,setTokenMode,newShape,resizeShape,rotateShape} from './encounter-state.js?v=16';
+import {CONDITIONS,combatants,patchMember,snapPoint} from './combat-state.js?v=16';
+import {el,button,badgeNodes} from './combat-ui.js?v=16';
+const NS='http://www.w3.org/2000/svg',$=id=>document.getElementById(id);
+const node=(tag,attrs={},text)=>{const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(text!==undefined)e.textContent=text;return e;};
+const names=['Blue','Brown','Red','Orange','Black','White','Green'];
+export function createEncounterTools({map,player,getState,commit,preview,finishDrag,pointAt,announce,getTool,livePositions}){
+  const svg=$('map'),stage=$('map-stage'),tokens=el('div');tokens.id='character-tokens';stage.append(tokens);
+  const overlay=node('svg',{id:'shape-handle-overlay','aria-label':'Spell area handles'});if(!player){overlay.append($('shape-handles'));stage.append(overlay);}
+  let geometry,selected=null,drag=null,frame=0,pending=null,status=null,lastLive=0;const tokenNodes=new Map();
   const world=p=>[p[0]*map.width,p[1]*map.height];
-  const shapeById=id=>getState().shapes.find(s=>s.id===id);
-  const updateShape=(id,patch,message='')=>commit({...getState(),shapes:getState().shapes.map(s=>s.id===id?{...s,...patch}:s)},message);
-  const portraitStyle=(el,index)=>{const {url,columns,column,row}=portraitAsset(index);el.style.backgroundImage=`url('${url}')`;el.style.backgroundSize=`${columns*100}% ${columns*100}%`;el.style.backgroundPosition=`${column/(columns-1)*100}% ${row/(columns-1)*100}%`;};
-  function footprint(s,thumbnail=false) {
-    const width=thumbnail?s.width:feetToWorld(map,s.width),height=thumbnail?s.height:feetToWorld(map,s.height);
-    const attrs={fill:s.color,'fill-opacity':thumbnail?.75:.27,stroke:s.color,'stroke-width':thumbnail?1.5:2,'vector-effect':'non-scaling-stroke'};
-    if(s.type==='circle')return node('ellipse',{...attrs,rx:width/2,ry:height/2});
-    if(s.type==='triangle')return node('polygon',{...attrs,points:`0,${-height/2} ${width/2},${height/2} ${-width/2},${height/2}`});
-    return node('rect',{...attrs,x:-width/2,y:-height/2,width,height});
+  function position(){if(!geometry)return;const{matrix,left,top}=geometry;for(const m of combatants(getState())){const t=tokenNodes.get(m.id);if(!t)continue;const[x,y]=world(m.position),size=feetToWorld(map,m.size||5)/50*Math.hypot(matrix.a,matrix.b);t.style.transform=`translate3d(${matrix.a*x+matrix.c*y+matrix.e-left-25*size}px,${matrix.b*x+matrix.d*y+matrix.f-top-25*size}px,0) scale(${size})`;}}
+  function updateGeometry(){const matrix=svg.getScreenCTM(),r=stage.getBoundingClientRect();if(matrix)geometry={matrix,left:r.left+stage.clientLeft,top:r.top+stage.clientTop};position();positionStatus();}
+  new ResizeObserver(updateGeometry).observe(stage);
+  function renderCharacters(){const s=getState(),members=combatants(s);for(const[id,t]of tokenNodes)if(!members.some(m=>m.id===id)){t.remove();tokenNodes.delete(id);}for(const m of members){let t=tokenNodes.get(m.id);if(!t){t=el(player?'div':'button',undefined,'character-token');t.dataset.character=m.id;const img=el('img',undefined,'token-face');img.alt='';img.width=img.height=96;img.draggable=false;t.append(img,el('span',undefined,'token-label'),el('span',undefined,'token-badges'));if(!player){t.type='button';}tokenNodes.set(m.id,t);tokens.append(t);}t.hidden=m.monster?(player&&!m.visible):s.tokenMode!=='players';t.classList.toggle('concealed-token',m.monster&&!m.visible);t.classList.toggle('token-selected',status?.id===m.id);setFace(t.firstElementChild,m);t.children[1].textContent=m.name;const draft=status?.id===m.id?status.draft:m;t.children[2].replaceChildren(badgeNodes(draft));if(!player)t.setAttribute('aria-label',`${m.name}. Drag to move; double-click for conditions.`);}updateGeometry();}
+  function footprint(s,thumb=false){const size=thumb?s.size:feetToWorld(map,s.size),attrs={fill:s.color,'fill-opacity':.28,stroke:s.color,'stroke-width':2,'vector-effect':'non-scaling-stroke'};if(s.type==='circle')return node('circle',{...attrs,r:size});if(s.type==='square')return node('rect',{...attrs,x:-size/2,y:-size/2,width:size,height:size});return node('path',{...attrs,d:`M0 0 L${-size*.5} ${-size*Math.sqrt(3)/2} A${size} ${size} 0 0 1 ${size*.5} ${-size*Math.sqrt(3)/2} Z`});}
+  function renderShapes(){const s=getState();$('shape-layer').replaceChildren();for(const shape of s.shapes){if(player&&!shape.visible)continue;const[x,y]=world(shape.center),g=node('g',{class:'spell-shape','data-shape':shape.id,transform:`translate(${x} ${y}) rotate(${shape.rotation})`,...(player?{'pointer-events':'none'}:{tabindex:0,role:'button','aria-label':`${shape.type} ${shape.size} feet`})});const f=footprint(shape);if(!shape.visible)f.setAttribute('stroke-dasharray','7 5');g.append(f);$('shape-layer').append(g);}
+    if(player)return;const shape=s.shapes.find(v=>v.id===selected);if(!shape)selected=null;$('shape-list').replaceChildren();$('shape-empty').hidden=!!s.shapes.length;
+    for(const v of s.shapes){const b=button('',()=>{selected=v.id;$('spell-areas').open=true;renderShapes();},'shape-choice');b.setAttribute('aria-pressed',v.id===selected);b.setAttribute('aria-label',`${v.type}, ${v.size} feet, ${v.visible?'visible':'hidden'}`);const icon=node('svg',{viewBox:'-25 -25 50 50',width:42,height:42});const g=node('g',{transform:`translate(0 ${v.type==='cone'?10:0}) rotate(${v.rotation}) scale(${v.type==='circle'?18/v.size:28/v.size})`});g.append(footprint(v,true));icon.append(g);b.append(icon,el('span',v.visible?'●':'○','visibility-dot'));$('shape-list').append(b);}
+    $('shape-editor').hidden=!shape;if(shape){$('shape-visible').textContent=shape.visible?'Hide from players':'Show to players';$('shape-visible').setAttribute('aria-pressed',shape.visible);$('shape-visibility-label').textContent=shape.visible?'Visible to players':'DM only';[...$('shape-colors').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.color===shape.color));}renderHandles(shape);
   }
-  function renderThumbnail(button,s) {
-    const size=Math.max(s.width,s.height)*1.55;
-    const icon=node('svg',{viewBox:`${-size/2} ${-size/2} ${size} ${size}`,width:42,height:42,'aria-hidden':'true'});
-    const g=node('g',{transform:`rotate(${s.rotation})`});g.append(footprint(s,true));icon.append(g);
-    const indicator=document.createElement('span');indicator.className='visibility-dot';indicator.textContent=s.visible?'●':'○';indicator.setAttribute('aria-hidden','true');
-    button.replaceChildren(icon,indicator);
-    button.setAttribute('aria-label',`${pretty(s.type)}, ${colorNames[SHAPE_COLORS.indexOf(s.color)]}, ${s.width} by ${s.height} feet, ${s.visible?'visible to players':'DM only'}`);
-    button.title=`${s.width} × ${s.height} ft · ${s.visible?'Visible to players':'DM only'}`;
-  }
-  function renderCharacters(state) {
-    tokenLayer.hidden=state.tokenMode!=='players';
-    for(const[id,el]of characterNodes)if(!state.roster.some(p=>p.id===id)){el.remove();characterNodes.delete(id);}
-    for(const member of state.roster){
-      let el=characterNodes.get(member.id);
-      if(!el){
-        el=document.createElement(player?'div':'button');el.className='character-token';el.dataset.character=member.id;
-        if(!player)el.type='button';
-        const face=document.createElement('img');face.className='token-face';face.alt='';face.width=face.height=96;face.draggable=false;face.decoding='async';
-        const label=document.createElement('span');label.className='token-label';el.append(face,label);
-        characterNodes.set(member.id,el);tokenLayer.append(el);
-      }
-      const portrait=String(member.portrait);
-      if(el.dataset.portrait!==portrait){
-        el.dataset.portrait=portrait;
-        tokenPortrait(member.portrait).then(url=>{if(el.dataset.portrait===portrait)el.firstElementChild.src=url;}).catch(()=>{ /* The ring and name remain usable if artwork is unavailable. */ });
-      }
-      if(el.lastElementChild.textContent!==member.name)el.lastElementChild.textContent=member.name;
-      if(!player)el.setAttribute('aria-label',`${member.name}. Drag to move or use arrow keys.`);
-    }
-    updateTokenGeometry();
-  }
-  function renderShapes(state) {
-    for(const[id,el]of shapeNodes)if(!state.shapes.some(s=>s.id===id&&(!player||s.visible))){el.remove();shapeNodes.delete(id);}
-    for(const s of state.shapes){
-      if(player&&!s.visible)continue;
-      let el=shapeNodes.get(s.id);
-      if(!el){el=node('g',{class:'spell-shape','data-shape':s.id,...(player?{'pointer-events':'none'}:{role:'button',tabindex:0})});shapeNodes.set(s.id,el);$('shape-layer').append(el);}
-      const[x,y]=world(s.center);el.setAttribute('transform',`translate(${x} ${y}) rotate(${s.rotation})`);
-      const drawing=footprint(s);if(!s.visible)drawing.setAttribute('stroke-dasharray','7 5');
-      el.replaceChildren(drawing);
-      if(!player)el.setAttribute('aria-label',`${pretty(s.type)} area, ${s.width} by ${s.height} feet. ${s.visible?'Visible to players':'DM only'}.`);
-    }
-    if(player)return;
-    if(shapeNodes.has(selectedShape))$('shape-layer').append(shapeNodes.get(selectedShape));
-    if(!state.shapes.some(s=>s.id===selectedShape))selectedShape=null;
-    const selected=shapeById(selectedShape);
-    $('shape-empty').hidden=state.shapes.length>0;
-    for(const[id,el]of shapeButtons)if(!state.shapes.some(s=>s.id===id)){el.remove();shapeButtons.delete(id);}
-    for(const s of state.shapes){
-      let button=shapeButtons.get(s.id);
-      if(!button){button=document.createElement('button');button.type='button';button.className='shape-choice';button.addEventListener('click',()=>{selectedShape=s.id;scaleStart=null;$('spell-areas').open=true;render();});shapeButtons.set(s.id,button);$('shape-list').append(button);}
-      renderThumbnail(button,s);button.setAttribute('aria-pressed',s.id===selectedShape);
-    }
-    $('shape-editor').hidden=!selected;
-    if(selected){
-      $('shape-visibility-label').textContent=selected.visible?'Visible to players':'DM only';
-      $('shape-visible').textContent=selected.visible?'Hide from players':'Show to players';$('shape-visible').setAttribute('aria-pressed',selected.visible);
-      for(const[key,field]of [['width','shape-width'],['height','shape-height'],['rotation','shape-rotation']])if(document.activeElement!==$(field))$(field).value=key==='rotation'?Math.round(selected[key]):selected[key];
-      for(const button of $('shape-colors').children)button.setAttribute('aria-pressed',button.dataset.color===selected.color);
-      if(!scaleStart)$('shape-size').value=Math.max(selected.width,selected.height);
-    }
-    renderHandles(selected);
-  }
-  function renderHandles(s) {
-    handleOverlay.setAttribute('viewBox',svg.getAttribute('viewBox'));
-    handleOverlay.style.display=s?'':'none';
-    const focusedHandle=document.activeElement?.closest('[data-handle]')?.dataset.handle;
-    $('shape-handles').replaceChildren();if(!s)return;
-    const[x,y]=world(s.center),w=feetToWorld(map,s.width),h=feetToWorld(map,s.height),z=getState().camera.zoom;
-    const unit=1/z;
-    const group=node('g',{transform:`translate(${x} ${y}) rotate(${s.rotation})`,'data-shape':s.id});
-    group.append(node('rect',{x:-w/2,y:-h/2,width:w,height:h,fill:'none',stroke:'#fff3ce','stroke-width':1.5*unit,'stroke-dasharray':`${5*unit} ${4*unit}`,'pointer-events':'none'}));
-    group.append(node('line',{x1:0,y1:-h/2,x2:0,y2:-h/2-36*unit,stroke:'#fff3ce','stroke-width':2*unit,'pointer-events':'none'}));
-    const handles=[['width',w/2,0],['height',0,h/2],['size',w/2,h/2],['rotate',0,-h/2-36*unit]];
-    for(const[type,hx,hy]of handles){
-      const handle=node('g',{'data-handle':type,role:'button',tabindex:0,'aria-label':`${type==='rotate'?'Rotate':type==='size'?'Resize':type==='width'?'Adjust width of':'Adjust length of'} selected area`,class:`shape-handle ${type}`,'pointer-events':'all'});
-      handle.append(node('circle',{cx:hx,cy:hy,r:16*unit,fill:'transparent'}));
-      handle.append(type==='rotate'?node('circle',{cx:hx,cy:hy,r:8*unit,fill:'#e8ba71',stroke:'#15261e','stroke-width':2*unit}):node('rect',{x:hx-7*unit,y:hy-7*unit,width:14*unit,height:14*unit,rx:2*unit,fill:'#fff3ce',stroke:'#15261e','stroke-width':2*unit}));
-      group.append(handle);
-    }
-    $('shape-handles').append(group);
-    const label=node('text',{class:'marker-label',x,y:y-(Math.hypot(w,h)/2+56*unit),'text-anchor':'middle','font-size':16*unit,'pointer-events':'none'},`${s.width} × ${s.height} ft · ${Math.round(s.rotation)}°${s.visible?'':' · DM only'}`);
-    // Keep the measurement horizontal while the area rotates.
-    $('shape-handles').append(label);
-    if(focusedHandle)$('shape-handles').querySelector(`[data-handle="${focusedHandle}"]`)?.focus();
-  }
-  function renderRoster(state) {
-    $('mode-party').setAttribute('aria-pressed',state.tokenMode==='party');$('mode-players').setAttribute('aria-pressed',state.tokenMode==='players');
-    $('player-count').value=state.roster.length;$('roster-count-label').textContent=`${state.roster.length} player${state.roster.length===1?'':'s'}`;
-    for(const[id,row]of rosterRows)if(!state.roster.some(p=>p.id===id)){row.remove();rosterRows.delete(id);}
-    for(const member of state.roster){
-      let row=rosterRows.get(member.id);
-      if(!row){
-        row=document.createElement('div');row.className='roster-row';
-        const face=document.createElement('button');face.type='button';face.className='portrait-thumb';face.addEventListener('click',()=>{portraitPlayer=member.id;$('portrait-dialog').showModal();});
-        const input=document.createElement('input');input.type='text';input.maxLength=32;input.autocomplete='off';input.id=`name-${member.id}`;
-        input.addEventListener('input',()=>commit({...getState(),roster:getState().roster.map(p=>p.id===member.id?{...p,name:input.value.trim()||'Player'}:p)},'Character name saved.'));
-        row.append(face,input);$('roster-list').append(row);rosterRows.set(member.id,row);
-      }
-      const[face,input]=row.children;portraitStyle(face,member.portrait);face.setAttribute('aria-label',`Choose face for ${member.name}`);face.title=PORTRAITS[member.portrait];input.setAttribute('aria-label',`Name for ${member.name}`);if(document.activeElement!==input)input.value=member.name;
-    }
-  }
-  function render() {const state=getState();renderCharacters(state);renderShapes(state);if(!player)renderRoster(state);}
+  function renderHandles(s){overlay.setAttribute('viewBox',svg.getAttribute('viewBox'));overlay.style.display=s?'':'none';const layer=$('shape-handles');layer.replaceChildren();if(!s)return;const[x,y]=world(s.center),r=feetToWorld(map,s.size),unit=1/getState().camera.zoom,g=node('g',{'data-shape':s.id,transform:`translate(${x} ${y}) rotate(${s.rotation})`});let handles;
+    if(s.type==='circle')handles=[['size',0,-r],['size',r,0],['size',0,r],['size',-r,0]];
+    else if(s.type==='square')handles=[['size',-r/2,-r/2],['size',r/2,-r/2],['size',r/2,r/2],['size',-r/2,r/2],['rotate',0,-r/2,0],['rotate',r/2,0,90],['rotate',0,r/2,180],['rotate',-r/2,0,270]];
+    else handles=[['rotate',0,0,180],['rotate',0,-r,0],['size',-.5*r,-Math.sqrt(3)/2*r],['size',.5*r,-Math.sqrt(3)/2*r]];
+    handles.forEach(([type,hx,hy,angle=0],i)=>{const h=node('g',{'data-handle':type,'data-angle':angle,tabindex:0,role:'button','aria-label':`${type==='rotate'?'Rotate':'Resize'} ${s.type} handle ${i+1}`,'pointer-events':'all',class:'shape-handle'});h.append(node('circle',{cx:hx,cy:hy,r:16*unit,fill:'transparent'}));h.append(type==='rotate'?node('circle',{cx:hx,cy:hy,r:7*unit,fill:'#e8ba71',stroke:'#17251d','stroke-width':2*unit}):node('rect',{x:hx-7*unit,y:hy-7*unit,width:14*unit,height:14*unit,rx:2*unit,fill:'#fff3ce',stroke:'#17251d','stroke-width':2*unit}));g.append(h);});layer.append(g,node('text',{class:'marker-label',x,y:y-r-24*unit,'text-anchor':'middle','font-size':16*unit,'pointer-events':'none'},`${s.size} ft ${s.type==='circle'?'radius':s.type==='square'?'side':'cone'}`));}
+  const updateShape=patch=>commit({...getState(),shapes:getState().shapes.map(s=>s.id===selected?{...s,...patch}:s)},'Area updated.');
+  function closeStatus(){if(!status)return;const{id,draft,root}=status;status=null;root.remove();commit(patchMember(getState(),id,{conditions:draft.conditions,letters:draft.letters}),'Conditions applied.');}
+  function positionStatus(){if(!status)return;const token=tokenNodes.get(status.id);if(!token)return;const r=token.getBoundingClientRect(),s=stage.getBoundingClientRect(),root=status.root;root.style.setProperty('--status-max-height',`${stage.clientHeight-8}px`);root.style.left=`${clamp(r.left-s.left+r.width/2-120,4,Math.max(4,s.width-root.offsetWidth-4))}px`;root.style.top=`${clamp(r.top-s.top-50,4,Math.max(4,s.height-root.offsetHeight-4))}px`;}
+  function openStatus(id){closeStatus();const member=combatants(getState()).find(m=>m.id===id);if(!member)return;const root=el('div',undefined,'token-status-editor'),letters=el('div',undefined,'letter-options'),conditions=el('div',undefined,'condition-options');root.setAttribute('role','dialog');root.setAttribute('aria-label',`${member.name} conditions`);root.append(letters,el('div',undefined,'status-spacer'),conditions);status={id,draft:structuredClone(member),root};stage.append(root);
+    const toggle=(field,value,b)=>{const list=status.draft[field];status.draft[field]=list.includes(value)?list.filter(v=>v!==value):[...list,value];b.setAttribute('aria-pressed',status.draft[field].includes(value));renderCharacters();};
+    for(const l of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'){const b=button(l,()=>toggle('letters',l,b));b.setAttribute('aria-pressed',member.letters.includes(l));letters.append(b);}for(const[id,symbol,name]of CONDITIONS){const b=button(`${symbol}  ${name}`,()=>toggle('conditions',id,b));b.setAttribute('aria-pressed',member.conditions.includes(id));conditions.append(b);}conditions.append(button('Apply & close',closeStatus,'primary'));renderCharacters();positionStatus();}
+  function flush(){cancelAnimationFrame(frame);frame=0;if(pending){const p=pending;pending=null;preview(p.state,p.characters);if(p.characters&&performance.now()-lastLive>32){lastLive=performance.now();livePositions?.();}}}
+  function queue(state,characters){pending={state,characters};if(!frame)frame=requestAnimationFrame(flush);}
   if(!player){
-    for(let count=1;count<=12;count++){const option=document.createElement('option');option.value=count;option.textContent=count;$('player-count').append(option);}
-    $('player-count').addEventListener('change',event=>commit(setRosterCount(map,getState(),Number(event.target.value)),'Player count updated.'));
-    for(const mode of ['party','players'])$(`mode-${mode}`).addEventListener('click',()=>{if(getState().tokenMode!==mode)commit(setTokenMode(map,getState(),mode),mode==='party'?'Party marker shown.':getState().regroupPlayers?'Players placed around the party position.':'Player positions restored.');});
-    $('close-portraits').addEventListener('click',()=>$('portrait-dialog').close());
-    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&selectedShape&&!$('portrait-dialog').open){selectedShape=null;render();}});
-    PORTRAITS.forEach((description,index)=>{const button=document.createElement('button');button.type='button';button.className='portrait-option';button.setAttribute('aria-label',description);button.title=description;const face=document.createElement('span');face.className='portrait-thumb';portraitStyle(face,index);button.append(face);button.addEventListener('click',()=>{commit({...getState(),roster:getState().roster.map(p=>p.id===portraitPlayer?{...p,portrait:index}:p)},'Character face updated.');$('portrait-dialog').close();});$('portrait-options').append(button);});
-    document.querySelectorAll('[data-add-shape]').forEach(button=>button.addEventListener('click',()=>{
-      if(getState().shapes.length>=32){announce('Up to 32 areas can be placed on this map.');return;}
-      const state=getState();const shape=newShape(button.dataset.addShape,[state.camera.x,state.camera.y],crypto.randomUUID());selectedShape=shape.id;$('spell-areas').open=true;commit({...state,shapes:[...state.shapes,shape]},'Area added. Adjust it, then choose Show to players.');
-    }));
-    SHAPE_COLORS.forEach((color,index)=>{const button=document.createElement('button');button.type='button';button.dataset.color=color;button.className='color-swatch';button.style.backgroundColor=color;button.setAttribute('aria-label',`${colorNames[index]} area`);button.addEventListener('click',()=>updateShape(selectedShape,{color}));$('shape-colors').append(button);});
-    $('shape-visible').addEventListener('click',()=>{const s=shapeById(selectedShape);if(s)updateShape(s.id,{visible:!s.visible},s.visible?'Area hidden from players.':'Area shown to players.');});
-    $('delete-shape').addEventListener('click',()=>commit({...getState(),shapes:getState().shapes.filter(s=>s.id!==selectedShape)},'Area removed. Undo restores it.'));
-    for(const[key,field]of [['width','shape-width'],['height','shape-height'],['rotation','shape-rotation']])$(field).addEventListener('input',event=>{
-      const s=shapeById(selectedShape);if(!s||event.target.value==='')return;const parsed=Number(event.target.value);const value=Number.isFinite(parsed)?Math.round(parsed):s[key];const bounded=key==='rotation'?(value%360+360)%360:clamp(value,1,200);event.target.value=bounded;updateShape(s.id,{[key]:bounded});
-    });
-    $('shape-size').addEventListener('input',event=>{
-      if(!scaleStart)scaleStart={state:structuredClone(getState()),shape:structuredClone(shapeById(selectedShape))};
-      if(!scaleStart.shape)return;const s=scaleStart.shape,factor=Number(event.target.value)/Math.max(s.width,s.height);
-      preview({...getState(),shapes:getState().shapes.map(item=>item.id===s.id?{...item,width:clamp(Math.round(s.width*factor),1,200),height:clamp(Math.round(s.height*factor),1,200)}:item)});
-    });
-    $('shape-size').addEventListener('change',()=>{if(scaleStart){const start=scaleStart.state;scaleStart=null;finishDrag(start,'Area resized.');}});
-    stage.addEventListener('pointerdown',event=>{
-      const character=event.target.closest('[data-character]'),shape=event.target.closest('[data-shape]'),handle=event.target.closest('[data-handle]');
-      if(event.button!==0||(!character&&!shape)||$('measure').getAttribute('aria-pressed')==='true')return;
-      event.stopImmediatePropagation();event.preventDefault();
-      const p=pointAt(event),state=getState();
-      if(shape){selectedShape=shape.dataset.shape;$('spell-areas').open=true;}
-      drag={pointer:event.pointerId,character:character?.dataset.character,shape:shape?.dataset.shape,handle:handle?.dataset.handle,point:p,start:structuredClone(state),x:event.clientX,y:event.clientY,moved:false};
-      stage.setPointerCapture(event.pointerId);if(character)character.classList.add('is-dragging');else render();
-    },true);
-    stage.addEventListener('pointermove',event=>{
-      if(!drag||event.pointerId!==drag.pointer)return;event.stopImmediatePropagation();
-      if(!drag.moved&&Math.hypot(event.clientX-drag.x,event.clientY-drag.y)<3)return;drag.moved=true;
-      const p=pointAt(event),state=getState();
-      if(drag.character){const member=drag.start.roster.find(p=>p.id===drag.character);const position=member.position.map((n,axis)=>clamp(n+p[axis]-drag.point[axis],0,1));queuePreview({...state,roster:state.roster.map(m=>m.id===member.id?{...m,position}:m)},true);}
-      else{const original=drag.start.shapes.find(s=>s.id===drag.shape);let next;
-        if(drag.handle==='rotate')next=rotateShape(map,original,p);
-        else if(drag.handle)next=resizeShape(map,original,p,drag.handle);
-        else next={...original,center:original.center.map((n,axis)=>clamp(n+p[axis]-drag.point[axis],0,1))};
-        queuePreview({...state,shapes:state.shapes.map(s=>s.id===next.id?next:s)});
-      }
-    },true);
-    stage.addEventListener('pointerup',event=>{
-      if(!drag||event.pointerId!==drag.pointer)return;event.stopImmediatePropagation();flushPreview();const current=drag;drag=null;characterNodes.get(current.character)?.classList.remove('is-dragging');
-      if(current.moved)finishDrag(current.start,current.character?'Player moved.':'Area adjusted.');else render();
-    },true);
-    stage.addEventListener('pointercancel',event=>{if(drag?.pointer===event.pointerId){event.stopImmediatePropagation();const start=drag.start;characterNodes.get(drag.character)?.classList.remove('is-dragging');drag=null;pendingPreview=null;cancelAnimationFrame(dragFrame);dragFrame=0;preview(start);}},true);
-    stage.addEventListener('keydown',event=>{
-      const character=event.target.closest('[data-character]'),shape=event.target.closest('[data-shape]'),handle=event.target.closest('[data-handle]');
-      if(!character&&!shape)return;
-      const offsets={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]},offset=offsets[event.key];
-      if(shape&&(event.key==='Enter'||event.key===' ')){event.preventDefault();selectedShape=shape.dataset.shape;$('spell-areas').open=true;render();return;}
-      if(!offset)return;event.preventDefault();event.stopPropagation();
-      if(character){commit({...getState(),roster:getState().roster.map(p=>p.id===character.dataset.character?{...p,position:p.position.map((n,axis)=>clamp(n+offset[axis]*map.grid.size/(axis?map.height:map.width),0,1))}:p)},'Player moved one square.');return;}
-      selectedShape=shape.dataset.shape;const s=shapeById(selectedShape);if(!s)return;
-      const direction=offset[0]||-offset[1];
-      if(handle){const type=handle.dataset.handle;updateShape(s.id,type==='rotate'?{rotation:(s.rotation+direction*5+360)%360}:type==='width'?{width:clamp(s.width+direction,1,200)}:type==='height'?{height:clamp(s.height+direction,1,200)}:{width:clamp(s.width+direction,1,200),height:clamp(s.height+direction,1,200)});}
-      else updateShape(s.id,{center:s.center.map((n,axis)=>clamp(n+offset[axis]*map.grid.size/(axis?map.height:map.width),0,1))});
-    });
+    stage.addEventListener('dblclick',e=>{if(getTool()||e.target.closest('.token-status-editor'))return;const token=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-character]');if(token){e.preventDefault();e.stopPropagation();openStatus(token.dataset.character);}});
+    ['party','players'].forEach(mode=>$(`mode-${mode}`).addEventListener('click',()=>commit(setTokenMode(map,getState(),mode),'Token display updated.')));
+    document.querySelectorAll('[data-add-shape]').forEach(b=>b.addEventListener('click',()=>{if(getState().shapes.length>=32)return;const s=getState(),shape=newShape(b.dataset.addShape,[s.camera.x,s.camera.y],crypto.randomUUID());selected=shape.id;$('spell-areas').open=true;commit({...s,shapes:[...s.shapes,shape]},'Area added, hidden from players.');}));
+    SHAPE_COLORS.forEach((color,i)=>{const b=button('',()=>updateShape({color}),'color-swatch');b.dataset.color=color;b.style.backgroundColor=color;b.setAttribute('aria-label',`${names[i]} area`);$('shape-colors').append(b);});
+    $('shape-visible').addEventListener('click',()=>{const s=getState().shapes.find(s=>s.id===selected);if(s)updateShape({visible:!s.visible});});$('delete-shape').addEventListener('click',()=>commit({...getState(),shapes:getState().shapes.filter(s=>s.id!==selected)},'Area removed.'));
+    document.addEventListener('pointerdown',e=>{if(status&&!status.root.contains(e.target)&&!e.target.closest(`[data-character="${status.id}"]`))closeStatus();},true);
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeStatus();selected=null;renderShapes();}});
+    stage.addEventListener('pointerdown',e=>{if(e.button!==0||getTool()||e.target.closest('.token-status-editor,#initiative-overlay'))return;const character=e.target.closest('[data-character]'),shape=e.target.closest('[data-shape]'),handle=e.target.closest('[data-handle]');if(!character&&!shape){if(selected){selected=null;renderShapes();}return;}e.stopImmediatePropagation();e.preventDefault();if(shape){selected=shape.dataset.shape;$('spell-areas').open=true;}const point=pointAt(e),start=structuredClone(getState());drag={id:e.pointerId,character:character?.dataset.character,shape:shape?.dataset.shape,handle:handle?.dataset.handle,angle:Number(handle?.dataset.angle)||0,start,point,x:e.clientX,y:e.clientY,moved:false};stage.setPointerCapture(e.pointerId);if(character)character.classList.add('is-dragging');else renderShapes();},true);
+    stage.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;e.stopImmediatePropagation();if(!drag.moved&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<1)return;drag.moved=true;const p=pointAt(e);if(!p)return;const state=getState();if(drag.character){const m=combatants(drag.start).find(m=>m.id===drag.character);let position=m.position.map((n,i)=>clamp(n+p[i]-drag.point[i],0,1));if(state.snap)position=snapPoint(map,position,m.size);queue(patchMember(state,m.id,{position}),true);}else{const original=drag.start.shapes.find(s=>s.id===drag.shape);let next;if(drag.handle==='rotate'){if(original.type==='cone'&&drag.angle===180){const r=feetToWorld(map,original.size),a=original.rotation*Math.PI/180;const pivot=[original.center[0]+Math.sin(a)*r/map.width,original.center[1]-Math.cos(a)*r/map.height];const angle=Math.atan2((p[1]-pivot[1])*map.height,(p[0]-pivot[0])*map.width)*180/Math.PI-90;next={...original,rotation:(angle+720)%360};}else next=rotateShape(map,original,p,drag.angle);}else if(drag.handle)next=resizeShape(map,original,p);else next={...original,center:original.center.map((n,i)=>clamp(n+p[i]-drag.point[i],0,1))};queue({...state,shapes:state.shapes.map(s=>s.id===next.id?next:s)},false);}},true);
+    stage.addEventListener('pointerup',e=>{if(!drag||drag.id!==e.pointerId)return;e.stopImmediatePropagation();flush();const d=drag;drag=null;tokenNodes.get(d.character)?.classList.remove('is-dragging');if(d.moved)finishDrag(d.start,d.character?'Token moved.':'Area adjusted.');else render();},true);
+    stage.addEventListener('pointercancel',e=>{if(!drag||drag.id!==e.pointerId)return;e.stopImmediatePropagation();const d=drag;drag=null;pending=null;cancelAnimationFrame(frame);frame=0;tokenNodes.get(d.character)?.classList.remove('is-dragging');preview(d.start);livePositions?.();},true);
+    stage.addEventListener('keydown',e=>{if(e.target.closest('.token-status-editor'))return;const target=e.target.closest('[data-character]'),shape=e.target.closest('[data-shape]'),offset={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(!target&&!shape)return;if(!offset)return;e.preventDefault();e.stopPropagation();if(target){const s=getState(),m=combatants(s).find(m=>m.id===target.dataset.character);let p=m.position.map((n,i)=>clamp(n+offset[i]*map.grid.size/(i?map.height:map.width),0,1));if(s.snap)p=snapPoint(map,p,m.size);commit(patchMember(s,m.id,{position:p}),'Token moved one square.');}else{selected=shape.dataset.shape;const s=getState().shapes.find(s=>s.id===selected),handle=e.target.closest('[data-handle]');if(handle){const delta=offset[0]||-offset[1];if(handle.dataset.handle==='rotate')updateShape({rotation:(s.rotation+delta*5+360)%360});else{const size=clamp(s.size+delta*5,5,200);updateShape({size,width:s.type==='circle'?size*2:size,height:s.type==='circle'?size*2:size});}}else updateShape({center:s.center.map((n,i)=>clamp(n+offset[i]*map.grid.size/(i?map.height:map.width),0,1))});}});
   }
-  return {render,renderCharacterPositions:()=>positionCharacters(getState()),isDragging:()=>!!drag,clearSelection:()=>{selectedShape=null;}};
+  function render(){renderCharacters();renderShapes();if(!player){$('mode-party').setAttribute('aria-pressed',getState().tokenMode==='party');$('mode-players').setAttribute('aria-pressed',getState().tokenMode==='players');}}
+  return {render,renderCharacterPositions:position,isDragging:()=>!!drag,clearSelection:()=>{selected=null;if(status){status.root.remove();status=null;}},closeStatus};
 }
