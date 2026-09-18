@@ -1,6 +1,6 @@
-import {itemAsset} from './items-catalog.js?v=25';
-import {portraitAsset} from './encounter-state.js?v=25';
-import {assetURL} from './local-assets.js?v=25';
+import {itemAsset} from './items-catalog.js?v=26';
+import {portraitAsset} from './encounter-state.js?v=26';
+import {assetURL} from './local-assets.js?v=26';
 export const TOKEN_FACE_SIZE=96;
 const sources=new Map(),faces=new Map();
 function load(url){if(!sources.has(url))sources.set(url,new Promise((resolve,reject)=>{const i=new Image();i.decoding='async';i.onload=()=>resolve(i);i.onerror=()=>reject(new Error('Portrait could not load.'));i.src=url;}));return sources.get(url);}

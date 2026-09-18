@@ -1,28 +1,28 @@
-import {ITEM_ATLAS} from './items-catalog.js?v=25';
-import {createItemsUI} from './items-ui.js?v=25';
-import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=25';
-import {createHistory} from './history.js?v=25';
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=25';
-import {setupSidebarResize} from './sidebar-resize.js?v=25';
-import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=25';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=25';
-import {createFogTools} from './fog-tools.js?v=25';
-import {normalizeFog} from './fog-state.js?v=25';
-import {customCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=25';
-import {createSessionBundle} from './session-bundle.js?v=25';
-import { startDMShell } from './dm-shell.js?v=25';
-import { openPlayerWindow } from './display-window.js?v=25';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=25';
-import { createEncounterTools } from './encounter-tools.js?v=25';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=25';
-import { createMapMenu } from './map-menu.js?v=25';
-import { createSaveControls } from './save-controls.js?v=25';
-import { parseSave, restoreSave } from './save-file.js?v=25';
-import { createLighting } from './lighting.js?v=25';
-import { setupFullscreen } from './fullscreen.js?v=25';
-import { startPlayerDisplay } from './player-display.js?v=25';
-import { createDirector } from './director.js?v=25';
-import { normalizeProject } from './presentation-state.js?v=25';
+import {ITEM_ATLAS} from './items-catalog.js?v=26';
+import {createItemsUI} from './items-ui.js?v=26';
+import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=26';
+import {createHistory} from './history.js?v=26';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=26';
+import {setupSidebarResize} from './sidebar-resize.js?v=26';
+import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=26';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=26';
+import {createFogTools} from './fog-tools.js?v=26';
+import {normalizeFog} from './fog-state.js?v=26';
+import {customCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=26';
+import {createSessionBundle} from './session-bundle.js?v=26';
+import { startDMShell } from './dm-shell.js?v=26';
+import { openPlayerWindow } from './display-window.js?v=26';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=26';
+import { createEncounterTools } from './encounter-tools.js?v=26';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=26';
+import { createMapMenu } from './map-menu.js?v=26';
+import { createSaveControls } from './save-controls.js?v=26';
+import { parseSave, restoreSave } from './save-file.js?v=26';
+import { createLighting } from './lighting.js?v=26';
+import { setupFullscreen } from './fullscreen.js?v=26';
+import { startPlayerDisplay } from './player-display.js?v=26';
+import { createDirector } from './director.js?v=26';
+import { normalizeProject } from './presentation-state.js?v=26';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -57,7 +57,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=25')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=26')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -68,7 +68,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=25`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=26`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -114,8 +114,8 @@ async function start() {
       const campaign=normalizeCampaign(readStored(`${sessionKey}:campaign`)||next.campaign,next.roster);
       const savedMembers=[...(next.roster||[]),...(next.monsters||[]),...(next.items||[]),...(next.campaign?.parties||[]).flatMap(g=>g.members),...(next.campaign?.encounters||[]).flatMap(g=>g.members),...(next.campaign?.itemLists||[]).flatMap(g=>g.members)];
       const points=formation(content,next.party,60);
-      for(const kind of ['parties','encounters','itemLists'])campaign[kind]=campaign[kind].map(g=>({...g,members:g.members.map((m,i)=>({...m,position:savedMembers.find(p=>p.id===m.id)?.position||points[i]||content.partyStart}))}));
-      next={...next,campaign,roster:campaign.parties.find(g=>g.id===campaign.activeParty)?.members||[],items:campaign.itemLists.find(g=>g.id===campaign.activeItems)?.members||[],monsters:campaign.encounters.find(g=>g.id===campaign.activeEncounter)?.members||[]};
+      for(const kind of ['parties','encounters'])campaign[kind]=campaign[kind].map(g=>({...g,members:g.members.map((m,i)=>({...m,position:savedMembers.find(p=>p.id===m.id)?.position||points[i]||content.partyStart}))}));
+      next={...next,campaign,roster:campaign.parties.find(g=>g.id===campaign.activeParty)?.members||[],items:next.items||[],monsters:campaign.encounters.find(g=>g.id===campaign.activeEncounter)?.members||[]};
     }
     return syncCampaign(next);
   }
@@ -187,6 +187,8 @@ async function start() {
     }
     layerNodes.set(item.id, node);
   }
+
+  for(const [index,decoration] of (map.decorations||[]).entries()){const id=`decoration-${index}`,clip=svgNode('clipPath',{id});clip.append(svgNode('polygon',{points:polygon(decoration.polygon)}));defs.append(clip);$('terrain-layers').append(svgNode('image',{...dimensions,href:artwork[decoration.asset],'clip-path':`url(#${id})`,'pointer-events':'none'}));}
 
   const floorNodes=new Map(),floorLayer=svgNode('g',{id:'floor-layers'});$('lighting-layer').before(floorLayer);
   for(const place of map.places)for(const floor of floorList(place)){if(!floor.asset)continue;const id=`floor-${place.id}-${floor.id}`,clip=svgNode('clipPath',{id});clip.append(svgNode('polygon',{points:polygon(floor.polygon)}));defs.append(clip);const art=svgNode('image',{...dimensions,href:artwork[floor.asset],'clip-path':`url(#${id})`,'pointer-events':'none'});floorLayer.append(art);floorNodes.set(`${place.id}:${floor.id}`,art);}
@@ -521,7 +523,7 @@ async function start() {
   }
   if(!embedded)setInterval(updateConnection,1000);
   window.addEventListener('pagehide',()=>{if(!player&&runtimeReady)save();});
-  if(!player){director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});createLibraries({map,getState:()=>state,commit,announce});itemsUI=createItemsUI({map,getState:()=>state,commit,announce});createMapUpload({sessionKey,catalog,onAdded:entry=>{setProject({...project,maps:[...project.maps,entry.id]});mapMenu.addEntry(entry);},announce});}
+  if(!player){director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});createLibraries({map,getState:()=>state,commit,announce});itemsUI=createItemsUI({map,getState:()=>state,commit,announce,pointAt,setTool,selectItem:id=>encounter.selectItem(id)});createMapUpload({sessionKey,catalog,onAdded:entry=>{setProject({...project,maps:[...project.maps,entry.id]});mapMenu.addEntry(entry);},announce});}
   if(embedded){
     let lastActivity=0;
     const activity=()=>{if(performance.now()-lastActivity>100){lastActivity=performance.now();window.parent.postMessage({type:'player-activity'},location.origin);}};

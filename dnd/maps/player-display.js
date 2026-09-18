@@ -1,7 +1,7 @@
-import {customCatalog} from './custom-maps.js?v=25';
-import { setupFullscreen } from './fullscreen.js?v=25';
-import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=25';
-import { validPresentation, sceneCanShow } from './presentation-state.js?v=25';
+import {customCatalog} from './custom-maps.js?v=26';
+import { setupFullscreen } from './fullscreen.js?v=26';
+import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=26';
+import { validPresentation, sceneCanShow } from './presentation-state.js?v=26';
 const $=id=>document.getElementById(id);
 const read=key=>{try{return JSON.parse(localStorage.getItem(key));}catch{return null;}};
 
@@ -17,7 +17,7 @@ export async function startPlayerDisplay(){
   const canvas=document.createElement('canvas');canvas.id='story-screen';canvas.className='story-screen';canvas.setAttribute('aria-label','Abstract storytelling atmosphere');stage.append(canvas);
   const animation=createStoryAnimation(canvas);
   const fullscreen=setupFullscreen({player:true,announce:text=>$('live-message').textContent=text});
-  const response=await fetch('./maps/catalog.json?v=25');if(!response.ok)throw new Error('The map library could not load. Reload to try again.');
+  const response=await fetch('./maps/catalog.json?v=26');if(!response.ok)throw new Error('The map library could not load. Reload to try again.');
   const catalog=(await response.json()).maps;
   catalog.push(...customCatalog(sessionKey));
   const stored=read(`${sessionKey}:presentation`);

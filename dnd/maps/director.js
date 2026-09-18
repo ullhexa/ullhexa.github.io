@@ -1,6 +1,6 @@
-import {createSceneGroups} from './scene-groups-ui.js?v=25';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=25';
-import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=25';
+import {createSceneGroups} from './scene-groups-ui.js?v=26';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=26';
+import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=26';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 

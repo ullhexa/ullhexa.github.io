@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "blighted-farm",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "title": "The Blighted Farm",
   "width": 2304,
   "height": 1536,
@@ -30,7 +30,6 @@
       "focusZoom": 2,
       "actions": [
         "barn-roof",
-        "barn-cellar",
         "barn-trashed",
         "barn-collapsed"
       ],
@@ -306,40 +305,6 @@
           0.786133
         ]
       ]
-    },
-    {
-      "id": "barn-cellar",
-      "type": "marker",
-      "label": "Open cellar doors",
-      "activeLabel": "Close cellar doors",
-      "placeId": "barn",
-      "point": [
-        0.28776,
-        0.080078
-      ],
-      "symbol": "\u2193",
-      "publicLabel": "Storage cellar",
-      "cover": {
-        "asset": "closedCellar",
-        "polygon": [
-          [
-            0.255208,
-            0.052734
-          ],
-          [
-            0.31901,
-            0.052734
-          ],
-          [
-            0.31901,
-            0.121094
-          ],
-          [
-            0.255208,
-            0.121094
-          ]
-        ]
-      }
     },
     {
       "id": "barn-trashed",
@@ -694,7 +659,9 @@
           0.711589,
           0.350586
         ],
-        "radius": 8
+        "radius": 8,
+        "requires": [],
+        "excludes": []
       },
       {
         "id": "farmhouse-kitchen-window",
@@ -702,7 +669,9 @@
           0.626302,
           0.305664
         ],
-        "radius": 6
+        "radius": 6,
+        "requires": [],
+        "excludes": []
       },
       {
         "id": "store-door",
@@ -710,7 +679,9 @@
           0.738932,
           0.620117
         ],
-        "radius": 6
+        "radius": 6,
+        "requires": [],
+        "excludes": []
       },
       {
         "id": "farmhouse-hearth",
@@ -844,6 +815,33 @@
   },
   "previousVersions": [
     "0.1.1",
-    "0.1.0"
+    "0.1.0",
+    "0.2.0"
+  ],
+  "retiredInteractions": [
+    "barn-cellar"
+  ],
+  "decorations": [
+    {
+      "asset": "closedCellar",
+      "polygon": [
+        [
+          0.255208,
+          0.052734
+        ],
+        [
+          0.31901,
+          0.052734
+        ],
+        [
+          0.31901,
+          0.121094
+        ],
+        [
+          0.255208,
+          0.121094
+        ]
+      ]
+    }
   ]
 }
