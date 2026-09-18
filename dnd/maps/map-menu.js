@@ -1,7 +1,7 @@
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=20';
-import {assetId} from './combat-state.js?v=20';
-import {assetURL} from './local-assets.js?v=20';
-import { renderSequence } from './director.js?v=20';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=23';
+import {assetId} from './combat-state.js?v=23';
+import {assetURL} from './local-assets.js?v=23';
+import { renderSequence } from './director.js?v=23';
 const $ = id => document.getElementById(id);
 
 export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject}) {

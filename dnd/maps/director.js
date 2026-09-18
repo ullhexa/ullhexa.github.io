@@ -1,6 +1,6 @@
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=20';
-import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=20';
-import { reorder } from './presentation-state.js?v=20';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=23';
+import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=23';
+import { reorder } from './presentation-state.js?v=23';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 
