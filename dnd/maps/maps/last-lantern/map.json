@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "last-lantern",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "title": "The Last Lantern",
   "width": 1536,
   "height": 1024,
@@ -29,7 +29,6 @@
       "focusZoom": 2.3,
       "actions": [
         "inn-roof",
-        "cellar",
         "inn-trashed",
         "inn-collapsed"
       ],
@@ -190,22 +189,6 @@
           0.682292,
           0.287109
         ]
-      ]
-    },
-    {
-      "id": "cellar",
-      "type": "marker",
-      "label": "Reveal the trapdoor",
-      "activeLabel": "Hide the trapdoor",
-      "placeId": "inn",
-      "point": [
-        0.417,
-        0.24
-      ],
-      "symbol": "\u2193",
-      "publicLabel": "Cellar entrance",
-      "requires": [
-        "inn-roof"
       ]
     },
     {
@@ -421,7 +404,8 @@
   ],
   "previousVersions": [
     "0.2.0",
-    "0.1.0"
+    "0.1.0",
+    "0.3.0"
   ],
   "lighting": {
     "occluders": [
@@ -485,7 +469,9 @@
           0.115885,
           0.211914
         ],
-        "radius": 15
+        "radius": 15,
+        "requires": [],
+        "excludes": []
       },
       {
         "id": "yard-candle-north",
@@ -493,7 +479,9 @@
           0.125,
           0.320312
         ],
-        "radius": 6
+        "radius": 6,
+        "requires": [],
+        "excludes": []
       },
       {
         "id": "yard-candle-west",
@@ -501,7 +489,9 @@
           0.067057,
           0.374023
         ],
-        "radius": 5
+        "radius": 5,
+        "requires": [],
+        "excludes": []
       },
       {
         "id": "yard-candle-south",
@@ -509,7 +499,9 @@
           0.126953,
           0.383789
         ],
-        "radius": 6
+        "radius": 6,
+        "requires": [],
+        "excludes": []
       },
       {
         "id": "inn-window-west-north",
@@ -517,7 +509,9 @@
           0.169271,
           0.235352
         ],
-        "radius": 7
+        "radius": 7,
+        "requires": [],
+        "excludes": []
       },
       {
         "id": "inn-window-west-south",
@@ -525,7 +519,9 @@
           0.169271,
           0.317383
         ],
-        "radius": 7
+        "radius": 7,
+        "requires": [],
+        "excludes": []
       },
       {
         "id": "inn-window-front-west",
@@ -533,7 +529,9 @@
           0.217448,
           0.435547
         ],
-        "radius": 9
+        "radius": 9,
+        "requires": [],
+        "excludes": []
       },
       {
         "id": "inn-window-front-east",
@@ -541,7 +539,9 @@
           0.345052,
           0.435547
         ],
-        "radius": 9
+        "radius": 9,
+        "requires": [],
+        "excludes": []
       },
       {
         "id": "hearth",
@@ -799,16 +799,20 @@
             0.72,
             0.8
           ]
-        ]
+        ],
+        "requires": [],
+        "excludes": []
       }
     ]
   },
   "retiredInteractions": [
     "camp-fog",
     "tracks",
-    "cache"
+    "cache",
+    "cellar"
   ],
   "retiredPlaces": [
     "camp"
-  ]
+  ],
+  "decorations": []
 }

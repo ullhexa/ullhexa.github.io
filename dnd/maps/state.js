@@ -1,7 +1,7 @@
-import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=25';
-import {normalizeFog} from './fog-state.js?v=25';
-import {assetId} from './combat-state.js?v=25';
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=25';
+import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=26';
+import {normalizeFog} from './fog-state.js?v=26';
+import {assetId} from './combat-state.js?v=26';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=26';
 export const GRID_COLORS = ['map','black','white'];
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {
@@ -58,11 +58,12 @@ export function validateMap(map) {
       if(!Array.isArray(light.excludes||[])||(light.excludes||[]).some(id=>!ids.has(id)))throw new Error('Invalid light exclusion.');
     }
   }
+  if(map.decorations!==undefined&&(!Array.isArray(map.decorations)||map.decorations.length>32||map.decorations.some(d=>!d||typeof map.art[d.asset]!=='string'||!map.art[d.asset].startsWith('./')||map.art[d.asset].includes('..')||!Array.isArray(d.polygon)||d.polygon.length<3||!d.polygon.every(validPoint))))throw new Error('Invalid map decoration.');
   validateFloors(map);
   return map;
 }
 export function validPoint(point){return Array.isArray(point)&&point.length===2&&point.every(n=>Number.isFinite(n)&&n>=0&&n<=1);}
-export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],floors:normalizeFloors(map),items:[],party:[...map.partyStart],grid:true,snap:false,fog:[],monsters:[],turnId:null,initiativeOverlay:{x:.02,y:.08,visible:true},gridColor:'map',environment:defaultEnvironment(),tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
+export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],floors:normalizeFloors(map),itemSchema:2,items:[],party:[...map.partyStart],grid:true,snap:false,fog:[],monsters:[],turnId:null,initiativeOverlay:{x:.02,y:.08,visible:true},gridColor:'map',environment:defaultEnvironment(),tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
 export function sanitizeState(map,input){
   const fresh=initialState(map);
   if(!input||input.format!==1||input.mapId!==map.id||(input.mapVersion!==map.version&&!(map.previousVersions||[]).includes(input.mapVersion)))return fresh;
