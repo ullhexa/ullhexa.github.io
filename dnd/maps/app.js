@@ -1,25 +1,25 @@
-import {createHistory} from './history.js?v=23';
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=23';
-import {setupSidebarResize} from './sidebar-resize.js?v=23';
-import {syncCampaign,normalizeCampaign,combatants,snapPoint} from './combat-state.js?v=23';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=23';
-import {createFogTools} from './fog-tools.js?v=23';
-import {normalizeFog} from './fog-state.js?v=23';
-import {customCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=23';
-import {createSessionBundle} from './session-bundle.js?v=23';
-import { startDMShell } from './dm-shell.js?v=23';
-import { openPlayerWindow } from './display-window.js?v=23';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=23';
-import { createEncounterTools } from './encounter-tools.js?v=23';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=23';
-import { createMapMenu } from './map-menu.js?v=23';
-import { createSaveControls } from './save-controls.js?v=23';
-import { parseSave, restoreSave } from './save-file.js?v=23';
-import { createLighting } from './lighting.js?v=23';
-import { setupFullscreen } from './fullscreen.js?v=23';
-import { startPlayerDisplay } from './player-display.js?v=23';
-import { createDirector } from './director.js?v=23';
-import { normalizeProject } from './presentation-state.js?v=23';
+import {createHistory} from './history.js?v=24';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=24';
+import {setupSidebarResize} from './sidebar-resize.js?v=24';
+import {syncCampaign,normalizeCampaign,combatants,snapPoint} from './combat-state.js?v=24';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=24';
+import {createFogTools} from './fog-tools.js?v=24';
+import {normalizeFog} from './fog-state.js?v=24';
+import {customCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=24';
+import {createSessionBundle} from './session-bundle.js?v=24';
+import { startDMShell } from './dm-shell.js?v=24';
+import { openPlayerWindow } from './display-window.js?v=24';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=24';
+import { createEncounterTools } from './encounter-tools.js?v=24';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=24';
+import { createMapMenu } from './map-menu.js?v=24';
+import { createSaveControls } from './save-controls.js?v=24';
+import { parseSave, restoreSave } from './save-file.js?v=24';
+import { createLighting } from './lighting.js?v=24';
+import { setupFullscreen } from './fullscreen.js?v=24';
+import { startPlayerDisplay } from './player-display.js?v=24';
+import { createDirector } from './director.js?v=24';
+import { normalizeProject } from './presentation-state.js?v=24';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -54,7 +54,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=23')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=24')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -65,7 +65,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=23`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=24`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -420,7 +420,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'23',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'24',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');

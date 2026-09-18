@@ -1,9 +1,9 @@
-import {conditionIcon} from './condition-icons.js?v=23';
-import {shortcutAction,isTextEntry} from './keyboard.js?v=23';
-import {setFace} from './token-portraits.js?v=23';
-import {SHAPE_COLORS,clamp,feetToWorld,setTokenMode,newShape,resizeShape,rotateShape} from './encounter-state.js?v=23';
-import {CONDITIONS,combatants,patchMember,snapPoint,initiativeOrder,bringToFront} from './combat-state.js?v=23';
-import {el,button,badgeNodes} from './combat-ui.js?v=23';
+import {conditionIcon} from './condition-icons.js?v=24';
+import {shortcutAction,isTextEntry} from './keyboard.js?v=24';
+import {setFace} from './token-portraits.js?v=24';
+import {SHAPE_COLORS,clamp,feetToWorld,setTokenMode,newShape,resizeShape,rotateShape} from './encounter-state.js?v=24';
+import {CONDITIONS,combatants,patchMember,snapPoint,initiativeOrder,bringToFront} from './combat-state.js?v=24';
+import {el,button,badgeNodes} from './combat-ui.js?v=24';
 const NS='http://www.w3.org/2000/svg',$=id=>document.getElementById(id);
 const node=(tag,attrs={},text)=>{const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(text!==undefined)e.textContent=text;return e;};
 const names=['Blue','Brown','Red','Orange','Black','White','Green','Purple'];
