@@ -174,7 +174,7 @@ body:not(.player-mode) .map-controls{align-items:center;gap:8px;padding:9px;bord
 #main-menu .main-menu-panel>.map-menu-heading{display:none}
 #main-menu .main-menu-panel>.dialog-actions{margin-top:auto;padding-top:20px}
 #main-menu .library-layout{flex:1}.main-menu-panel .library-portraits{max-height:none;overflow:visible}
-#show-battle{background:#542b29;border-color:#814540;color:#f7d1c7}#show-story{background:#244b38;border-color:#3f7958;color:#d2edda}
+#show-battle,#show-story{background:#000;border-color:var(--line);color:var(--text)}
 #show-battle[aria-pressed=true]{background:#a64b43;border-color:#ec9884;color:#fff6ee}#show-story[aria-pressed=true]{background:#3b8057;border-color:#8ed4a5;color:#f0fff3}
 .shape-palette{position:absolute;z-index:8;display:grid;grid-template-columns:repeat(4,28px);gap:9px;padding:12px;border:1px solid #9b9271;border-radius:10px;background:#14221af5;box-shadow:0 6px 24px #0008;pointer-events:auto}
 .shape-palette .color-swatch{width:28px;height:28px;border:2px solid #ffffff55}.shape-palette .color-swatch[aria-pressed=true]{outline:2px solid #fff1cf;outline-offset:2px}
