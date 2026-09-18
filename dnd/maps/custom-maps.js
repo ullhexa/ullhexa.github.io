@@ -1,6 +1,6 @@
-import {uploadImage,assetURL} from './local-assets.js?v=23';
-import {el,button} from './combat-ui.js?v=23';
-import {assetId,safeId} from './combat-state.js?v=23';
+import {uploadImage,assetURL} from './local-assets.js?v=24';
+import {el,button} from './combat-ui.js?v=24';
+import {assetId,safeId} from './combat-state.js?v=24';
 export function customCatalog(sessionKey){try{const entries=JSON.parse(localStorage.getItem(`${sessionKey}:custom-maps`))||[];return entries.filter(validCustomEntry);}catch{return [];}}
 export function validCustomEntry(e){const m=e?.map;return !!(e&&safeId(e.id)&&e.id.startsWith('custom-')&&m&&m.id===e.id&&m.schemaVersion===1&&m.version==='1'&&e.thumbnail===m.art?.base&&e.title===m.title&&Object.keys(m.art||{}).every(k=>['base','roofs'].includes(k))&&m.lighting===undefined&&m.userMap===true&&typeof m.title==='string'&&m.title.length<=80&&m.width>=100&&m.width<=4096&&m.height>=100&&m.height<=4096&&Number.isFinite(m.grid?.size)&&m.grid.size>=1&&m.grid.distance===5&&assetId(m.art?.base)&&m.art.base===m.art.roofs&&Array.isArray(m.places)&&m.places.length===0&&Array.isArray(m.interactions)&&m.interactions.length===0);}
 export function saveCustomCatalog(sessionKey,entries){if(!entries.every(validCustomEntry)||entries.length>40)throw new Error('Invalid custom map library.');localStorage.setItem(`${sessionKey}:custom-maps`,JSON.stringify(entries));}
