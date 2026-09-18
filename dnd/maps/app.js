@@ -1,24 +1,25 @@
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=20';
-import {setupSidebarResize} from './sidebar-resize.js?v=20';
-import {syncCampaign,normalizeCampaign,combatants,snapPoint} from './combat-state.js?v=20';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=20';
-import {createFogTools} from './fog-tools.js?v=20';
-import {normalizeFog} from './fog-state.js?v=20';
-import {customCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=20';
-import {createSessionBundle} from './session-bundle.js?v=20';
-import { startDMShell } from './dm-shell.js?v=20';
-import { openPlayerWindow } from './display-window.js?v=20';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=20';
-import { createEncounterTools } from './encounter-tools.js?v=22';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=20';
-import { createMapMenu } from './map-menu.js?v=20';
-import { createSaveControls } from './save-controls.js?v=20';
-import { parseSave, restoreSave } from './save-file.js?v=20';
-import { createLighting } from './lighting.js?v=20';
-import { setupFullscreen } from './fullscreen.js?v=20';
-import { startPlayerDisplay } from './player-display.js?v=22';
-import { createDirector } from './director.js?v=20';
-import { normalizeProject } from './presentation-state.js?v=20';
+import {createHistory} from './history.js?v=23';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=23';
+import {setupSidebarResize} from './sidebar-resize.js?v=23';
+import {syncCampaign,normalizeCampaign,combatants,snapPoint} from './combat-state.js?v=23';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=23';
+import {createFogTools} from './fog-tools.js?v=23';
+import {normalizeFog} from './fog-state.js?v=23';
+import {customCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=23';
+import {createSessionBundle} from './session-bundle.js?v=23';
+import { startDMShell } from './dm-shell.js?v=23';
+import { openPlayerWindow } from './display-window.js?v=23';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=23';
+import { createEncounterTools } from './encounter-tools.js?v=23';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=23';
+import { createMapMenu } from './map-menu.js?v=23';
+import { createSaveControls } from './save-controls.js?v=23';
+import { parseSave, restoreSave } from './save-file.js?v=23';
+import { createLighting } from './lighting.js?v=23';
+import { setupFullscreen } from './fullscreen.js?v=23';
+import { startPlayerDisplay } from './player-display.js?v=23';
+import { createDirector } from './director.js?v=23';
+import { normalizeProject } from './presentation-state.js?v=23';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -53,7 +54,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=20')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=23')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -64,7 +65,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=20`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=23`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -119,7 +120,7 @@ async function start() {
   if (player) state = playerProjection(state);
   let selected = map.places[0]?.id||null;
   let focusedPlace = null;
-  let history = [];
+  const history = createHistory();
   let lastPeer = 0;
   let ruler = [];
   let measuring = false;
@@ -186,7 +187,7 @@ async function start() {
   party.append(svgNode('circle', { r: 12, fill: '#84c5d6', opacity: .28 }));
   party.append(svgNode('text', { 'text-anchor': 'middle', y: 5, fill: '#fff9dc', 'font-size': 14, 'font-weight': 700 }, 'P'));
   $('party-layer').append(party);
-  function finishDrag(before,message){history.push(before);if(history.length>40)history.shift();state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
+  function finishDrag(before,message){history.record(before);state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
   function preview(next,mode=false){state=next;if(mode===true)encounter.renderCharacterPositions();else if(mode==='fog')fog?.render();else render();}
   let positionSequence=0,lastPositionSequence=-1;
   function livePositions(){send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,party:state.party,positions:combatants(playerProjection(state)).map(m=>({id:m.id,position:m.position,stack:m.stack||0}))});}
@@ -195,7 +196,7 @@ async function start() {
   fog=createFogTools({map,player,getState:()=>state,preview,finishDrag,pointAt,setTool,sendPreview:strokes=>send({type:'fog-preview',mapId:map.id,revision:state.revision,fog:strokes}),announce});
   combat=createCombatUI({map,player,getState:()=>state,commit,announce});
 
-  function remember() { history.push(structuredClone(state)); if (history.length > 40) history.shift(); }
+  function remember(view) { history.record(state,view); }
   function save() {
     if (player) return;
     state=syncCampaign(state);
@@ -222,8 +223,7 @@ async function start() {
     if (message) announce(message);
   }
   function restoreEncounter(restored,restoredProject) {
-    remember();
-    history[history.length-1].restoreView={selectedPlace:selected,ruler:structuredClone(ruler),project:structuredClone(project)};
+    remember({selectedPlace:selected,ruler,project});
     if(restoredProject){project=normalizeProject(restoredProject,catalog,map.id);director.render();}
     ruler=restored.view.ruler;measuring=false;$('map-stage').classList.remove('is-measuring');
     $('measure').setAttribute('aria-pressed','false');$('map').style.cursor='';
@@ -275,7 +275,8 @@ async function start() {
     }
     for(const[id,node]of doorHotspots){const item=map.interactions.find(i=>i.id===id),available=(item.requires||[]).every(dep=>isVisible(map,state,dep)),on=state.active.includes(id);node.style.display=available?'':'none';node.querySelector('.event-step').textContent=on?'2/2':'1/2';node.setAttribute('aria-label',`${item.publicLabel}: ${on?'open':'closed'}, ${on?2:1} of 2. Click for next state.`);}
     sizeHotspots();
-    $('undo').disabled = history.length === 0;
+    $('undo').disabled = !history.canUndo;
+    $('redo').disabled = !history.canRedo;
     const overview = Math.abs(state.camera.zoom-1)<.001 && Math.abs(state.camera.x-.5)<.001 && Math.abs(state.camera.y-.5)<.001;
     const place=map.places.find(p=>p.id===focusedPlace);
     if(!place||selected!==focusedPlace||Math.abs(state.camera.x-place.point[0])>.00001||Math.abs(state.camera.y-place.point[1])>.00001||Math.abs(state.camera.zoom-place.focusZoom)>.00001)focusedPlace=null;
@@ -407,19 +408,19 @@ async function start() {
     $('measure').addEventListener('click',()=>{setTool(measuring?null:'measure');announce(measuring?'Drag between two points to measure. Clear ruler removes the line.':'Measurement off.');});
     $('clear-measurement').addEventListener('click', () => { ruler = []; renderRuler(true); });
     document.addEventListener('keydown', event => { if(!event.defaultPrevented&&event.key==='Escape'&&tool){setTool(null);ruler=[];renderRuler(true);} });
-    $('undo').addEventListener('click', () => {
-      if(!history.length)return;
-      const {restoreView,...previous}=history.pop();
-      if(restoreView)ruler=restoreView.ruler;
-      if(restoreView?.project){project=restoreView.project;director.render();}
-      commit({ ...previous, camera: restoreView?previous.camera:state.camera, grid: restoreView?previous.grid:state.grid, gridColor: restoreView?previous.gridColor:state.gridColor }, 'Last encounter change undone.', false);
-      if(restoreView)selectPlace(restoreView.selectedPlace);
-    });
+    function travelHistory(direction){
+      const entry=history[direction](state,{selectedPlace:selected,ruler,project});if(!entry)return;
+      if(entry.view){ruler=entry.view.ruler;if(entry.view.project){project=entry.view.project;director.render();}}
+      commit(entry.state,direction==='undo'?'Last encounter change undone.':'Last encounter change redone.',false);
+      if(entry.view)selectPlace(entry.view.selectedPlace);
+    }
+    $('undo').addEventListener('click',()=>travelHistory('undo'));
+    $('redo').addEventListener('click',()=>travelHistory('redo'));
     $('open-player').addEventListener('click', () => {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'22',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'23',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
@@ -455,7 +456,7 @@ async function start() {
       cancelAnimationFrame(partyFrame);partyFrame=0;const finished = drag;
       if(finished.measure){if(!finished.moved)ruler=[];drag=null;renderRuler(true);return;}
       if (finished.moved) {
-        if (finished.token) { history.push(finished.start); if (history.length > 40) history.shift(); }
+        if (finished.token) history.record(finished.start);
         state.revision += 1; render(); save();
         if (finished.token) announce('Party moved.');
       }

@@ -1,6 +1,6 @@
-import {normalizeFog} from './fog-state.js?v=20';
-import {assetId} from './combat-state.js?v=20';
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=20';
+import {normalizeFog} from './fog-state.js?v=23';
+import {assetId} from './combat-state.js?v=23';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=23';
 export const GRID_COLORS = ['map','black','white'];
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {

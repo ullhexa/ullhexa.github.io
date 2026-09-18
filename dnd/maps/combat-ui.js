@@ -1,10 +1,10 @@
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=20';
-import {conditionIcon} from './condition-icons.js?v=20';
-import {shortcutAction,isTextEntry} from './keyboard.js?v=20';
-import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=20';
-import {PORTRAITS,formation} from './encounter-state.js?v=20';
-import {setFace,portraitStyle} from './token-portraits.js?v=20';
-import {uploadImage,assetURL} from './local-assets.js?v=20';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=23';
+import {conditionIcon} from './condition-icons.js?v=23';
+import {shortcutAction,isTextEntry} from './keyboard.js?v=23';
+import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=23';
+import {PORTRAITS,formation} from './encounter-state.js?v=23';
+import {setFace,portraitStyle} from './token-portraits.js?v=23';
+import {uploadImage,assetURL} from './local-assets.js?v=23';
 const $=id=>document.getElementById(id);
 export function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 export function button(text,fn,cls){const b=el('button',text,cls);b.type='button';if(fn)b.addEventListener('click',fn);return b;}
@@ -19,7 +19,7 @@ export function createCombatUI({map,player,getState,commit,announce}){
     left=el('section',undefined,'combat-roster');left.id='combat-roster';document.querySelector('.encounter-heading').after(left);
     panel=el('aside',undefined,'initiative-panel');panel.id='initiative-panel';panel.tabIndex=0;panel.setAttribute('aria-label','Initiative turn order. Use Up, Down or Space.');const heading=el('div',undefined,'initiative-heading');heading.append(el('h2','Initiative'),button('↑',()=>advance(-1)),button('↓',()=>advance(1)));heading.children[1].setAttribute('aria-label','Previous turn');heading.children[2].setAttribute('aria-label','Next turn');list=el('div');list.id='initiative-list';
     const visibility=el('label',undefined,'check-label');const check=input('', 'Show player order',()=>{const s=getState();commit({...s,initiativeOverlay:{...s.initiativeOverlay,visible:check.checked}},'Player order visibility updated.');},'checkbox');check.id='initiative-visible';visibility.append(check,document.createTextNode('Player order'));panel.append(heading,visibility,el('p','Enter scores beside the portraits. ↑/↓ or Space change turns. Select a monster, type a value, then ← damage / → heal.','tool-hint'),list);document.querySelector('.workspace').append(panel);
-    document.addEventListener('keydown',e=>{if(e.defaultPrevented)return;const field=isTextEntry(e.target)?e.target:null,hp=field?.hasAttribute('data-hp-input');const action=shortcutAction({key:e.key,typing:!!field,hp,conditions:!!document.querySelector('.token-status-editor'),modal:!!document.querySelector('dialog[open]'),meta:e.metaKey,ctrl:e.ctrlKey,alt:e.altKey,shift:e.shiftKey,composing:e.isComposing});if(!action)return;if(['next-turn','previous-turn'].includes(action)){if(!initiativeOrder(getState()).length)return;e.preventDefault();e.stopImmediatePropagation();advance(action==='next-turn'?1:-1);}else if(action==='damage'||action==='heal'){e.preventDefault();e.stopImmediatePropagation();field.closest('.turn-row').querySelector(`[data-hp-action="${action}"]`).click();}else if(action==='undo'){e.preventDefault();e.stopImmediatePropagation();$('undo').click();}},true);
+    document.addEventListener('keydown',e=>{if(e.defaultPrevented)return;const field=isTextEntry(e.target)?e.target:null,hp=field?.hasAttribute('data-hp-input');const action=shortcutAction({key:e.key,typing:!!field,hp,conditions:!!document.querySelector('.token-status-editor'),modal:!!document.querySelector('dialog[open]'),meta:e.metaKey,ctrl:e.ctrlKey,alt:e.altKey,shift:e.shiftKey,composing:e.isComposing});if(!action)return;if(['next-turn','previous-turn'].includes(action)){if(!initiativeOrder(getState()).length)return;e.preventDefault();e.stopImmediatePropagation();advance(action==='next-turn'?1:-1);}else if(action==='damage'||action==='heal'){e.preventDefault();e.stopImmediatePropagation();field.closest('.turn-row').querySelector(`[data-hp-action="${action}"]`).click();}else if(action==='undo'||action==='redo'){e.preventDefault();e.stopImmediatePropagation();$(action).click();}},true);
 
     overlay.tabIndex=0;overlay.setAttribute('aria-label','Player initiative position. Drag to place.');
     overlay.addEventListener('pointerdown',e=>{if(e.button!==0)return;e.stopPropagation();e.preventDefault();overlayDrag={id:e.pointerId,x:e.clientX,y:e.clientY,start:{...getState().initiativeOverlay},rect:stage.getBoundingClientRect()};overlay.setPointerCapture(e.pointerId);});
