@@ -1,5 +1,5 @@
-import {groupSelection} from './group-selection.js?v=26';
-import {sceneKeys,updateSceneGroup,activateSceneGroup,deleteSceneGroup,reorder} from './presentation-state.js?v=26';
+import {groupSelection} from './group-selection.js?v=27';
+import {sceneKeys,updateSceneGroup,activateSceneGroup,deleteSceneGroup,reorder} from './presentation-state.js?v=27';
 const el=(tag,text,cls)=>{const e=document.createElement(tag);if(text)e.textContent=text;if(cls)e.className=cls;return e;};
 const button=(text,fn,cls)=>{const b=el('button',text,cls);b.type='button';b.addEventListener('click',fn);return b;};
 export function renderSequence(container,items,catalog,onChange,{locked}={}){
