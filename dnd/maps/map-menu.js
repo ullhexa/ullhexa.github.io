@@ -1,7 +1,7 @@
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=24';
-import {assetId} from './combat-state.js?v=24';
-import {assetURL} from './local-assets.js?v=24';
-import { renderSequence } from './director.js?v=24';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=25';
+import {assetId} from './combat-state.js?v=25';
+import {assetURL} from './local-assets.js?v=25';
+import {createSceneGroups} from './scene-groups-ui.js?v=25';
 const $ = id => document.getElementById(id);
 
 export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject}) {
@@ -9,11 +9,9 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
   const dialog=$('map-dialog'),cache=new Map([[activeId,activeMap]]),buttons=new Map();
   let selected=null,request=0,environment=null;
   const textNode=(tag,text,className)=>{const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node;};
-  const sequence=document.createElement('section');sequence.className='session-sequence';
-  sequence.append(textNode('h3','In this session'),textNode('p','Add maps, then arrange the sequence for the Maps dropdown. The current map stays in the list.'));
-  const sequenceList=document.createElement('div');sequenceList.id='map-sequence';sequence.append(sequenceList);dialog.querySelector('.dialog-actions').before(sequence);
-  function renderPlan(){renderSequence(sequenceList,getProject().maps,catalog,maps=>{setProject({...getProject(),maps});renderPlan();updateAdd();},{locked:activeId});}
-  function updateAdd(){const button=$('add-map-session');if(button){button.disabled=getProject().maps.includes(selected);button.textContent=button.disabled?'Added to session':'Add to session';}}
+  const groups=createSceneGroups({kind:'maps',panel:dialog,content:dialog.querySelector('.map-menu-layout'),getProject,setProject,catalog,onChange:()=>updateAdd()});
+  function renderPlan(){groups.renderSequence();}
+  function updateAdd(){const button=$('add-map-session');if(button){button.disabled=!groups.selected()||groups.entries().includes(selected);button.textContent=groups.entries().includes(selected)?'Added to session':'Add to session';}}
 
   function environmentControls(map){
     environment={...getEnvironment(map)};
@@ -50,7 +48,7 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
         if(count)features.append(textNode('li',`${count} ${count===1?singular:plural}`));
       }
       details.append(features,environmentControls(map));
-      const add=textNode('button','Add to session');add.id='add-map-session';add.type='button';add.addEventListener('click',()=>{setProject({...getProject(),maps:[...getProject().maps,entry.id]});renderPlan();updateAdd();});details.append(add);updateAdd();
+      const add=textNode('button','Add to session');add.id='add-map-session';add.type='button';add.addEventListener('click',()=>{groups.update([...groups.entries(),entry.id]);renderPlan();updateAdd();});details.append(add);updateAdd();
       if(entry.id===activeId)details.append(textNode('p','Currently in play. Your encounter progress will be kept.','map-menu-hint'));
       $('apply-map').disabled=false;
     } catch {
@@ -66,12 +64,12 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
     button.addEventListener('click',()=>select(entry));buttons.set(entry.id,button);$('map-grid-menu').append(button);renderPlan();
   }
   catalog.forEach(addEntry);
-  registerMenu('maps',dialog,{onShow:fresh=>{if(!fresh){renderPlan();return;}
+  registerMenu('maps',dialog,{onShow:fresh=>{groups.render(fresh);if(!fresh){renderPlan();return;}
     request++;selected=null;environment=null;for(const button of buttons.values())button.setAttribute('aria-pressed','false');
     $('map-details').replaceChildren(textNode('p','Select a map to see its details.','map-menu-hint'));$('apply-map').disabled=true;renderPlan();
   }});
   $('open-maps').addEventListener('click',()=>openMenu('maps'));
-  for(const id of ['close-maps','cancel-map'])$(id).addEventListener('click',()=>closeMenu());
-  $('apply-map').addEventListener('click',()=>{if(selected&&environment&&!$('apply-map').disabled){closeMenu();applyMap(cache.get(selected),{...environment});}});
+  for(const id of ['close-maps'])$(id).addEventListener('click',()=>closeMenu());
+  $('apply-map').addEventListener('click',()=>{if(selected&&environment&&!$('apply-map').disabled){if(groups.selected()){if(!groups.entries().includes(selected))groups.update([...groups.entries(),selected]);groups.activate();}closeMenu();applyMap(cache.get(selected),{...environment});}});
   return {addEntry};
 }

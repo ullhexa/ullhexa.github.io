@@ -1,25 +1,28 @@
-import {createHistory} from './history.js?v=24';
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=24';
-import {setupSidebarResize} from './sidebar-resize.js?v=24';
-import {syncCampaign,normalizeCampaign,combatants,snapPoint} from './combat-state.js?v=24';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=24';
-import {createFogTools} from './fog-tools.js?v=24';
-import {normalizeFog} from './fog-state.js?v=24';
-import {customCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=24';
-import {createSessionBundle} from './session-bundle.js?v=24';
-import { startDMShell } from './dm-shell.js?v=24';
-import { openPlayerWindow } from './display-window.js?v=24';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=24';
-import { createEncounterTools } from './encounter-tools.js?v=24';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=24';
-import { createMapMenu } from './map-menu.js?v=24';
-import { createSaveControls } from './save-controls.js?v=24';
-import { parseSave, restoreSave } from './save-file.js?v=24';
-import { createLighting } from './lighting.js?v=24';
-import { setupFullscreen } from './fullscreen.js?v=24';
-import { startPlayerDisplay } from './player-display.js?v=24';
-import { createDirector } from './director.js?v=24';
-import { normalizeProject } from './presentation-state.js?v=24';
+import {ITEM_ATLAS} from './items-catalog.js?v=25';
+import {createItemsUI} from './items-ui.js?v=25';
+import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=25';
+import {createHistory} from './history.js?v=25';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=25';
+import {setupSidebarResize} from './sidebar-resize.js?v=25';
+import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=25';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=25';
+import {createFogTools} from './fog-tools.js?v=25';
+import {normalizeFog} from './fog-state.js?v=25';
+import {customCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=25';
+import {createSessionBundle} from './session-bundle.js?v=25';
+import { startDMShell } from './dm-shell.js?v=25';
+import { openPlayerWindow } from './display-window.js?v=25';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=25';
+import { createEncounterTools } from './encounter-tools.js?v=25';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=25';
+import { createMapMenu } from './map-menu.js?v=25';
+import { createSaveControls } from './save-controls.js?v=25';
+import { parseSave, restoreSave } from './save-file.js?v=25';
+import { createLighting } from './lighting.js?v=25';
+import { setupFullscreen } from './fullscreen.js?v=25';
+import { startPlayerDisplay } from './player-display.js?v=25';
+import { createDirector } from './director.js?v=25';
+import { normalizeProject } from './presentation-state.js?v=25';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -54,7 +57,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=24')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=25')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -65,13 +68,13 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=24`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=25`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
   const map = await loadMap(entry);
   const artwork=await resolveMapArt(map);
-  let mapMenu,combat,fog,tool=null;
+  let mapMenu,combat,itemsUI,fog,tool=null;
   let project=normalizeProject(readStored(`${sessionKey}:project`),catalog,map.id);
   let director,playerWindow=dmHost?.playerWindow||null,runtimeReady=false,sceneReady=false;
   const peers=new Map();
@@ -109,17 +112,17 @@ async function start() {
     let next=sanitizeState(content,previous);
     if(!player){
       const campaign=normalizeCampaign(readStored(`${sessionKey}:campaign`)||next.campaign,next.roster);
-      const savedMembers=[...(next.roster||[]),...(next.monsters||[]),...(next.campaign?.parties||[]).flatMap(g=>g.members),...(next.campaign?.encounters||[]).flatMap(g=>g.members)];
+      const savedMembers=[...(next.roster||[]),...(next.monsters||[]),...(next.items||[]),...(next.campaign?.parties||[]).flatMap(g=>g.members),...(next.campaign?.encounters||[]).flatMap(g=>g.members),...(next.campaign?.itemLists||[]).flatMap(g=>g.members)];
       const points=formation(content,next.party,60);
-      for(const kind of ['parties','encounters'])campaign[kind]=campaign[kind].map(g=>({...g,members:g.members.map((m,i)=>({...m,position:savedMembers.find(p=>p.id===m.id)?.position||points[i]||content.partyStart}))}));
-      next={...next,campaign,roster:campaign.parties.find(g=>g.id===campaign.activeParty).members,monsters:campaign.encounters.find(g=>g.id===campaign.activeEncounter)?.members||[]};
+      for(const kind of ['parties','encounters','itemLists'])campaign[kind]=campaign[kind].map(g=>({...g,members:g.members.map((m,i)=>({...m,position:savedMembers.find(p=>p.id===m.id)?.position||points[i]||content.partyStart}))}));
+      next={...next,campaign,roster:campaign.parties.find(g=>g.id===campaign.activeParty)?.members||[],items:campaign.itemLists.find(g=>g.id===campaign.activeItems)?.members||[],monsters:campaign.encounters.find(g=>g.id===campaign.activeEncounter)?.members||[]};
     }
     return syncCampaign(next);
   }
   let state = readMapState(map);
   if (player) state = playerProjection(state);
   let selected = map.places[0]?.id||null;
-  let focusedPlace = null;
+  let focusedPlace = null,selectedOptionsFloor;
   const history = createHistory();
   let lastPeer = 0;
   let ruler = [];
@@ -141,7 +144,6 @@ async function start() {
   const placeButtons = new Map(),placeExpansions=new Map();let expandedPlace=null;
   const actionButtons = new Map();
   const hotspots = new Map();
-  const doorHotspots=new Map();
   const stepButtons=new Map();
   $('map-grid').setAttribute('width', map.grid.size);
   $('map-grid').setAttribute('height', map.grid.size);
@@ -167,21 +169,29 @@ async function start() {
       $('fog-layers').append(node);
     } else {
       const [x, y] = xy(item.point);
-      node = svgNode('g', { transform: `translate(${x} ${y})`, 'pointer-events': 'none' });
-      node.append(svgNode('circle', { r: 17, fill: '#e8ba71', stroke: '#28271a', 'stroke-width': 3 }));
-      node.append(svgNode('text', { 'text-anchor': 'middle', y: 6, 'font-size': 21, fill: '#252219', 'font-weight': 700 }, item.symbol));
-      node.append(svgNode('text', { class: 'marker-label', 'text-anchor': 'middle', y: 37, 'font-size': 16 }, item.publicLabel));
+      node = svgNode('g', {class:'map-door',transform:`translate(${x} ${y})`,...(player?{'pointer-events':'none'}:{role:'button',tabindex:0,'data-place':item.placeId,'data-action':item.id})});
+      if(!item.cover){
+        node.append(svgNode('rect',{x:-14,y:-18,width:28,height:36,rx:2,fill:'#100f0d',stroke:'#54452f','stroke-width':3}));
+        for(let i=0;i<5;i++)node.append(svgNode('path',{d:`M-11 ${-12+i*6}h22`,stroke:'#665b45','stroke-width':3}));
+        const lid=svgNode('g',{class:'door-lid'});lid.append(svgNode('rect',{x:-14,y:-18,width:28,height:36,rx:1,fill:'#655036',stroke:'#241b13','stroke-width':2}));
+        for(const y of [-10,0,10])lid.append(svgNode('path',{d:`M-13 ${y}h26`,stroke:'#2a2017','stroke-width':1}));lid.append(svgNode('circle',{cx:8,cy:0,r:2,fill:'none',stroke:'#cfad65','stroke-width':2}));node.append(lid);
+      }else node.append(svgNode('rect',{x:-24,y:-24,width:48,height:48,fill:'transparent'}));
+      if(!player){node.addEventListener('click',()=>{if(!tool&&!drag){selectPlace(item.placeId);activate(item.id);}});node.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();activate(item.id);}});}
       $('discovery-markers').append(node);
     }
     if(item.cover){
       const clip=svgNode('clipPath',{id:`clip-cover-${item.id}`});
       clip.append(svgNode('polygon',{points:polygon(item.cover.polygon)}));defs.append(clip);
       const cover=svgNode('image',{...dimensions,href:artwork[item.cover.asset],'clip-path':`url(#clip-cover-${item.id})`,'pointer-events':'none'});
-      $('terrain-layers').append(cover);coverNodes.set(item.id,cover);
+      cover.style.transition='opacity .3s ease';$('terrain-layers').append(cover);coverNodes.set(item.id,cover);
     }
     layerNodes.set(item.id, node);
   }
 
+  const floorNodes=new Map(),floorLayer=svgNode('g',{id:'floor-layers'});$('lighting-layer').before(floorLayer);
+  for(const place of map.places)for(const floor of floorList(place)){if(!floor.asset)continue;const id=`floor-${place.id}-${floor.id}`,clip=svgNode('clipPath',{id});clip.append(svgNode('polygon',{points:polygon(floor.polygon)}));defs.append(clip);const art=svgNode('image',{...dimensions,href:artwork[floor.asset],'clip-path':`url(#${id})`,'pointer-events':'none'});floorLayer.append(art);floorNodes.set(`${place.id}:${floor.id}`,art);}
+
+  $('dm-hotspots').after($('discovery-markers'));
   const party = svgNode('g', { class: 'party-token', ...(player ? {} : { role: 'button', tabindex: 0, 'aria-label': 'Party marker. Drag to move.' }) });
   party.append(svgNode('circle', { r: 21, fill: '#203d48', stroke: '#e9e7bb', 'stroke-width': 3 }));
   party.append(svgNode('circle', { r: 12, fill: '#84c5d6', opacity: .28 }));
@@ -190,9 +200,9 @@ async function start() {
   function finishDrag(before,message){history.record(before);state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
   function preview(next,mode=false){state=next;if(mode===true)encounter.renderCharacterPositions();else if(mode==='fog')fog?.render();else render();}
   let positionSequence=0,lastPositionSequence=-1;
-  function livePositions(){send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,party:state.party,positions:combatants(playerProjection(state)).map(m=>({id:m.id,position:m.position,stack:m.stack||0}))});}
+  function livePositions(){send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,party:state.party,positions:mapTokens(playerProjection(state)).map(m=>({id:m.id,position:m.position,stack:m.stack||0}))});}
   function setTool(value){tool=value;measuring=value==='measure';$('map-stage').classList.toggle('is-measuring',measuring);$('measure').setAttribute('aria-pressed',measuring);fog?.setMode(value);$('map').style.cursor=value?'crosshair':'';encounter.clearSelection();}
-  const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,livePositions});
+  const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,setTool,livePositions});
   fog=createFogTools({map,player,getState:()=>state,preview,finishDrag,pointAt,setTool,sendPreview:strokes=>send({type:'fog-preview',mapId:map.id,revision:state.revision,fog:strokes}),announce});
   combat=createCombatUI({map,player,getState:()=>state,commit,announce});
 
@@ -242,11 +252,12 @@ async function start() {
     const place = map.places.find(place => place.id === id);
     if(!place){document.querySelector('.selected-place').hidden=true;return;}
     document.querySelector('.selected-place').hidden=false;
+    selectedOptionsFloor=selectedFloor(place,state)?.id;
     $('selected-title').textContent = `${map.places.indexOf(place)+1}. ${place.name}`;
     $('selected-actions').replaceChildren(); actionButtons.clear();stepButtons.clear();
-    const sequence=place.sequence||[],managed=new Set(sequence.flatMap(step=>step.active));
+    const view=placeView(place,state),sequence=view.sequence||[],managed=new Set(sequence.flatMap(step=>step.active));
     if(sequence.length){const steps=document.createElement('div');steps.className='place-sequence';steps.setAttribute('role','group');steps.setAttribute('aria-label',`${place.name} states`);sequence.forEach((step,index)=>{const b=document.createElement('button');b.type='button';const number=document.createElement('small');number.textContent=`${index+1}/${sequence.length}`;const label=document.createElement('span');label.textContent=step.label;b.append(number,label);b.setAttribute('aria-label',`${place.name}: ${step.label}`);b.addEventListener('click',()=>commit(setPlaceStep(place,state,index),`${place.name}: ${step.label}.`));steps.append(b);stepButtons.set(index,b);});$('selected-actions').append(steps);}
-    for (const id of place.actions.filter(id=>!managed.has(id))) {
+    for (const id of view.actions.filter(id=>!managed.has(id))) {
       const button = document.createElement('button'); button.type = 'button';
       button.addEventListener('click', () => activate(id));
       $('selected-actions').append(button); actionButtons.set(id, button);
@@ -258,9 +269,9 @@ async function start() {
     for (const place of map.places) {
       const button = placeButtons.get(place.id);
       button?.setAttribute('aria-pressed', place.id === selected);
-      const step=placeStep(place,state),sequence=place.sequence||[];
-      for(const[index,b]of (placeExpansions.get(place.id)?.steps||[]).entries())b.setAttribute('aria-pressed',index===step);
-      if(button)button.lastElementChild.textContent=sequence.length?`${step+1}/${sequence.length} · ${sequence[step].label}`:'';
+      const step=placeStep(place,state),sequence=placeView(place,state).sequence||[],floors=floorList(place),floor=selectedFloor(place,state);
+      for(const[index,b]of (placeExpansions.get(place.id)?.steps||[]).entries())b.setAttribute('aria-pressed',floors[index]?.id===floor?.id);
+      if(button)button.lastElementChild.textContent=floors.length>1?floor.label:'';
       const node = hotspots.get(place.id);
       if(node){node.querySelector('circle').setAttribute('fill',place.id===selected?'#e8ba71':'#172a21');node.querySelector('.event-step').textContent=`${step+1}/${sequence.length||1}`;node.setAttribute('aria-label',`${place.name}: ${sequence[step]?.label||'Ready'}, ${step+1} of ${sequence.length||1}. Click for next state.`);}
       if(place.id===selected)for(const[index,b]of stepButtons)b.setAttribute('aria-pressed',index===step);
@@ -273,7 +284,7 @@ async function start() {
       button.disabled = !on && (item.requires || []).some(dep => !isVisible(map, state, dep));
       button.title = button.disabled ? 'Reveal the surrounding area first.' : '';
     }
-    for(const[id,node]of doorHotspots){const item=map.interactions.find(i=>i.id===id),available=(item.requires||[]).every(dep=>isVisible(map,state,dep)),on=state.active.includes(id);node.style.display=available?'':'none';node.querySelector('.event-step').textContent=on?'2/2':'1/2';node.setAttribute('aria-label',`${item.publicLabel}: ${on?'open':'closed'}, ${on?2:1} of 2. Click for next state.`);}
+
     sizeHotspots();
     $('undo').disabled = !history.canUndo;
     $('redo').disabled = !history.canRedo;
@@ -291,9 +302,12 @@ async function start() {
     $('light-level-value').value=`${state.environment.darkness}%`;
     for (const item of map.interactions) {
       const visible = isVisible(map, state, item.id);
-      layerNodes.get(item.id).style.display = (item.type==='marker'&&!player?false:['marker','terrain'].includes(item.type)?visible:!visible) ? '' : 'none';
+      if(item.type==='marker'){const available=interactionOnFloor(map,state,item)&&(item.requires||[]).every(dep=>isVisible(map,state,dep));const door=layerNodes.get(item.id);door.style.display=available?'':'none';door.classList.toggle('door-open',visible);if(!player)door.setAttribute('aria-label',`${item.publicLabel}: ${visible?'open':'closed'}`);if(coverNodes.has(item.id))coverNodes.get(item.id).style.opacity=visible?'0':'1';continue;}
+      layerNodes.get(item.id).style.display = (interactionOnFloor(map,state,item)&&(['terrain'].includes(item.type)?visible:!visible)) ? '' : 'none';
       if(coverNodes.has(item.id))coverNodes.get(item.id).style.display=visible?'none':'';
     }
+    for(const [key,node] of floorNodes){const [placeId,floorId]=key.split(':');const p=map.places.find(p=>p.id===placeId);node.style.display=selectedFloor(p,state)?.id===floorId?'':'none';}
+    if(!player&&selectedOptionsFloor!==selectedFloor(map.places.find(p=>p.id===selected)||{},state)?.id){selectPlace(selected);}
     const { x, y, zoom } = state.camera;
     const w = map.width / zoom, h = map.height / zoom;
     $('map').setAttribute('viewBox', `${x * map.width - w / 2} ${y * map.height - h / 2} ${w} ${h}`);
@@ -309,7 +323,7 @@ async function start() {
     const [px, py] = xy(state.party); party.setAttribute('transform', `translate(${px} ${py})`);
     $('party-layer').style.display = state.tokenMode === 'party' ? '' : 'none';
     $('party-hint').textContent = state.tokenMode === 'party' ? 'Drag the party marker to move freely.' : 'Drag each character to move freely.';
-    encounter.render();fog?.render();combat?.render(); renderControls(); renderRuler(); reportScene();
+    encounter.render();fog?.render();combat?.render();itemsUI?.render(); renderControls(); renderRuler(); reportScene();
   }
   function renderRuler(broadcast = false) {
     if (broadcast && !player) send({ type: 'ruler', mapId:map.id, points: ruler });
@@ -344,12 +358,12 @@ async function start() {
   function activateHotspot(node,event={}){
     if(tool)return;const place=map.places.find(p=>p.id===node.dataset.place);if(!place)return;selectPlace(place.id);
     if(node.dataset.action)activate(node.dataset.action);
-    else{const next=cyclePlace(place,state,event.shiftKey||event.metaKey?-1:1);commit(next,`${place.name}: ${place.sequence?.[placeStep(place,next)]?.label||'Updated'}.`);}
+    else{const next=cyclePlace(place,state,event.shiftKey||event.metaKey?-1:1);commit(next,`${place.name}: ${placeView(place,next).sequence?.[placeStep(place,next)]?.label||'Updated'}.`);}
   }
   function sizeHotspots(){
     const matrix=$('map').getScreenCTM();if(!matrix)return;
     const scale=.8/Math.hypot(matrix.a,matrix.b);
-    for(const node of [...hotspots.values(),...doorHotspots.values()]){const glyph=node.querySelector('.hotspot-glyph');glyph.setAttribute('transform',`translate(${glyph.dataset.x} ${glyph.dataset.y}) scale(${scale})`);}
+    for(const node of hotspots.values()){const glyph=node.querySelector('.hotspot-glyph');glyph.setAttribute('transform',`translate(${glyph.dataset.x} ${glyph.dataset.y}) scale(${scale})`);}
   }
   function makeHotspot(place,point,number,area,action){
     const node=svgNode('g',{class:'hotspot',role:'button',tabindex:0,'data-place':place.id,...(action?{'data-action':action}:{})});
@@ -372,18 +386,17 @@ async function start() {
       title.append(number,document.createTextNode(place.name));
       button.append(title, document.createElement('span')); button.addEventListener('click', () => selectPlace(place.id));
       const row=document.createElement('div');row.className='place-row';row.dataset.placeRow=place.id;row.append(button);placeButtons.set(place.id,button);
-      const expand=document.createElement('button');expand.type='button';expand.className='place-expand';expand.textContent='⌄';expand.setAttribute('aria-label',`Show ${place.name} states`);expand.setAttribute('aria-expanded','false');const sequence=document.createElement('div');sequence.className='place-inline-sequence';sequence.id=`sequence-${place.id}`;sequence.hidden=true;expand.setAttribute('aria-controls',sequence.id);const steps=[];
-      function collapse(){sequence.hidden=true;expand.textContent='⌄';expand.setAttribute('aria-expanded','false');expand.setAttribute('aria-label',`Show ${place.name} states`);row.classList.remove('expanded');}
-      expand.addEventListener('click',()=>{const wasOpen=expandedPlace===place.id;for(const p of placeExpansions.values())p.collapse();expandedPlace=wasOpen?null:place.id;if(!wasOpen){sequence.hidden=false;expand.textContent='⌃';expand.setAttribute('aria-expanded','true');expand.setAttribute('aria-label',`Hide ${place.name} states`);row.classList.add('expanded');}});
-      (place.sequence||[]).forEach((step,i)=>{const b=document.createElement('button');b.type='button';b.textContent=`${i+1}/${place.sequence.length} · ${step.label}`;b.setAttribute('aria-label',`${place.name} state ${i+1}: ${step.label}`);b.addEventListener('click',()=>{selectPlace(place.id);commit(setPlaceStep(place,state,i),`${place.name}: ${step.label}.`);});sequence.append(b);steps.push(b);});
+      const expand=document.createElement('button');expand.type='button';expand.className='place-expand';expand.textContent='⌄';expand.setAttribute('aria-label',`Show ${place.name} floors`);expand.setAttribute('aria-expanded','false');const sequence=document.createElement('div');sequence.className='place-inline-sequence';sequence.id=`sequence-${place.id}`;sequence.hidden=true;expand.setAttribute('aria-controls',sequence.id);const steps=[];
+      function collapse(){sequence.hidden=true;expand.textContent='⌄';expand.setAttribute('aria-expanded','false');expand.setAttribute('aria-label',`Show ${place.name} floors`);row.classList.remove('expanded');}
+      expand.addEventListener('click',()=>{const wasOpen=expandedPlace===place.id;for(const p of placeExpansions.values())p.collapse();expandedPlace=wasOpen?null:place.id;if(!wasOpen){sequence.hidden=false;expand.textContent='⌃';expand.setAttribute('aria-expanded','true');expand.setAttribute('aria-label',`Hide ${place.name} floors`);row.classList.add('expanded');}});
+      floorList(place).forEach(floor=>{const b=document.createElement('button');b.type='button';b.textContent=floor.label;b.setAttribute('aria-label',`${place.name}: ${floor.label}`);b.addEventListener('click',()=>{selectPlace(place.id);commit(selectFloor(map,state,place.id,floor.id),`${place.name}: ${floor.label}.`);});sequence.append(b);steps.push(b);});expand.hidden=floorList(place).length<2;row.classList.toggle('single-floor',expand.hidden);
       placeExpansions.set(place.id,{row,collapse,steps});row.append(expand,sequence);$('places').append(row);
       const [x, y] = xy(place.point);
       const roof = map.interactions.find(item => item.type === 'roof' && item.placeId === place.id);
       const terrain=map.interactions.find(item=>item.type==='terrain'&&item.placeId===place.id&&!item.variant);
       const node=makeHotspot(place,place.point,String(index+1),roof?.polygon||terrain?.polygon);
       $('dm-hotspots').append(node);hotspots.set(place.id,node);
-      const doors=map.interactions.filter(item=>item.type==='marker'&&item.placeId===place.id);
-      doors.forEach((item,i)=>{const door=makeHotspot(place,item.point,`${index+1}${String.fromCharCode(97+i)}`,item.cover?.polygon,item.id);$('dm-hotspots').append(door);doorHotspots.set(item.id,door);});
+
     }
     document.addEventListener('pointerdown',e=>{if(expandedPlace&&!placeExpansions.get(expandedPlace)?.row.contains(e.target)){placeExpansions.get(expandedPlace)?.collapse();expandedPlace=null;}},true);
     selectPlace(selected);
@@ -420,7 +433,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'24',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'25',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
@@ -432,7 +445,7 @@ async function start() {
       if(measuring){if(inBounds(p)){ruler=[p,p];drag={id:event.pointerId,measure:true,start:structuredClone(state),moved:false};$('map').setPointerCapture(event.pointerId);renderRuler(true);}return;}
       const token = party.contains(event.target);
       const ctm = $('map').getScreenCTM();
-      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, camera: { ...state.camera }, scale: ctm.a, point: p, start: structuredClone(state), token, moved: false, hotspot: !!event.target.closest('.hotspot') };
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, camera: { ...state.camera }, scale: ctm.a, point: p, start: structuredClone(state), token, moved: false, hotspot: !!event.target.closest('.hotspot,.map-door') };
       if (token) event.preventDefault();
       $('map').setPointerCapture(event.pointerId);
     });
@@ -462,7 +475,7 @@ async function start() {
       }
       // Pointer capture redirects click; handle a stationary building click explicitly.
       if (!finished.moved && finished.hotspot) {
-        const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest('.hotspot');
+        const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest('.hotspot,.map-door');
         if(hit)activateHotspot(hit,event);
       }
       setTimeout(() => { if (drag === finished) drag = null; }, 0);
@@ -484,7 +497,7 @@ async function start() {
     if(!player&&message.type==='display-error')announce('The player map could not load. Close and reopen the player display to retry.');
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='positions'&&Number.isSafeInteger(message.sequence)&&message.sequence>lastPositionSequence){
       lastPositionSequence=message.sequence;const positions=new Map((Array.isArray(message.positions)?message.positions:[]).filter(p=>p&&typeof p.id==='string'&&inBounds(p.position)).map(p=>[p.id,{position:p.position,...(Number.isSafeInteger(p.stack)&&p.stack>=0?{stack:p.stack}:{})}]));
-      state={...state,roster:state.roster.map(m=>({...m,...(positions.get(m.id)||{})})),monsters:state.monsters.map(m=>({...m,...(positions.get(m.id)||{})}))};
+      state={...state,roster:state.roster.map(m=>({...m,...(positions.get(m.id)||{})})),items:(state.items||[]).map(m=>({...m,...(positions.get(m.id)||{})})),monsters:state.monsters.map(m=>({...m,...(positions.get(m.id)||{})}))};
       if(inBounds(message.party)){state.party=message.party;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);}encounter.renderCharacterPositions();
     }
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='fog-preview'){state={...state,fog:normalizeFog(message.fog)};fog.render();}
@@ -508,7 +521,7 @@ async function start() {
   }
   if(!embedded)setInterval(updateConnection,1000);
   window.addEventListener('pagehide',()=>{if(!player&&runtimeReady)save();});
-  if(!player){director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});createLibraries({map,getState:()=>state,commit,announce});createMapUpload({sessionKey,catalog,onAdded:entry=>{setProject({...project,maps:[...project.maps,entry.id]});mapMenu.addEntry(entry);},announce});}
+  if(!player){director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});createLibraries({map,getState:()=>state,commit,announce});itemsUI=createItemsUI({map,getState:()=>state,commit,announce});createMapUpload({sessionKey,catalog,onAdded:entry=>{setProject({...project,maps:[...project.maps,entry.id]});mapMenu.addEntry(entry);},announce});}
   if(embedded){
     let lastActivity=0;
     const activity=()=>{if(performance.now()-lastActivity>100){lastActivity=performance.now();window.parent.postMessage({type:'player-activity'},location.origin);}};
@@ -519,7 +532,7 @@ async function start() {
   render(); updateConnection();
   if(player)send({type:'scene-hello'});
   const loadImage = src => new Promise((resolve, reject) => { const image = new Image(); image.onload = resolve; image.onerror = () => reject(new Error('The map artwork could not load. Reload to try again.')); image.src = src; });
-  await Promise.all([...Object.values(artwork).map(loadImage), ...PORTRAIT_ASSETS.map(loadImage)]);
+  await Promise.all([...Object.values(artwork).map(loadImage), ...[...PORTRAIT_ASSETS,ITEM_ATLAS].map(loadImage)]);
   $('map-loading').hidden = true;sceneReady=true;reportScene();
   if(!player) {
     const bundle=createSessionBundle({sessionKey,catalog,loadMap,getState:()=>state,readMapState,saveCurrent:save});

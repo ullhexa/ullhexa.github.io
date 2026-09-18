@@ -1,4 +1,4 @@
-import {FOG_SIZES,FOG_FEATHER} from './fog-state.js?v=24';
+import {FOG_SIZES,FOG_FEATHER} from './fog-state.js?v=25';
 export function createFogTools({map,player,getState,preview,finishDrag,pointAt,setTool,sendPreview,announce}){
   const stage=document.getElementById('map-stage'),svg=document.getElementById('map'),canvas=document.createElement('canvas');canvas.id='painted-fog';stage.append(canvas);
   const ratio=Math.min(1,2048/map.width,2048/map.height);canvas.width=Math.round(map.width*ratio);canvas.height=Math.round(map.height*ratio);
@@ -25,7 +25,7 @@ export function createFogTools({map,player,getState,preview,finishDrag,pointAt,s
   function position(){const matrix=svg.getScreenCTM(),r=stage.getBoundingClientRect();if(!matrix)return;canvas.style.transform=`matrix(${matrix.a/ratio},${matrix.b/ratio},${matrix.c/ratio},${matrix.d/ratio},${matrix.e-r.left-stage.clientLeft},${matrix.f-r.top-stage.clientTop})`;}
   new ResizeObserver(position).observe(stage);
   function flush(){cancelAnimationFrame(frame);frame=0;if(!drag)return;preview({...getState(),fog:[...drag.start.fog,drag.stroke]},'fog');draw();if(performance.now()-lastSignal>65){lastSignal=performance.now();sendPreview(getState().fog);}}
-  if(!player){const controls=document.createElement('div');controls.className='fog-controls';controls.setAttribute('aria-label','Fog of war');const caption=document.createElement('span');caption.textContent='Fog';controls.append(caption);
+  if(!player){const controls=document.createElement('div');controls.className='fog-controls';controls.setAttribute('aria-label','Fog of war');const caption=document.createElement('span');caption.textContent='Fog:';controls.append(caption);
     const buttons=[];for(const [id,label]of [['paint','Brush'],['erase','Eraser']]){const b=document.createElement('button');b.textContent=label;b.setAttribute('aria-pressed','false');b.addEventListener('click',()=>setTool(tool===id?null:id));controls.append(b);buttons.push([id,b]);}
     for(const n of FOG_SIZES){const b=document.createElement('button');b.textContent=`${n} ft`;b.dataset.fogSize=n;b.setAttribute('aria-pressed',n===size);b.addEventListener('click',()=>{size=n;controls.querySelectorAll('[data-fog-size]').forEach(v=>v.setAttribute('aria-pressed',Number(v.dataset.fogSize)===size));});controls.append(b);}document.querySelector('.map-controls').append(controls);
     stage.addEventListener('pointerdown',e=>{if(!tool||e.button!==0||e.target.closest('#initiative-overlay'))return;const p=pointAt(e);if(!p||p.some(n=>n<0||n>1))return;e.preventDefault();e.stopImmediatePropagation();if(getState().fog.length>=1500){announce('Fog stroke limit reached. Undo or erase existing strokes before continuing.');return;}drag={pointer:e.pointerId,start:structuredClone(getState()),stroke:{tool,size,points:[p]}};stage.setPointerCapture(e.pointerId);flush();},true);
