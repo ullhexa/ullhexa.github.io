@@ -1,7 +1,7 @@
-import {exportAssets,referencedAssets,validAsset,putAssets} from './local-assets.js?v=16';
-import {validCustomEntry,customCatalog,saveCustomCatalog} from './custom-maps.js?v=16';
-import {restoreSave,MAX_SAVE_BYTES} from './save-file.js?v=16';
-import {validateMap} from './state.js?v=16';
+import {exportAssets,referencedAssets,validAsset,putAssets} from './local-assets.js?v=18';
+import {validCustomEntry,customCatalog,saveCustomCatalog} from './custom-maps.js?v=18';
+import {restoreSave,MAX_SAVE_BYTES} from './save-file.js?v=18';
+import {validateMap} from './state.js?v=18';
 export function createSessionBundle({sessionKey,catalog,loadMap,getState,readMapState,saveCurrent}){
   const session=sessionKey.split(':').at(-1);
   return {

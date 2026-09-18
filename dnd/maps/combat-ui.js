@@ -1,7 +1,7 @@
-import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet} from './combat-state.js?v=16';
-import {PORTRAITS,formation} from './encounter-state.js?v=16';
-import {setFace,portraitStyle} from './token-portraits.js?v=16';
-import {uploadImage,assetURL} from './local-assets.js?v=16';
+import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet} from './combat-state.js?v=18';
+import {PORTRAITS,formation} from './encounter-state.js?v=18';
+import {setFace,portraitStyle} from './token-portraits.js?v=18';
+import {uploadImage,assetURL} from './local-assets.js?v=18';
 const $=id=>document.getElementById(id);
 export function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 export function button(text,fn,cls){const b=el('button',text,cls);b.type='button';if(fn)b.addEventListener('click',fn);return b;}

@@ -1,11 +1,21 @@
-import {normalizeMembers, normalizeCampaign, syncCampaign, fiveFeet, initiativeOrder} from './combat-state.js?v=16';
+import {normalizeMembers, normalizeCampaign, syncCampaign, fiveFeet, initiativeOrder} from './combat-state.js?v=18';
 export const PORTRAITS = ['Human warrior','Silver-haired elf','Dwarven adventurer','Halfling ranger','Half-orc guardian','Human wizard','Tiefling wanderer','Elven mage','Dragonborn',
   'Copper-haired elf','Human paladin','Dwarven shieldmaiden','Halfling bard','Half-orc veteran','Violet tiefling','Blue dragonborn','Gnome tinkerer',
   'Human cleric','Human monk','Elven scholar','Feline ranger','Lizardfolk druid','Veteran knight','Human rogue','Dwarven cleric','Human druid','Elder sorcerer','Golden dragonborn','Gnome scout','Orc fighter'];
 export const PORTRAIT_ASSETS = ['./assets/portraits.png','./assets/portraits-additional.png','./assets/portraits-extra.png','./assets/monsters.png'];
+// The generated monster sheet has uneven row heights, especially its last row.
+// Crop within the measured panels instead of assuming a uniform 5 × 6 atlas.
+const MONSTER_COLUMNS = [0,230,459,687,916,1145];
+const MONSTER_ROWS = [0,213,423,634,845,1066,1374];
 export function portraitAsset(index,monster=false) {
   const sheet=monster?3:index<9?0:index<25?1:2,columns=[3,4,3,5][sheet],rows=[3,4,2,6][sheet],cell=monster?index:index-[0,9,25][sheet];
-  return {url:PORTRAIT_ASSETS[sheet],columns,rows,column:cell%columns,row:Math.floor(cell/columns)};
+  const column=cell%columns,row=Math.floor(cell/columns),asset={url:PORTRAIT_ASSETS[sheet],columns,rows,column,row};
+  if(monster){
+    const x=MONSTER_COLUMNS[column],y=MONSTER_ROWS[row],w=MONSTER_COLUMNS[column+1]-x,h=MONSTER_ROWS[row+1]-y;
+    const size=Math.min(w,h)-4; // Keep resampling safely inside each panel's seam.
+    asset.crop=[(x+(w-size)/2)/1145,(y+(h-size)/2)/1374,size/1145,size/1374];
+  }
+  return asset;
 }
 export const SHAPE_TYPES = ['circle','square','cone'];
 export const SHAPE_COLORS = ['#58a9e0','#9a6d47','#e76660','#eea348','#111111','#ffffff','#6fb980'];
