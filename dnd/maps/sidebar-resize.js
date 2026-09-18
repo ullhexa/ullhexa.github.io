@@ -5,7 +5,7 @@ export function setupSidebarResize(){
   const handle=document.createElement('div');handle.id='sidebar-resizer';handle.tabIndex=0;
   handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','vertical');
   handle.setAttribute('aria-label','Resize DM sidebar');handle.setAttribute('aria-controls','dm-panel');
-  handle.title='Drag to resize · Arrow keys to adjust · Double-click to reset';workspace.append(handle);
+  handle.title='Drag to resize · −/+ keys to adjust · Double-click to reset';workspace.append(handle);
   let preferred=null,drag=null;
   try{const stored=Number(localStorage.getItem(key));if(Number.isFinite(stored)&&stored>=220&&stored<=480)preferred=stored;}catch{}
   const defaults=()=>innerWidth<=1150?258:300;
@@ -21,6 +21,6 @@ export function setupSidebarResize(){
   const end=e=>{if(!drag||e.pointerId!==drag.id)return;if(e.type==='pointercancel')preferred=drag.previous;drag=null;document.body.classList.remove('resizing-sidebar');apply();save();};
   handle.addEventListener('pointerup',end);handle.addEventListener('pointercancel',end);
   handle.addEventListener('dblclick',()=>{preferred=null;apply();save();});
-  handle.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home'].includes(e.key))return;e.preventDefault();e.stopPropagation();preferred=e.key==='Home'?null:Math.max(220,Math.min(maximum(),panel.getBoundingClientRect().width+(e.key==='ArrowLeft'?-1:1)*(e.shiftKey?30:10)));apply();save();});
+  handle.addEventListener('keydown',e=>{if(!['-','+','=','Home'].includes(e.key))return;e.preventDefault();e.stopPropagation();preferred=e.key==='Home'?null:Math.max(220,Math.min(maximum(),panel.getBoundingClientRect().width+(e.key==='-'?-1:1)*(e.shiftKey?30:10)));apply();save();});
   window.addEventListener('resize',apply);apply();
 }

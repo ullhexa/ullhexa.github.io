@@ -1,6 +1,7 @@
-import {assetId} from './combat-state.js?v=19';
-import {assetURL} from './local-assets.js?v=19';
-import { renderSequence } from './director.js?v=19';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=20';
+import {assetId} from './combat-state.js?v=20';
+import {assetURL} from './local-assets.js?v=20';
+import { renderSequence } from './director.js?v=20';
 const $ = id => document.getElementById(id);
 
 export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject}) {
@@ -65,11 +66,12 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
     button.addEventListener('click',()=>select(entry));buttons.set(entry.id,button);$('map-grid-menu').append(button);renderPlan();
   }
   catalog.forEach(addEntry);
-  $('open-maps').addEventListener('click',()=>{
+  registerMenu('maps',dialog,{onShow:fresh=>{if(!fresh){renderPlan();return;}
     request++;selected=null;environment=null;for(const button of buttons.values())button.setAttribute('aria-pressed','false');
-    $('map-details').replaceChildren(textNode('p','Select a map to see its details.','map-menu-hint'));$('apply-map').disabled=true;renderPlan();dialog.showModal();
-  });
-  for(const id of ['close-maps','cancel-map'])$(id).addEventListener('click',()=>dialog.close());
-  $('apply-map').addEventListener('click',()=>{if(selected&&environment&&!$('apply-map').disabled){dialog.close();applyMap(cache.get(selected),{...environment});}});
+    $('map-details').replaceChildren(textNode('p','Select a map to see its details.','map-menu-hint'));$('apply-map').disabled=true;renderPlan();
+  }});
+  $('open-maps').addEventListener('click',()=>openMenu('maps'));
+  for(const id of ['close-maps','cancel-map'])$(id).addEventListener('click',()=>closeMenu());
+  $('apply-map').addEventListener('click',()=>{if(selected&&environment&&!$('apply-map').disabled){closeMenu();applyMap(cache.get(selected),{...environment});}});
   return {addEntry};
 }

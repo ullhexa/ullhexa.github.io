@@ -1,24 +1,24 @@
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=19';
-import {setupSidebarResize} from './sidebar-resize.js?v=19';
-import {syncCampaign,normalizeCampaign,combatants,snapPoint} from './combat-state.js?v=19';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=19';
-import {createFogTools} from './fog-tools.js?v=19';
-import {normalizeFog} from './fog-state.js?v=19';
-import {customCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=19';
-import {createSessionBundle} from './session-bundle.js?v=19';
-import { startDMShell } from './dm-shell.js?v=19';
-import { openPlayerWindow } from './display-window.js?v=19';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=19';
-import { createEncounterTools } from './encounter-tools.js?v=19';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=19';
-import { createMapMenu } from './map-menu.js?v=19';
-import { createSaveControls } from './save-controls.js?v=19';
-import { parseSave, restoreSave } from './save-file.js?v=19';
-import { createLighting } from './lighting.js?v=19';
-import { setupFullscreen } from './fullscreen.js?v=19';
-import { startPlayerDisplay } from './player-display.js?v=19';
-import { createDirector } from './director.js?v=19';
-import { normalizeProject } from './presentation-state.js?v=19';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=20';
+import {setupSidebarResize} from './sidebar-resize.js?v=20';
+import {syncCampaign,normalizeCampaign,combatants,snapPoint} from './combat-state.js?v=20';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=20';
+import {createFogTools} from './fog-tools.js?v=20';
+import {normalizeFog} from './fog-state.js?v=20';
+import {customCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=20';
+import {createSessionBundle} from './session-bundle.js?v=20';
+import { startDMShell } from './dm-shell.js?v=20';
+import { openPlayerWindow } from './display-window.js?v=20';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=20';
+import { createEncounterTools } from './encounter-tools.js?v=20';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=20';
+import { createMapMenu } from './map-menu.js?v=20';
+import { createSaveControls } from './save-controls.js?v=20';
+import { parseSave, restoreSave } from './save-file.js?v=20';
+import { createLighting } from './lighting.js?v=20';
+import { setupFullscreen } from './fullscreen.js?v=20';
+import { startPlayerDisplay } from './player-display.js?v=20';
+import { createDirector } from './director.js?v=20';
+import { normalizeProject } from './presentation-state.js?v=20';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -53,7 +53,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=19')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=20')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -64,7 +64,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=19`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=20`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -137,7 +137,7 @@ async function start() {
   const dimensions = { width: map.width, height: map.height };
   const layerNodes = new Map();
   const coverNodes = new Map();
-  const placeButtons = new Map();
+  const placeButtons = new Map(),placeExpansions=new Map();let expandedPlace=null;
   const actionButtons = new Map();
   const hotspots = new Map();
   const doorHotspots=new Map();
@@ -181,7 +181,7 @@ async function start() {
     layerNodes.set(item.id, node);
   }
 
-  const party = svgNode('g', { class: 'party-token', ...(player ? {} : { role: 'button', tabindex: 0, 'aria-label': 'Party marker. Drag freely or use arrow keys to move one square.' }) });
+  const party = svgNode('g', { class: 'party-token', ...(player ? {} : { role: 'button', tabindex: 0, 'aria-label': 'Party marker. Drag to move.' }) });
   party.append(svgNode('circle', { r: 21, fill: '#203d48', stroke: '#e9e7bb', 'stroke-width': 3 }));
   party.append(svgNode('circle', { r: 12, fill: '#84c5d6', opacity: .28 }));
   party.append(svgNode('text', { 'text-anchor': 'middle', y: 5, fill: '#fff9dc', 'font-size': 14, 'font-weight': 700 }, 'P'));
@@ -190,7 +190,7 @@ async function start() {
   function finishDrag(before,message){history.push(before);if(history.length>40)history.shift();state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
   function preview(next,mode=false){state=next;if(mode===true)encounter.renderCharacterPositions();else if(mode==='fog')fog?.render();else render();}
   let positionSequence=0,lastPositionSequence=-1;
-  function livePositions(){send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,party:state.party,positions:combatants(playerProjection(state)).map(m=>({id:m.id,position:m.position}))});}
+  function livePositions(){send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,party:state.party,positions:combatants(playerProjection(state)).map(m=>({id:m.id,position:m.position,stack:m.stack||0}))});}
   function setTool(value){tool=value;measuring=value==='measure';$('map-stage').classList.toggle('is-measuring',measuring);$('measure').setAttribute('aria-pressed',measuring);fog?.setMode(value);$('map').style.cursor=value?'crosshair':'';encounter.clearSelection();}
   const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,livePositions});
   fog=createFogTools({map,player,getState:()=>state,preview,finishDrag,pointAt,setTool,sendPreview:strokes=>send({type:'fog-preview',mapId:map.id,revision:state.revision,fog:strokes}),announce});
@@ -260,6 +260,7 @@ async function start() {
       const button = placeButtons.get(place.id);
       button?.setAttribute('aria-pressed', place.id === selected);
       const step=placeStep(place,state),sequence=place.sequence||[];
+      for(const[index,b]of (placeExpansions.get(place.id)?.steps||[]).entries())b.setAttribute('aria-pressed',index===step);
       if(button)button.lastElementChild.textContent=sequence.length?`${step+1}/${sequence.length} · ${sequence[step].label}`:'';
       const node = hotspots.get(place.id);
       if(node){node.querySelector('circle').setAttribute('fill',place.id===selected?'#e8ba71':'#172a21');node.querySelector('.event-step').textContent=`${step+1}/${sequence.length||1}`;node.setAttribute('aria-label',`${place.name}: ${sequence[step]?.label||'Ready'}, ${step+1} of ${sequence.length||1}. Click for next state.`);}
@@ -340,10 +341,10 @@ async function start() {
     clearTimeout(zoomSave); zoomSave = setTimeout(save, 100);
   }
 
-  function activateHotspot(node){
+  function activateHotspot(node,event={}){
     if(tool)return;const place=map.places.find(p=>p.id===node.dataset.place);if(!place)return;selectPlace(place.id);
     if(node.dataset.action)activate(node.dataset.action);
-    else{const next=cyclePlace(place,state);commit(next,`${place.name}: ${place.sequence?.[placeStep(place,next)]?.label||'Updated'}.`);}
+    else{const next=cyclePlace(place,state,event.shiftKey||event.metaKey?-1:1);commit(next,`${place.name}: ${place.sequence?.[placeStep(place,next)]?.label||'Updated'}.`);}
   }
   function sizeHotspots(){
     const matrix=$('map').getScreenCTM();if(!matrix)return;
@@ -357,8 +358,8 @@ async function start() {
     glyph.append(svgNode('circle',{r:action?17:21,fill:'#172a21',stroke:'#e8ba71','stroke-width':2}));
     glyph.append(svgNode('text',{'text-anchor':'middle',y:6,'font-size':action?13:17,'pointer-events':'none'},number));
     glyph.append(svgNode('text',{class:'event-step','text-anchor':'middle',y:action?-25:-30,'font-size':14,'pointer-events':'none'},''));node.append(glyph);
-    node.addEventListener('click',()=>{if(!drag)activateHotspot(node);});
-    node.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();activateHotspot(node);}});
+    node.addEventListener('click',event=>{if(!drag)activateHotspot(node,event);});
+    node.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();event.stopPropagation();activateHotspot(node,event);}});
     return node;
   }
 
@@ -370,7 +371,12 @@ async function start() {
       const number = document.createElement('b'); number.className='place-number';number.textContent=`${index+1}. `;
       title.append(number,document.createTextNode(place.name));
       button.append(title, document.createElement('span')); button.addEventListener('click', () => selectPlace(place.id));
-      $('places').append(button); placeButtons.set(place.id, button);
+      const row=document.createElement('div');row.className='place-row';row.dataset.placeRow=place.id;row.append(button);placeButtons.set(place.id,button);
+      const expand=document.createElement('button');expand.type='button';expand.className='place-expand';expand.textContent='⌄';expand.setAttribute('aria-label',`Show ${place.name} states`);expand.setAttribute('aria-expanded','false');const sequence=document.createElement('div');sequence.className='place-inline-sequence';sequence.id=`sequence-${place.id}`;sequence.hidden=true;expand.setAttribute('aria-controls',sequence.id);const steps=[];
+      function collapse(){sequence.hidden=true;expand.textContent='⌄';expand.setAttribute('aria-expanded','false');expand.setAttribute('aria-label',`Show ${place.name} states`);row.classList.remove('expanded');}
+      expand.addEventListener('click',()=>{const wasOpen=expandedPlace===place.id;for(const p of placeExpansions.values())p.collapse();expandedPlace=wasOpen?null:place.id;if(!wasOpen){sequence.hidden=false;expand.textContent='⌃';expand.setAttribute('aria-expanded','true');expand.setAttribute('aria-label',`Hide ${place.name} states`);row.classList.add('expanded');}});
+      (place.sequence||[]).forEach((step,i)=>{const b=document.createElement('button');b.type='button';b.textContent=`${i+1}/${place.sequence.length} · ${step.label}`;b.setAttribute('aria-label',`${place.name} state ${i+1}: ${step.label}`);b.addEventListener('click',()=>{selectPlace(place.id);commit(setPlaceStep(place,state,i),`${place.name}: ${step.label}.`);});sequence.append(b);steps.push(b);});
+      placeExpansions.set(place.id,{row,collapse,steps});row.append(expand,sequence);$('places').append(row);
       const [x, y] = xy(place.point);
       const roof = map.interactions.find(item => item.type === 'roof' && item.placeId === place.id);
       const terrain=map.interactions.find(item=>item.type==='terrain'&&item.placeId===place.id&&!item.variant);
@@ -379,6 +385,7 @@ async function start() {
       const doors=map.interactions.filter(item=>item.type==='marker'&&item.placeId===place.id);
       doors.forEach((item,i)=>{const door=makeHotspot(place,item.point,`${index+1}${String.fromCharCode(97+i)}`,item.cover?.polygon,item.id);$('dm-hotspots').append(door);doorHotspots.set(item.id,door);});
     }
+    document.addEventListener('pointerdown',e=>{if(expandedPlace&&!placeExpansions.get(expandedPlace)?.row.contains(e.target)){placeExpansions.get(expandedPlace)?.collapse();expandedPlace=null;}},true);
     selectPlace(selected);
     if(!map.places.length){$('places').previousElementSibling.hidden=true;$('places').hidden=true;announce('Custom map ready. Paint fog or add tokens and spell areas.');}
     setupSidebarResize();
@@ -400,7 +407,7 @@ async function start() {
     $('light-level').addEventListener('blur',()=>{adjustingLighting=false;});
     $('measure').addEventListener('click',()=>{setTool(measuring?null:'measure');announce(measuring?'Drag between two points to measure. Clear ruler removes the line.':'Measurement off.');});
     $('clear-measurement').addEventListener('click', () => { ruler = []; renderRuler(true); });
-    document.addEventListener('keydown', event => { if(event.key==='Escape'&&tool){setTool(null);ruler=[];renderRuler(true);} });
+    document.addEventListener('keydown', event => { if(!event.defaultPrevented&&event.key==='Escape'&&tool){setTool(null);ruler=[];renderRuler(true);} });
     $('undo').addEventListener('click', () => {
       if(!history.length)return;
       const {restoreView,...previous}=history.pop();
@@ -413,7 +420,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'19',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'20',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
@@ -456,17 +463,13 @@ async function start() {
       // Pointer capture redirects click; handle a stationary building click explicitly.
       if (!finished.moved && finished.hotspot) {
         const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest('.hotspot');
-        if(hit)activateHotspot(hit);
+        if(hit)activateHotspot(hit,event);
       }
       setTimeout(() => { if (drag === finished) drag = null; }, 0);
     };
     $('map').addEventListener('pointerup', endDrag);
     $('map').addEventListener('pointercancel', event => { if (drag?.id === event.pointerId) { cancelAnimationFrame(partyFrame);partyFrame=0;state=drag.start;drag=null;render();livePositions(); } });
-    party.addEventListener('keydown', event => {
-      const offset = { ArrowLeft: [-1,0], ArrowRight: [1,0], ArrowUp: [0,-1], ArrowDown: [0,1] }[event.key];
-      if (!offset) return; event.preventDefault();event.stopPropagation();
-      let p=state.party.map((n,i)=>clamp(n+offset[i]*map.grid.size/(i?map.height:map.width),0,1));if(state.snap)p=snapPoint(map,p);commit(moveParty(state,p),'Party moved one square.');
-    });
+
   }
 
   function receive(message) {
@@ -480,8 +483,8 @@ async function start() {
     if(!player&&message.type==='close-blocked')announce('This player tab was opened manually. Close it using the browser’s tab controls.');
     if(!player&&message.type==='display-error')announce('The player map could not load. Close and reopen the player display to retry.');
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='positions'&&Number.isSafeInteger(message.sequence)&&message.sequence>lastPositionSequence){
-      lastPositionSequence=message.sequence;const positions=new Map((Array.isArray(message.positions)?message.positions:[]).filter(p=>p&&typeof p.id==='string'&&inBounds(p.position)).map(p=>[p.id,p.position]));
-      state={...state,roster:state.roster.map(m=>({...m,position:positions.get(m.id)||m.position})),monsters:state.monsters.map(m=>({...m,position:positions.get(m.id)||m.position}))};
+      lastPositionSequence=message.sequence;const positions=new Map((Array.isArray(message.positions)?message.positions:[]).filter(p=>p&&typeof p.id==='string'&&inBounds(p.position)).map(p=>[p.id,{position:p.position,...(Number.isSafeInteger(p.stack)&&p.stack>=0?{stack:p.stack}:{})}]));
+      state={...state,roster:state.roster.map(m=>({...m,...(positions.get(m.id)||{})})),monsters:state.monsters.map(m=>({...m,...(positions.get(m.id)||{})}))};
       if(inBounds(message.party)){state.party=message.party;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);}encounter.renderCharacterPositions();
     }
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='fog-preview'){state={...state,fog:normalizeFog(message.fog)};fog.render();}

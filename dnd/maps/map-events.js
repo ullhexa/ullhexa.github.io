@@ -10,6 +10,7 @@ export function setPlaceStep(place,state,index){
   const managed=new Set(sequence.flatMap(step=>step.active));
   return {...state,active:[...state.active.filter(id=>!managed.has(id)),...sequence[index].active],revision:state.revision+1};
 }
-export function cyclePlace(place,state){
-  return setPlaceStep(place,state,(placeStep(place,state)+1)%(place.sequence?.length||1));
+export function cyclePlace(place,state,delta=1){
+  const count=place.sequence?.length||1;
+  return setPlaceStep(place,state,((placeStep(place,state)+delta)%count+count)%count);
 }
