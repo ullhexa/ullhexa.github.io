@@ -1,6 +1,6 @@
-import {assetId} from './combat-state.js?v=18';
-import {assetURL} from './local-assets.js?v=18';
-import { renderSequence } from './director.js?v=18';
+import {assetId} from './combat-state.js?v=19';
+import {assetURL} from './local-assets.js?v=19';
+import { renderSequence } from './director.js?v=19';
 const $ = id => document.getElementById(id);
 
 export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject}) {
@@ -44,7 +44,7 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
       }
       details.append(stats,textNode('p',`${formatSize(map.width / map.grid.size * map.grid.distance)} × ${formatSize(map.height / map.grid.size * map.grid.distance)} ${map.grid.unit} · ${formatSize(map.width / map.grid.size)} × ${formatSize(map.height / map.grid.size)} squares`,'map-menu-hint'));
       const features=document.createElement('ul');features.className='map-features';
-      for(const [type,singular,plural] of [['roof','removable roof','removable roofs'],['marker','discovery','discoveries'],['fog','concealed area','concealed areas'],['terrain','terrain change','terrain changes']]) {
+      for(const [type,singular,plural] of [['roof','removable roof','removable roofs'],['marker','doorway','doorways'],['terrain','prepared map variation','prepared map variations']]) {
         const count=map.interactions.filter(item=>item.type===type).length;
         if(count)features.append(textNode('li',`${count} ${count===1?singular:plural}`));
       }

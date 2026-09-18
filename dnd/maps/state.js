@@ -1,6 +1,6 @@
-import {normalizeFog} from './fog-state.js?v=18';
-import {assetId} from './combat-state.js?v=18';
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=18';
+import {normalizeFog} from './fog-state.js?v=19';
+import {assetId} from './combat-state.js?v=19';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=19';
 export const GRID_COLORS = ['map','black','white'];
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {
@@ -42,6 +42,7 @@ export function validateMap(map) {
   const placeIds=new Set();
   for(const place of map.places){
     if(!place.id||placeIds.has(place.id)||!validPoint(place.point)||!Number.isFinite(place.focusZoom)||place.focusZoom<1||place.focusZoom>4||!Array.isArray(place.actions)||place.actions.some(id=>!ids.has(id)))throw new Error('Invalid place or action reference.');
+    if(place.sequence!==undefined&&(!Array.isArray(place.sequence)||place.sequence.length<2||place.sequence.length>8||place.sequence.some(step=>!step||typeof step.label!=='string'||!step.label||!Array.isArray(step.active)||new Set(step.active).size!==step.active.length||step.active.some(id=>!place.actions.includes(id)))))throw new Error('Invalid place sequence.');
     placeIds.add(place.id);
   }
   if(map.interactions.some(item=>!placeIds.has(item.placeId)))throw new Error('Unknown interaction place.');
@@ -53,6 +54,7 @@ export function validateMap(map) {
     for(const light of lighting.lights){
       if(!light||typeof light.id!=='string'||!/^[-a-zA-Z0-9]+$/.test(light.id)||lightIds.has(light.id)||!validPoint(light.point)||!Number.isFinite(light.radius)||light.radius<=0||light.radius>100||(light.clip!==undefined&&!polygon(light.clip))||!Array.isArray(light.requires||[])||(light.requires||[]).some(id=>!ids.has(id)))throw new Error('Invalid map light.');
       lightIds.add(light.id);
+      if(!Array.isArray(light.excludes||[])||(light.excludes||[]).some(id=>!ids.has(id)))throw new Error('Invalid light exclusion.');
     }
   }
   return map;

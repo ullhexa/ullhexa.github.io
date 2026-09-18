@@ -1,22 +1,24 @@
-import {syncCampaign,normalizeCampaign,combatants,snapPoint} from './combat-state.js?v=18';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=18';
-import {createFogTools} from './fog-tools.js?v=18';
-import {normalizeFog} from './fog-state.js?v=18';
-import {customCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=18';
-import {createSessionBundle} from './session-bundle.js?v=18';
-import { startDMShell } from './dm-shell.js?v=18';
-import { openPlayerWindow } from './display-window.js?v=18';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=18';
-import { createEncounterTools } from './encounter-tools.js?v=18';
-import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=18';
-import { createMapMenu } from './map-menu.js?v=18';
-import { createSaveControls } from './save-controls.js?v=18';
-import { parseSave, restoreSave } from './save-file.js?v=18';
-import { createLighting } from './lighting.js?v=18';
-import { setupFullscreen } from './fullscreen.js?v=18';
-import { startPlayerDisplay } from './player-display.js?v=18';
-import { createDirector } from './director.js?v=18';
-import { normalizeProject } from './presentation-state.js?v=18';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=19';
+import {setupSidebarResize} from './sidebar-resize.js?v=19';
+import {syncCampaign,normalizeCampaign,combatants,snapPoint} from './combat-state.js?v=19';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=19';
+import {createFogTools} from './fog-tools.js?v=19';
+import {normalizeFog} from './fog-state.js?v=19';
+import {customCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=19';
+import {createSessionBundle} from './session-bundle.js?v=19';
+import { startDMShell } from './dm-shell.js?v=19';
+import { openPlayerWindow } from './display-window.js?v=19';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=19';
+import { createEncounterTools } from './encounter-tools.js?v=19';
+import { playerProjection, formation, moveParty, PORTRAIT_ASSETS } from './encounter-state.js?v=19';
+import { createMapMenu } from './map-menu.js?v=19';
+import { createSaveControls } from './save-controls.js?v=19';
+import { parseSave, restoreSave } from './save-file.js?v=19';
+import { createLighting } from './lighting.js?v=19';
+import { setupFullscreen } from './fullscreen.js?v=19';
+import { startPlayerDisplay } from './player-display.js?v=19';
+import { createDirector } from './director.js?v=19';
+import { normalizeProject } from './presentation-state.js?v=19';
 
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -51,7 +53,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=18')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=19')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -62,7 +64,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=18`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=19`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -116,6 +118,7 @@ async function start() {
   let state = readMapState(map);
   if (player) state = playerProjection(state);
   let selected = map.places[0]?.id||null;
+  let focusedPlace = null;
   let history = [];
   let lastPeer = 0;
   let ruler = [];
@@ -137,6 +140,8 @@ async function start() {
   const placeButtons = new Map();
   const actionButtons = new Map();
   const hotspots = new Map();
+  const doorHotspots=new Map();
+  const stepButtons=new Map();
   $('map-grid').setAttribute('width', map.grid.size);
   $('map-grid').setAttribute('height', map.grid.size);
   $('map-grid').firstElementChild.setAttribute('d', `M${map.grid.size} 0H0V${map.grid.size}`);
@@ -233,13 +238,16 @@ async function start() {
     catch (error) { announce(error.message); }
   }
   function selectPlace(id) {
+    if(selected!==id)focusedPlace=null;
     selected = id;
     const place = map.places.find(place => place.id === id);
     if(!place){document.querySelector('.selected-place').hidden=true;return;}
     document.querySelector('.selected-place').hidden=false;
     $('selected-title').textContent = `${map.places.indexOf(place)+1}. ${place.name}`;
-    $('selected-actions').replaceChildren(); actionButtons.clear();
-    for (const id of place.actions) {
+    $('selected-actions').replaceChildren(); actionButtons.clear();stepButtons.clear();
+    const sequence=place.sequence||[],managed=new Set(sequence.flatMap(step=>step.active));
+    if(sequence.length){const steps=document.createElement('div');steps.className='place-sequence';steps.setAttribute('role','group');steps.setAttribute('aria-label',`${place.name} states`);sequence.forEach((step,index)=>{const b=document.createElement('button');b.type='button';const number=document.createElement('small');number.textContent=`${index+1}/${sequence.length}`;const label=document.createElement('span');label.textContent=step.label;b.append(number,label);b.setAttribute('aria-label',`${place.name}: ${step.label}`);b.addEventListener('click',()=>commit(setPlaceStep(place,state,index),`${place.name}: ${step.label}.`));steps.append(b);stepButtons.set(index,b);});$('selected-actions').append(steps);}
+    for (const id of place.actions.filter(id=>!managed.has(id))) {
       const button = document.createElement('button'); button.type = 'button';
       button.addEventListener('click', () => activate(id));
       $('selected-actions').append(button); actionButtons.set(id, button);
@@ -251,22 +259,27 @@ async function start() {
     for (const place of map.places) {
       const button = placeButtons.get(place.id);
       button?.setAttribute('aria-pressed', place.id === selected);
-      const count = place.actions.filter(id => isVisible(map, state, id)).length;
-      if (button) button.lastElementChild.textContent = place.id === 'bridge' ? (state.active.includes('bridge-broken') ? 'Broken' : 'Intact') : place.actions.length ? `${count}/${place.actions.length} revealed` : 'Crossing';
+      const step=placeStep(place,state),sequence=place.sequence||[];
+      if(button)button.lastElementChild.textContent=sequence.length?`${step+1}/${sequence.length} · ${sequence[step].label}`:'';
       const node = hotspots.get(place.id);
-      if (node) node.querySelector('circle').setAttribute('fill', place.id === selected ? '#e8ba71' : '#172a21');
+      if(node){node.querySelector('circle').setAttribute('fill',place.id===selected?'#e8ba71':'#172a21');node.querySelector('.event-step').textContent=`${step+1}/${sequence.length||1}`;node.setAttribute('aria-label',`${place.name}: ${sequence[step]?.label||'Ready'}, ${step+1} of ${sequence.length||1}. Click for next state.`);}
+      if(place.id===selected)for(const[index,b]of stepButtons)b.setAttribute('aria-pressed',index===step);
     }
     for (const [id, button] of actionButtons) {
       const item = map.interactions.find(item => item.id === id);
       const on = state.active.includes(id);
-      button.textContent = on ? item.activeLabel : item.label;
+      button.textContent = `${on?'2/2':'1/2'} · ${on ? item.activeLabel : item.label}`;
       button.setAttribute('aria-pressed', on);
       button.disabled = !on && (item.requires || []).some(dep => !isVisible(map, state, dep));
       button.title = button.disabled ? 'Reveal the surrounding area first.' : '';
     }
+    for(const[id,node]of doorHotspots){const item=map.interactions.find(i=>i.id===id),available=(item.requires||[]).every(dep=>isVisible(map,state,dep)),on=state.active.includes(id);node.style.display=available?'':'none';node.querySelector('.event-step').textContent=on?'2/2':'1/2';node.setAttribute('aria-label',`${item.publicLabel}: ${on?'open':'closed'}, ${on?2:1} of 2. Click for next state.`);}
+    sizeHotspots();
     $('undo').disabled = history.length === 0;
     const overview = Math.abs(state.camera.zoom-1)<.001 && Math.abs(state.camera.x-.5)<.001 && Math.abs(state.camera.y-.5)<.001;
-    $('sidebar-overview').disabled = overview;
+    const place=map.places.find(p=>p.id===focusedPlace);
+    if(!place||selected!==focusedPlace||Math.abs(state.camera.x-place.point[0])>.00001||Math.abs(state.camera.y-place.point[1])>.00001||Math.abs(state.camera.zoom-place.focusZoom)>.00001)focusedPlace=null;
+    $('focus-place').textContent=focusedPlace?'Overview':'Focus';
     $('fit-map').disabled = overview;
   }
   function render() {
@@ -277,7 +290,7 @@ async function start() {
     $('light-level-value').value=`${state.environment.darkness}%`;
     for (const item of map.interactions) {
       const visible = isVisible(map, state, item.id);
-      layerNodes.get(item.id).style.display = (['marker','terrain'].includes(item.type) ? visible : !visible) ? '' : 'none';
+      layerNodes.get(item.id).style.display = (item.type==='marker'&&!player?false:['marker','terrain'].includes(item.type)?visible:!visible) ? '' : 'none';
       if(coverNodes.has(item.id))coverNodes.get(item.id).style.display=visible?'none':'';
     }
     const { x, y, zoom } = state.camera;
@@ -318,6 +331,7 @@ async function start() {
   }
   const inBounds = p => p && p.every(n => n >= 0 && n <= 1);
   function zoomBy(factor, anchor) {
+    focusedPlace=null;
     const before = state.camera;
     const zoom = clamp(before.zoom * factor, 1, 4);
     const ratio = before.zoom / zoom;
@@ -326,7 +340,30 @@ async function start() {
     clearTimeout(zoomSave); zoomSave = setTimeout(save, 100);
   }
 
+  function activateHotspot(node){
+    if(tool)return;const place=map.places.find(p=>p.id===node.dataset.place);if(!place)return;selectPlace(place.id);
+    if(node.dataset.action)activate(node.dataset.action);
+    else{const next=cyclePlace(place,state);commit(next,`${place.name}: ${place.sequence?.[placeStep(place,next)]?.label||'Updated'}.`);}
+  }
+  function sizeHotspots(){
+    const matrix=$('map').getScreenCTM();if(!matrix)return;
+    const scale=.8/Math.hypot(matrix.a,matrix.b);
+    for(const node of [...hotspots.values(),...doorHotspots.values()]){const glyph=node.querySelector('.hotspot-glyph');glyph.setAttribute('transform',`translate(${glyph.dataset.x} ${glyph.dataset.y}) scale(${scale})`);}
+  }
+  function makeHotspot(place,point,number,area,action){
+    const node=svgNode('g',{class:'hotspot',role:'button',tabindex:0,'data-place':place.id,...(action?{'data-action':action}:{})});
+    if(area)node.append(svgNode('polygon',{points:polygon(area),fill:'transparent'}));
+    const[x,y]=xy(point),glyph=svgNode('g',{class:'hotspot-glyph','data-x':x,'data-y':y});
+    glyph.append(svgNode('circle',{r:action?17:21,fill:'#172a21',stroke:'#e8ba71','stroke-width':2}));
+    glyph.append(svgNode('text',{'text-anchor':'middle',y:6,'font-size':action?13:17,'pointer-events':'none'},number));
+    glyph.append(svgNode('text',{class:'event-step','text-anchor':'middle',y:action?-25:-30,'font-size':14,'pointer-events':'none'},''));node.append(glyph);
+    node.addEventListener('click',()=>{if(!drag)activateHotspot(node);});
+    node.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();activateHotspot(node);}});
+    return node;
+  }
+
   if (!player) {
+    new ResizeObserver(sizeHotspots).observe($('map-stage'));
     for (const [index, place] of map.places.entries()) {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'place-button';
       const title = document.createElement('span');
@@ -336,22 +373,19 @@ async function start() {
       $('places').append(button); placeButtons.set(place.id, button);
       const [x, y] = xy(place.point);
       const roof = map.interactions.find(item => item.type === 'roof' && item.placeId === place.id);
-      const node = svgNode('g', { class: 'hotspot', role: 'button', tabindex: 0, 'aria-label': roof ? `Toggle ${place.name} roof` : `Inspect ${place.name}` });
-      if (roof) node.append(svgNode('polygon', { points: polygon(roof.polygon), fill: 'transparent' }));
-      node.append(svgNode('circle', { cx: x, cy: y, r: 22, fill: '#172a21', stroke: '#e8ba71', 'stroke-width': 2 }));
-      node.append(svgNode('text', { x, y: y+6, 'text-anchor': 'middle', 'font-size': 17, 'pointer-events': 'none' }, index+1));
-      const click = () => { if (measuring) return; selectPlace(place.id); if (roof) activate(roof.id); };
-      node.addEventListener('click', event => { if (drag) return; click(); });
-      node.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); click(); } });
-      $('dm-hotspots').append(node); hotspots.set(place.id, node);
+      const terrain=map.interactions.find(item=>item.type==='terrain'&&item.placeId===place.id&&!item.variant);
+      const node=makeHotspot(place,place.point,String(index+1),roof?.polygon||terrain?.polygon);
+      $('dm-hotspots').append(node);hotspots.set(place.id,node);
+      const doors=map.interactions.filter(item=>item.type==='marker'&&item.placeId===place.id);
+      doors.forEach((item,i)=>{const door=makeHotspot(place,item.point,`${index+1}${String.fromCharCode(97+i)}`,item.cover?.polygon,item.id);$('dm-hotspots').append(door);doorHotspots.set(item.id,door);});
     }
     selectPlace(selected);
     if(!map.places.length){$('places').previousElementSibling.hidden=true;$('places').hidden=true;announce('Custom map ready. Paint fog or add tokens and spell areas.');}
-    $('focus-place').addEventListener('click', () => { const place = map.places.find(place => place.id === selected); commit({ ...state, camera: { x: place.point[0], y: place.point[1], zoom: place.focusZoom } }, `Focused on ${place.name.toLowerCase()}.`, false); });
+    setupSidebarResize();
+    $('focus-place').addEventListener('click', () => { const place=map.places.find(p=>p.id===selected);if(!place)return;if(focusedPlace){focusedPlace=null;$('fit-map').click();return;}focusedPlace=place.id;commit({...state,camera:{x:place.point[0],y:place.point[1],zoom:place.focusZoom}},`Focused on ${place.name.toLowerCase()}.`,false); });
     $('zoom-in').addEventListener('click', () => zoomBy(1.25));
     $('zoom-out').addEventListener('click', () => zoomBy(.8));
     $('fit-map').addEventListener('click', () => commit({ ...state, camera: initialState(map).camera }, 'Showing the whole map.', false));
-    $('sidebar-overview').addEventListener('click', () => $('fit-map').click());
     $('snap-grid').addEventListener('change',event=>commit({...state,snap:event.target.checked},'Grid snapping updated.'));
     $('show-grid').addEventListener('change', event => commit({ ...state, grid: event.target.checked }, '', false));
     for(const button of gridColorButtons)button.addEventListener('click',()=>commit({...state,gridColor:button.dataset.gridColor},'',false));
@@ -379,7 +413,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'18',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'19',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
@@ -422,7 +456,7 @@ async function start() {
       // Pointer capture redirects click; handle a stationary building click explicitly.
       if (!finished.moved && finished.hotspot) {
         const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest('.hotspot');
-        if (hit) { const placeId = [...hotspots].find(([, node]) => node === hit)?.[0]; if (placeId) { selectPlace(placeId); const roof = map.interactions.find(item => item.type === 'roof' && item.placeId === placeId); if (roof) activate(roof.id); } }
+        if(hit)activateHotspot(hit);
       }
       setTimeout(() => { if (drag === finished) drag = null; }, 0);
     };

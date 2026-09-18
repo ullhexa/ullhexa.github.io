@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "last-lantern",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "title": "The Last Lantern",
   "width": 1536,
   "height": 1024,
@@ -14,7 +14,9 @@
   "art": {
     "base": "./maps/last-lantern/interior.png",
     "roofs": "./maps/last-lantern/roofs.png",
-    "brokenBridge": "./maps/last-lantern/bridge-broken.png"
+    "brokenBridge": "./maps/last-lantern/bridge-broken.png",
+    "trashed": "./maps/last-lantern/trashed.png",
+    "collapsed": "./maps/last-lantern/collapsed.png"
   },
   "places": [
     {
@@ -27,7 +29,35 @@
       "focusZoom": 2.3,
       "actions": [
         "inn-roof",
-        "cellar"
+        "cellar",
+        "inn-trashed",
+        "inn-collapsed"
+      ],
+      "sequence": [
+        {
+          "label": "Roof on",
+          "active": []
+        },
+        {
+          "label": "Roof off",
+          "active": [
+            "inn-roof"
+          ]
+        },
+        {
+          "label": "Trashed",
+          "active": [
+            "inn-roof",
+            "inn-trashed"
+          ]
+        },
+        {
+          "label": "Collapsed",
+          "active": [
+            "inn-roof",
+            "inn-collapsed"
+          ]
+        }
       ]
     },
     {
@@ -40,7 +70,34 @@
       "focusZoom": 2.5,
       "actions": [
         "stable-roof",
-        "tracks"
+        "stable-trashed",
+        "stable-collapsed"
+      ],
+      "sequence": [
+        {
+          "label": "Roof on",
+          "active": []
+        },
+        {
+          "label": "Roof off",
+          "active": [
+            "stable-roof"
+          ]
+        },
+        {
+          "label": "Trashed",
+          "active": [
+            "stable-roof",
+            "stable-trashed"
+          ]
+        },
+        {
+          "label": "Collapsed",
+          "active": [
+            "stable-roof",
+            "stable-collapsed"
+          ]
+        }
       ]
     },
     {
@@ -53,19 +110,18 @@
       "focusZoom": 1.8,
       "actions": [
         "bridge-broken"
-      ]
-    },
-    {
-      "id": "camp",
-      "name": "Beyond the trees",
-      "point": [
-        0.852865,
-        0.796875
       ],
-      "focusZoom": 2.2,
-      "actions": [
-        "camp-fog",
-        "cache"
+      "sequence": [
+        {
+          "label": "Intact",
+          "active": []
+        },
+        {
+          "label": "Broken",
+          "active": [
+            "bridge-broken"
+          ]
+        }
       ]
     }
   ],
@@ -137,39 +193,6 @@
       ]
     },
     {
-      "id": "camp-fog",
-      "type": "fog",
-      "label": "Reveal the campsite",
-      "activeLabel": "Conceal the campsite",
-      "placeId": "camp",
-      "polygon": [
-        [
-          0.76,
-          0.66
-        ],
-        [
-          0.88,
-          0.63
-        ],
-        [
-          1,
-          0.69
-        ],
-        [
-          1,
-          1
-        ],
-        [
-          0.73,
-          1
-        ],
-        [
-          0.72,
-          0.8
-        ]
-      ]
-    },
-    {
       "id": "cellar",
       "type": "marker",
       "label": "Reveal the trapdoor",
@@ -179,39 +202,10 @@
         0.417,
         0.24
       ],
-      "symbol": "↓",
+      "symbol": "\u2193",
       "publicLabel": "Cellar entrance",
       "requires": [
         "inn-roof"
-      ]
-    },
-    {
-      "id": "tracks",
-      "type": "marker",
-      "label": "Reveal muddy tracks",
-      "activeLabel": "Hide muddy tracks",
-      "placeId": "stable",
-      "point": [
-        0.78,
-        0.36
-      ],
-      "symbol": "?",
-      "publicLabel": "Muddy tracks"
-    },
-    {
-      "id": "cache",
-      "type": "marker",
-      "label": "Reveal the courier’s satchel",
-      "activeLabel": "Hide the courier’s satchel",
-      "placeId": "camp",
-      "point": [
-        0.86,
-        0.82
-      ],
-      "symbol": "◇",
-      "publicLabel": "Courier’s satchel",
-      "requires": [
-        "camp-fog"
       ]
     },
     {
@@ -267,6 +261,158 @@
           0.566406
         ]
       ]
+    },
+    {
+      "id": "inn-trashed",
+      "type": "terrain",
+      "variant": "trashed",
+      "label": "Trashed interior",
+      "activeLabel": "Restore building",
+      "placeId": "inn",
+      "asset": "trashed",
+      "polygon": [
+        [
+          0.160156,
+          0.144531
+        ],
+        [
+          0.266276,
+          0.144531
+        ],
+        [
+          0.266276,
+          0.140625
+        ],
+        [
+          0.296875,
+          0.140625
+        ],
+        [
+          0.296875,
+          0.144531
+        ],
+        [
+          0.459635,
+          0.144531
+        ],
+        [
+          0.460286,
+          0.432617
+        ],
+        [
+          0.160156,
+          0.432617
+        ]
+      ],
+      "requires": [
+        "inn-roof"
+      ]
+    },
+    {
+      "id": "inn-collapsed",
+      "type": "terrain",
+      "variant": "collapsed",
+      "label": "Collapsed building",
+      "activeLabel": "Restore building",
+      "placeId": "inn",
+      "asset": "collapsed",
+      "polygon": [
+        [
+          0.160156,
+          0.144531
+        ],
+        [
+          0.266276,
+          0.144531
+        ],
+        [
+          0.266276,
+          0.140625
+        ],
+        [
+          0.296875,
+          0.140625
+        ],
+        [
+          0.296875,
+          0.144531
+        ],
+        [
+          0.459635,
+          0.144531
+        ],
+        [
+          0.460286,
+          0.432617
+        ],
+        [
+          0.160156,
+          0.432617
+        ]
+      ],
+      "requires": [
+        "inn-roof"
+      ]
+    },
+    {
+      "id": "stable-trashed",
+      "type": "terrain",
+      "variant": "trashed",
+      "label": "Trashed interior",
+      "activeLabel": "Restore building",
+      "placeId": "stable",
+      "asset": "trashed",
+      "polygon": [
+        [
+          0.682292,
+          0.070313
+        ],
+        [
+          0.860026,
+          0.070313
+        ],
+        [
+          0.860026,
+          0.287109
+        ],
+        [
+          0.682292,
+          0.287109
+        ]
+      ],
+      "requires": [
+        "stable-roof"
+      ]
+    },
+    {
+      "id": "stable-collapsed",
+      "type": "terrain",
+      "variant": "collapsed",
+      "label": "Collapsed building",
+      "activeLabel": "Restore building",
+      "placeId": "stable",
+      "asset": "collapsed",
+      "polygon": [
+        [
+          0.682292,
+          0.070313
+        ],
+        [
+          0.860026,
+          0.070313
+        ],
+        [
+          0.860026,
+          0.287109
+        ],
+        [
+          0.682292,
+          0.287109
+        ]
+      ],
+      "requires": [
+        "stable-roof"
+      ]
     }
   ],
   "partyStart": [
@@ -274,6 +420,7 @@
     0.6328125
   ],
   "previousVersions": [
+    "0.2.0",
     "0.1.0"
   ],
   "lighting": {
@@ -423,6 +570,9 @@
         ],
         "requires": [
           "inn-roof"
+        ],
+        "excludes": [
+          "inn-collapsed"
         ]
       },
       {
@@ -452,6 +602,9 @@
         ],
         "requires": [
           "inn-roof"
+        ],
+        "excludes": [
+          "inn-collapsed"
         ]
       },
       {
@@ -481,6 +634,9 @@
         ],
         "requires": [
           "inn-roof"
+        ],
+        "excludes": [
+          "inn-collapsed"
         ]
       },
       {
@@ -510,6 +666,9 @@
         ],
         "requires": [
           "inn-roof"
+        ],
+        "excludes": [
+          "inn-collapsed"
         ]
       },
       {
@@ -539,6 +698,9 @@
         ],
         "requires": [
           "inn-roof"
+        ],
+        "excludes": [
+          "inn-collapsed"
         ]
       },
       {
@@ -568,6 +730,9 @@
         ],
         "requires": [
           "inn-roof"
+        ],
+        "excludes": [
+          "inn-collapsed"
         ]
       },
       {
@@ -597,6 +762,9 @@
         ],
         "requires": [
           "inn-roof"
+        ],
+        "excludes": [
+          "inn-collapsed"
         ]
       },
       {
@@ -631,11 +799,16 @@
             0.72,
             0.8
           ]
-        ],
-        "requires": [
-          "camp-fog"
         ]
       }
     ]
-  }
+  },
+  "retiredInteractions": [
+    "camp-fog",
+    "tracks",
+    "cache"
+  ],
+  "retiredPlaces": [
+    "camp"
+  ]
 }

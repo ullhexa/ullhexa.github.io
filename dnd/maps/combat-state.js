@@ -24,5 +24,11 @@ export function combatants(state){return [...state.roster,...(state.monsters||[]
 export function initiativeOrder(state,publicOnly=false){return combatants(state).filter(m=>(!publicOnly||!m.monster)&&m.initiative!==null&&Number.isFinite(m.initiative)).sort((a,b)=>b.initiative-a.initiative||a.id.localeCompare(b.id));}
 export function stepTurn(state,delta){const order=initiativeOrder(state);if(!order.length)return {...state,turnId:null};const index=order.findIndex(m=>m.id===state.turnId);return {...state,turnId:order[(Math.max(0,index)+delta+order.length)%order.length].id};}
 export function patchMember(state,id,patch){return {...state,roster:state.roster.map(m=>m.id===id?{...m,...patch}:m),monsters:(state.monsters||[]).map(m=>m.id===id?{...m,...patch}:m)};}
+export function resetInitiative(state,monster=false){
+  const key=monster?'monsters':'roster',members=state[key]||[];
+  const next={...state,[key]:members.map(m=>({...m,initiative:null}))};
+  if(members.some(m=>m.id===state.turnId))next.turnId=initiativeOrder(next)[0]?.id||null;
+  return syncCampaign(next);
+}
 export function changeHP(member,amount,heal=false){return {...member,hp:clamp(member.hp+(heal?1:-1)*Math.max(0,Math.round(Number(amount)||0)),0,member.maxHp)};}
 export function snapPoint(map,p,size=5){const cells=Math.max(1,Math.round(size/map.grid.distance)),offset=cells%2?.5:0;return p.map((n,i)=>{const dimension=i?map.height:map.width;return clamp((Math.round(n*dimension/map.grid.size-offset)+offset)*map.grid.size/dimension,0,1);});}
