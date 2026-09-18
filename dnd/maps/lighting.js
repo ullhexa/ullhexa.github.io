@@ -1,4 +1,4 @@
-import {isVisible} from './state.js?v=18';
+import {isVisible} from './state.js?v=19';
 
 const NS='http://www.w3.org/2000/svg';
 const node=(tag,attrs={})=>{
@@ -8,7 +8,7 @@ const node=(tag,attrs={})=>{
 };
 
 export function lightIsVisible(map,state,light){
-  return (light.requires||[]).every(id=>isVisible(map,state,id));
+  return (light.requires||[]).every(id=>isVisible(map,state,id)) && !(light.excludes||[]).some(id=>isVisible(map,state,id));
 }
 
 // Prepared light fields stay in map coordinates; only visibility and darkness change.

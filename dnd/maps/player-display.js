@@ -1,7 +1,7 @@
-import {customCatalog} from './custom-maps.js?v=18';
-import { setupFullscreen } from './fullscreen.js?v=18';
-import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=18';
-import { validPresentation, sceneCanShow } from './presentation-state.js?v=18';
+import {customCatalog} from './custom-maps.js?v=19';
+import { setupFullscreen } from './fullscreen.js?v=19';
+import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=19';
+import { validPresentation, sceneCanShow } from './presentation-state.js?v=19';
 const $=id=>document.getElementById(id);
 const read=key=>{try{return JSON.parse(localStorage.getItem(key));}catch{return null;}};
 
@@ -17,7 +17,7 @@ export async function startPlayerDisplay(){
   const canvas=document.createElement('canvas');canvas.id='story-screen';canvas.className='story-screen';canvas.setAttribute('aria-label','Abstract storytelling atmosphere');stage.append(canvas);
   const animation=createStoryAnimation(canvas);
   const fullscreen=setupFullscreen({player:true,announce:text=>$('live-message').textContent=text});
-  const response=await fetch('./maps/catalog.json?v=18');if(!response.ok)throw new Error('The map library could not load. Reload to try again.');
+  const response=await fetch('./maps/catalog.json?v=19');if(!response.ok)throw new Error('The map library could not load. Reload to try again.');
   const catalog=(await response.json()).maps;
   catalog.push(...customCatalog(sessionKey));
   const stored=read(`${sessionKey}:presentation`);
@@ -49,7 +49,7 @@ export async function startPlayerDisplay(){
     if(pending?.mapId===presentation.mapId){update();return;}
     pending?.frame.remove();
     const frame=document.createElement('iframe');frame.className='player-scene';frame.title='Battle map';frame.setAttribute('aria-hidden','true');frame.tabIndex=-1;
-    const url=new URL(location.href);url.search=new URLSearchParams({view:'player',scene:'1',session,map:presentation.mapId,build:'18'}).toString();frame.src=url;
+    const url=new URL(location.href);url.search=new URLSearchParams({view:'player',scene:'1',session,map:presentation.mapId,build:'19'}).toString();frame.src=url;
     pending={frame,mapId:presentation.mapId,revision:-1,ready:false};stage.prepend(frame);update();
   }
   async function closeDisplay(){
