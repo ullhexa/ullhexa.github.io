@@ -1,4 +1,6 @@
-import { renderSequence } from './director.js?v=15';
+import {assetId} from './combat-state.js?v=16';
+import {assetURL} from './local-assets.js?v=16';
+import { renderSequence } from './director.js?v=16';
 const $ = id => document.getElementById(id);
 
 export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject}) {
@@ -22,7 +24,7 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
     const slider=document.createElement('input');slider.id='map-light-level';slider.type='range';slider.min='0';slider.max='95';slider.step='1';slider.value=environment.darkness;slider.setAttribute('aria-label','Light to dark');
     const update=()=>{output.value=`${environment.darkness}%`;slider.setAttribute('aria-valuetext',`${environment.darkness}% darkness`);};
     slider.addEventListener('input',()=>{environment.darkness=Number(slider.value);update();});
-    section.append(label,slider,textNode('p','Darken the map gradually. Fires, candles, and windows keep their light. Apply below to use this setting.','environment-hint'));
+    section.append(label,slider,textNode('p',map.userMap?'Darken the image gradually. Apply below to use this setting.':'Darken the map gradually. Fires, candles, and windows keep their light. Apply below to use this setting.','environment-hint'));
     update();return section;
   }
 
@@ -55,16 +57,19 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
     }
   }
 
-  for(const entry of catalog) {
+  function addEntry(entry) {
+    if(buttons.has(entry.id))return;
     const button=document.createElement('button');button.type='button';button.className='map-card';button.setAttribute('aria-pressed','false');
-    const image=document.createElement('img');image.src=entry.thumbnail;image.alt='';image.width=300;image.height=200;image.loading='lazy';
+    const image=document.createElement('img');if(assetId(entry.thumbnail))assetURL(entry.thumbnail).then(url=>image.src=url);else image.src=entry.thumbnail;image.alt='';image.width=300;image.height=200;image.loading='lazy';
     button.append(image,textNode('span',entry.title,'map-card-title'),textNode('span',entry.id===activeId?'Currently in play':entry.category,'map-card-caption'));
-    button.addEventListener('click',()=>select(entry));buttons.set(entry.id,button);$('map-grid-menu').append(button);
+    button.addEventListener('click',()=>select(entry));buttons.set(entry.id,button);$('map-grid-menu').append(button);renderPlan();
   }
+  catalog.forEach(addEntry);
   $('open-maps').addEventListener('click',()=>{
     request++;selected=null;environment=null;for(const button of buttons.values())button.setAttribute('aria-pressed','false');
     $('map-details').replaceChildren(textNode('p','Select a map to see its details.','map-menu-hint'));$('apply-map').disabled=true;renderPlan();dialog.showModal();
   });
   for(const id of ['close-maps','cancel-map'])$(id).addEventListener('click',()=>dialog.close());
   $('apply-map').addEventListener('click',()=>{if(selected&&environment&&!$('apply-map').disabled){dialog.close();applyMap(cache.get(selected),{...environment});}});
+  return {addEntry};
 }
