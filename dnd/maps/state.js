@@ -1,6 +1,7 @@
-import {normalizeFog} from './fog-state.js?v=24';
-import {assetId} from './combat-state.js?v=24';
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=24';
+import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=25';
+import {normalizeFog} from './fog-state.js?v=25';
+import {assetId} from './combat-state.js?v=25';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=25';
 export const GRID_COLORS = ['map','black','white'];
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {
@@ -57,14 +58,16 @@ export function validateMap(map) {
       if(!Array.isArray(light.excludes||[])||(light.excludes||[]).some(id=>!ids.has(id)))throw new Error('Invalid light exclusion.');
     }
   }
+  validateFloors(map);
   return map;
 }
 export function validPoint(point){return Array.isArray(point)&&point.length===2&&point.every(n=>Number.isFinite(n)&&n>=0&&n<=1);}
-export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],party:[...map.partyStart],grid:true,snap:false,fog:[],monsters:[],turnId:null,initiativeOverlay:{x:.02,y:.08,visible:true},gridColor:'map',environment:defaultEnvironment(),tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
+export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],floors:normalizeFloors(map),items:[],party:[...map.partyStart],grid:true,snap:false,fog:[],monsters:[],turnId:null,initiativeOverlay:{x:.02,y:.08,visible:true},gridColor:'map',environment:defaultEnvironment(),tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
 export function sanitizeState(map,input){
   const fresh=initialState(map);
   if(!input||input.format!==1||input.mapId!==map.id||(input.mapVersion!==map.version&&!(map.previousVersions||[]).includes(input.mapVersion)))return fresh;
   const ids=new Set(map.interactions.map(item=>item.id));
+  fresh.floors=normalizeFloors(map,input.floors);
   fresh.active=Array.isArray(input.active)?[...new Set(input.active.filter(id=>ids.has(id)))]:[];
   if(validPoint(input.party))fresh.party=[...input.party];
   Object.assign(fresh,normalizeEncounter(map,input,fresh.party));
@@ -81,7 +84,7 @@ export function isVisible(map,state,id){
   const visit=(target,seen)=>{
     if(seen.has(target))return false;
     const item=map.interactions.find(i=>i.id===target);
-    return !!item&&state.active.includes(target)&&(item.requires||[]).every(dep=>visit(dep,new Set([...seen,target])));
+    return !!item&&interactionOnFloor(map,state,item)&&state.active.includes(target)&&(item.requires||[]).every(dep=>visit(dep,new Set([...seen,target])));
   };
   return visit(id,new Set());
 }
