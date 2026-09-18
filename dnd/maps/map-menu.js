@@ -1,6 +1,6 @@
-import {assetId} from './combat-state.js?v=16';
-import {assetURL} from './local-assets.js?v=16';
-import { renderSequence } from './director.js?v=16';
+import {assetId} from './combat-state.js?v=18';
+import {assetURL} from './local-assets.js?v=18';
+import { renderSequence } from './director.js?v=18';
 const $ = id => document.getElementById(id);
 
 export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject}) {
