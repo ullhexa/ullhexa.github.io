@@ -1,5 +1,5 @@
-import {portraitAsset} from './encounter-state.js?v=19';
-import {assetURL} from './local-assets.js?v=19';
+import {portraitAsset} from './encounter-state.js?v=20';
+import {assetURL} from './local-assets.js?v=20';
 export const TOKEN_FACE_SIZE=96;
 const sources=new Map(),faces=new Map();
 function load(url){if(!sources.has(url))sources.set(url,new Promise((resolve,reject)=>{const i=new Image();i.decoding='async';i.onload=()=>resolve(i);i.onerror=()=>reject(new Error('Portrait could not load.'));i.src=url;}));return sources.get(url);}

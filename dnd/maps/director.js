@@ -1,5 +1,6 @@
-import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=19';
-import { reorder } from './presentation-state.js?v=19';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=20';
+import { STORY_SCENES, createStoryAnimation } from './story-scenes.js?v=20';
+import { reorder } from './presentation-state.js?v=20';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 
@@ -30,7 +31,7 @@ export function createDirector({catalog,mapId,getProject,setProject,prepareMap,a
   mapSelect.setAttribute('aria-label','Prepared maps');storySelect.setAttribute('aria-label','Prepared storytelling');
   quick.append(mapSelect,storySelect);document.querySelector('.lighting-control').after(quick);
   const status=el('span',null,'presentation-status');status.id='presentation-status';document.querySelector('.map-topline>div').append(status);
-  const dialog=el('dialog');dialog.id='story-dialog';dialog.setAttribute('aria-labelledby','story-menu-title');
+  const dialog=el('section');dialog.id='story-dialog';dialog.setAttribute('aria-labelledby','story-menu-title');
   dialog.innerHTML='<div class="map-menu-heading"><div><p class="eyebrow">STORYTELLING LIBRARY</p><h2 id="story-menu-title">Set the atmosphere</h2></div><button id="close-stories" class="quiet" aria-label="Close storytelling menu">×</button></div><div class="story-menu-layout"><div id="story-grid" class="story-grid" role="group" aria-label="Available atmospheres"></div><section class="story-details" aria-label="Selected atmosphere"><canvas id="story-preview" aria-label="Atmosphere preview"></canvas><h3 id="story-title"></h3><p id="story-description"></p><button id="add-story">Add to session</button></section></div><section class="session-sequence"><h3>In this session</h3><p>Keep a short list for the Storytelling dropdown. Arrange it in story order.</p><div id="story-sequence"></div></section><div class="dialog-actions"><button id="cancel-story">Keep playing</button><button id="apply-story" class="primary">Use atmosphere</button></div>';
   document.body.append(dialog);
   let selected=getProject().vibe;
@@ -41,8 +42,8 @@ export function createDirector({catalog,mapId,getProject,setProject,prepareMap,a
     const swatch=el('span',null,'story-swatch');swatch.style.background=`radial-gradient(ellipse at 70% 25%,${scene.colors[2]}80,transparent 55%),radial-gradient(ellipse at 20% 70%,${scene.colors[1]},${scene.colors[0]})`;
     button.append(swatch,el('span',scene.title));button.addEventListener('click',()=>select(scene.id));$('story-grid').append(button);
   }
-  const close=()=>dialog.close();$('close-stories').addEventListener('click',close);$('cancel-story').addEventListener('click',close);dialog.addEventListener('close',()=>animation.stop());
-  menuButton.addEventListener('click',()=>{dialog.showModal();select(getProject().vibe);animation.start();});
+  const close=closeMenu;$('close-stories').addEventListener('click',close);$('cancel-story').addEventListener('click',close);registerMenu('story',dialog,{onShow:fresh=>{if(fresh)select(getProject().vibe);else render();animation.start();},onHide:()=>animation.stop()});
+  menuButton.addEventListener('click',()=>openMenu('story'));
   $('add-story').addEventListener('click',()=>{const project=getProject();if(!project.stories.includes(selected))setProject({...project,stories:[...project.stories,selected]});render();});
   $('apply-story').addEventListener('click',()=>{const project=getProject();setProject({...project,vibe:selected,stories:project.stories.includes(selected)?project.stories:[...project.stories,selected]});close();announce(project.mode==='story'?'Storytelling atmosphere changed.':'Atmosphere ready. Press Storytelling to show it.');});
   mapSelect.addEventListener('change',async()=>{const id=mapSelect.value;mapSelect.value='';mapSelect.disabled=true;try{await prepareMap(id);}catch(error){announce(error.message);}finally{mapSelect.disabled=false;}});
