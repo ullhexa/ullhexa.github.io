@@ -1,7 +1,9 @@
-import { MAX_SAVE_BYTES, parseSave, restoreSave, serializeSave, saveFilename } from './save-file.js?v=26';
+import {chooseSaveDestination,writeGameFile} from './file-destination.js?v=27';
+import { MAX_SAVE_BYTES, parseSave, restoreSave, serializeSave, saveFilename } from './save-file.js?v=27';
 const $=id=>document.getElementById(id);
 
 export function createSaveControls({map,catalog,loadMap,bundle,getState,getView,getProject,applySave,announce}) {
+  const submit=$('save-game-form').querySelector('[type=submit]');submit.textContent=typeof window.showSaveFilePicker==='function'?'Choose destination':'Download save';
   let lastName=`${map.title} - ${new Date().toLocaleDateString('en-CA')}`;
   function showError(message) {
     $('save-error-message').textContent=message;
@@ -13,16 +15,18 @@ export function createSaveControls({map,catalog,loadMap,bundle,getState,getView,
   });
   $('cancel-save').addEventListener('click',()=>$('save-game-dialog').close());
   $('save-game-form').addEventListener('submit',async event=>{
-    event.preventDefault();
+    event.preventDefault();if(submit.disabled)return;submit.disabled=true;
     try {
       const name=$('save-name').value.trim();
       const raw=serializeSave(map,getState(),name,getView(),undefined,getProject?.());
+      const filename=saveFilename(name),handle=await chooseSaveDestination(filename);
       const data=bundle?await bundle.export(JSON.parse(raw)):raw;
-      const filename=saveFilename(name),url=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+      if(handle){await writeGameFile(handle,data);lastName=name;$('save-game-dialog').close();announce(`Saved: ${handle.name||filename}`);return;}
+      const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));
       const link=document.createElement('a');link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();
       setTimeout(()=>URL.revokeObjectURL(url),60000);
       lastName=name;$('save-game-dialog').close();announce(`Download started: ${filename}`);
-    } catch(error) {$('save-name-error').textContent=error.message;}
+    } catch(error) {if(error.name==='AbortError')return;$('save-name-error').textContent=error.message;}finally{submit.disabled=false;}
   });
   $('load-game').addEventListener('click',()=>{const input=$('load-game-file');input.value='';input.click();});
   $('load-game-file').addEventListener('input',async event=>{

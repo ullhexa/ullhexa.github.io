@@ -1,10 +1,10 @@
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=26';
-import {el,button} from './combat-ui.js?v=26';
-import {ITEMS,searchItems} from './items-catalog.js?v=26';
-import {setFace} from './token-portraits.js?v=26';
-import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=26';
-import {uploadImage} from './local-assets.js?v=26';
-import {groupSelection} from './group-selection.js?v=26';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=27';
+import {el,button} from './combat-ui.js?v=27';
+import {ITEMS,searchItems} from './items-catalog.js?v=27';
+import {setFace} from './token-portraits.js?v=27';
+import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=27';
+import {uploadImage} from './local-assets.js?v=27';
+import {groupSelection} from './group-selection.js?v=27';
 const $=id=>document.getElementById(id);
 function face(item){const img=el('img');img.alt='';img.width=img.height=40;img.draggable=false;setFace(img,item);return img;}
 function field(label,value,change,type='text'){const wrap=el('label',label,'field-label'),input=el('input');input.type=type;input.value=value;input.setAttribute('aria-label',label);input.addEventListener('input',()=>change(input.value));wrap.append(input);return {wrap,input};}

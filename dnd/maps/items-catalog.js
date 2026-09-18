@@ -1,3 +1,4 @@
+import {ITEM_CROPS} from './item-crops.js?v=27';
 export const ITEMS=[
 'Longsword','Dagger','Battle axe','Wooden club','Mace','Spear','Bow','Crossbow','Quiver','Round shield',
 'Helmet','Boots','Gloves','Chainmail','Leather armour','Red cloak','Wizard hat','Staff','Spellbook','Wand',
@@ -50,12 +51,7 @@ export const ITEMS=[
 "Chains", "Manacles", "Iron shackles", "Ball and chain", "Rope bundle", "Grappling hook", "Caltrops", "Ball bearings", "Hunting snare", "Tripwire",
 "Dragon scale", "Dragon tooth", "Unicorn horn", "Phoenix feather", "Dried bat wing", "Monster eye", "Tentacle", "Severed vine", "Fossil", "Meteorite"];
 export const ITEM_ATLAS='./assets/items.png';
-const columns=[0,126,250,376,500,628,752,878,1004,1128,1254],rows=[0,139,271,393,517,647,759,891,1007,1133,1254];
 export const ITEM_ATLASES=[ITEM_ATLAS,'./assets/items-doors.png','./assets/items-furniture.png','./assets/items-scenes.png','./assets/items-equipment.png'];
-// Source images are retained intact; these measured row bounds prevent adjacent-icon bleed.
-const sheetRows=[[0,120,238,359,484,607,733,853,977,1100,1254],[0,135,258,401,522,663,769,902,1020,1141,1254],[0,134,252,379,508,642,746,877,996,1120,1254],[0,132,258,382,517,647,770,907,1035,1143,1254]];
-const doorColumns={2:[0,116,231,347,462,577,692,808,924,1052,1254],5:[0,115,230,345,460,575,690,811,953,1098,1254],6:[0,116,231,347,464,581,696,809,951,1096,1254],7:[0,115,230,345,460,575,690,811,953,1098,1254],8:[0,116,231,347,464,581,696,809,951,1096,1254],9:[0,115,230,346,463,610,764,914,1030,1143,1254],0:[0,116,230,345,460,573,687,800,920,1035,1144,1254],1:[0,116,231,346,461,575,690,805,920,1035,1144,1254],3:[0,115,230,345,460,574,686,800,914,1028,1142,1254],4:[0,115,230,345,461,575,690,804,919,1034,1144,1254]};
-const doorCells={0:[0,1,2,3,4,5,6,7,8,10],1:[0,1,2,3,4,5,6,7,8,10],3:[0,1,2,3,4,5,6,8,9,10],4:[0,1,2,3,4,5,6,8,9,10]};
-export function itemAsset(index){const sheet=Math.floor(index/100),cell=index%100,c=cell%10,r=Math.floor(cell/10);if(!sheet)return {url:ITEM_ATLAS,crop:[columns[c]/1254,rows[r]/1254,(columns[c+1]-columns[c])/1254,(rows[r+1]-rows[r])/1254]};const ys=sheetRows[sheet-1],xs=sheet===1&&doorColumns[r]||Array.from({length:11},(_,i)=>i*125.4),col=sheet===1&&doorCells[r]?doorCells[r][c]:c;return {url:ITEM_ATLASES[sheet],crop:[xs[col]/1254,ys[r]/1254,(xs[col+1]-xs[col])/1254,(ys[r+1]-ys[r])/1254]};}
+export function itemAsset(index){const sheet=Math.floor(index/100);return {url:ITEM_ATLASES[sheet],crop:ITEM_CROPS[sheet][index%100].map(value=>value/1254)};}
 const synonyms={secret:'hidden concealed passage',door:'entrance doorway gate hatch',portal:'gateway teleport teleportation',curtain:'drape drapery screen',chest:'container treasure coffer box',stairs:'stair staircase steps',trapdoor:'hatch floor entrance',potion:'bottle flask elixir',armour:'armor',mold:'mould fungus fungi blight',mushroom:'fungus fungi',slime:'ooze blight',cage:'prison cell',coffin:'sarcophagus tomb',rug:'carpet',torch:'light fire',lantern:'light lamp'};
 export function searchItems(query){const words=String(query).toLowerCase().trim().split(/\s+/).filter(Boolean);return ITEMS.map((name,portrait)=>({name,portrait})).filter(({name})=>{const lower=name.toLowerCase(),terms=lower+' '+Object.entries(synonyms).filter(([key])=>lower.includes(key)).map(([,v])=>v).join(' ');return words.every(word=>terms.includes(word));});}
