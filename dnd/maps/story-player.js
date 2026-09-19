@@ -1,6 +1,6 @@
-import {createStoryAnimation} from './story-scenes.js?v=29';
-import {assetURL} from './local-assets.js?v=29';
-import {loadRaster} from './resource-loading.js?v=29';
+import {createStoryAnimation} from './story-scenes.js?v=30';
+import {assetURL} from './local-assets.js?v=30';
+import {loadRaster} from './resource-loading.js?v=30';
 
 export const STORY_FADE_MS=3000;
 export const MODE_FADE_MS=3000;
@@ -8,8 +8,8 @@ export function createStoryPlayer(container,{onError=()=>{}}={}){
   let current=null,retiring=null,request=0,requested=null,running=false,stopTimer=0,retireTimer=0;
   const dispose=layer=>{layer?.animation?.destroy();layer?.element.remove();};
   async function set(scene){
-    if(!scene||requested===scene.id)return;
-    requested=scene.id;const version=++request;
+    if(!scene)return;const key=`${scene.id}:${scene.asset||''}`;if(requested===key)return;
+    requested=key;const version=++request;
     try{
       let element,animation;
       if(scene.asset){element=await loadRaster(await assetURL(scene.asset));element.alt=scene.title;}

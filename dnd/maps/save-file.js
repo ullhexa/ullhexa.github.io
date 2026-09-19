@@ -1,10 +1,10 @@
-import {validUserTokens} from './library-assets.js?v=29';
-import {validFloors} from './floors.js?v=29';
-import {sanitizeState,validPoint,GRID_COLORS,validEnvironment} from './state.js?v=29';
-import {PORTRAITS,SHAPE_TYPES,SHAPE_COLORS} from './encounter-state.js?v=29';
-import {CONDITIONS,safeId,assetId,parseInitiative} from './combat-state.js?v=29';
-import {normalizeFog} from './fog-state.js?v=29';
-import {validProject} from './presentation-state.js?v=29';
+import {validUserTokens} from './library-assets.js?v=30';
+import {validFloors} from './floors.js?v=30';
+import {sanitizeState,validPoint,GRID_COLORS,validEnvironment} from './state.js?v=30';
+import {PORTRAITS,SHAPE_TYPES,SHAPE_COLORS} from './encounter-state.js?v=30';
+import {CONDITIONS,safeId,assetId,parseInitiative} from './combat-state.js?v=30';
+import {normalizeFog} from './fog-state.js?v=30';
+import {validProject} from './presentation-state.js?v=30';
 export const MAX_SAVE_BYTES=64*1024*1024;
 const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v),unique=a=>new Set(a).size===a.length;
 const check=(ok,message='This save contains incomplete or invalid game data.')=>{if(!ok)throw new Error(message);};

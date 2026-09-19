@@ -1,5 +1,5 @@
-import {el,button} from './editor-dom.js?v=29';
-import {assetURL,uploadImage,putAssets} from './local-assets.js?v=29';
+import {el,button} from './editor-dom.js?v=30';
+import {assetURL,uploadImage,putAssets} from './local-assets.js?v=30';
 export function editStatCard(member){
   const dialog=el('dialog',undefined,'stat-card-editor'),tabs=el('div',undefined,'source-tabs'),content=el('div',undefined,'stat-card-content'),error=el('p','','save-error'),footer=el('div',undefined,'dialog-actions');
   let mode=member.statText?'text':'image',asset=member.statCard||null,text=member.statText||'',result=null,image=null,request=0,zoom=1,offset=[0,0],drag=null,changed=false;

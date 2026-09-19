@@ -1,31 +1,33 @@
-import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=29';
-import {createDiceTools} from './dice.js?v=29';
-import {fetchJSON,loadRaster} from './resource-loading.js?v=29';
-import {storyCatalog,nextStory} from './story-assets.js?v=29';
-import {createItemsUI} from './items-ui.js?v=29';
-import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=29';
-import {createHistory} from './history.js?v=29';
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=29';
-import {setupSidebarResize} from './sidebar-resize.js?v=29';
-import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=29';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=29';
-import {createFogTools} from './fog-tools.js?v=29';
-import {normalizeFog} from './fog-state.js?v=29';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=29';
-import {createSessionBundle} from './session-bundle.js?v=29';
-import { startDMShell } from './dm-shell.js?v=29';
-import { openPlayerWindow } from './display-window.js?v=29';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=29';
-import { createEncounterTools } from './encounter-tools.js?v=29';
-import { playerProjection, formation, moveParty } from './encounter-state.js?v=29';
-import { createMapMenu } from './map-menu.js?v=29';
-import { createSaveControls } from './save-controls.js?v=29';
-import { parseSave, restoreSave } from './save-file.js?v=29';
-import { createLighting } from './lighting.js?v=29';
-import { setupFullscreen } from './fullscreen.js?v=29';
-import { startPlayerDisplay } from './player-display.js?v=29';
-import { createDirector } from './director.js?v=29';
-import { normalizeProject } from './presentation-state.js?v=29';
+import {consumeMapDismissal} from './map-dismissal.js?v=30';
+import {boundedCamera,cameraViewBox} from './camera.js?v=30';
+import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=30';
+import {createDiceTools} from './dice.js?v=30';
+import {fetchJSON,loadRaster} from './resource-loading.js?v=30';
+import {storyCatalog,nextStory} from './story-assets.js?v=30';
+import {createItemsUI} from './items-ui.js?v=30';
+import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=30';
+import {createHistory} from './history.js?v=30';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=30';
+import {setupSidebarResize} from './sidebar-resize.js?v=30';
+import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=30';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=30';
+import {createFogTools} from './fog-tools.js?v=30';
+import {normalizeFog} from './fog-state.js?v=30';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=30';
+import {createSessionBundle} from './session-bundle.js?v=30';
+import { startDMShell } from './dm-shell.js?v=30';
+import { openPlayerWindow } from './display-window.js?v=30';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=30';
+import { createEncounterTools } from './encounter-tools.js?v=30';
+import { playerProjection, formation, moveParty } from './encounter-state.js?v=30';
+import { createMapMenu } from './map-menu.js?v=30';
+import { createSaveControls } from './save-controls.js?v=30';
+import { parseSave, restoreSave } from './save-file.js?v=30';
+import { createLighting } from './lighting.js?v=30';
+import { setupFullscreen } from './fullscreen.js?v=30';
+import { startPlayerDisplay } from './player-display.js?v=30';
+import { createDirector } from './director.js?v=30';
+import { normalizeProject } from './presentation-state.js?v=30';
 
 listenForBoardReset();
 const $ = id => document.getElementById(id);
@@ -60,7 +62,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=29')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=30')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -71,7 +73,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=29`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=30`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -90,6 +92,12 @@ async function start() {
     const fallback=catalog[0].id,next={...project,maps:project.maps.filter(v=>v!==id),mapGroups:project.mapGroups.map(g=>({...g,entries:g.entries.filter(v=>v!==id)}))};
     project=normalizeProject(next,catalog,id===map.id?fallback:map.id);writeStored(`${sessionKey}:project`,project);director?.render();
     if(id===map.id)await prepareMap(fallback);else publish();
+  }
+  async function applyMapEdit(next){
+    if(next.id===map.id)save();
+    saveCustomCatalog(sessionKey,customCatalog(sessionKey).map(e=>e.id===next.id?next:e));
+    catalog.splice(catalog.findIndex(e=>e.id===next.id),1,next);director?.render();
+    if(next.id===map.id)location.reload();
   }
   async function prepareMap(id,environment){
     const target=id===map.id?map:await loadMap(catalog.find(entry=>entry.id===id));
@@ -114,11 +122,11 @@ async function start() {
   if(!player) {
     document.querySelector('.encounter-heading h1').textContent=map.title;
     document.querySelector('.encounter-heading .eyebrow').textContent=entry.category.toUpperCase();
-    mapMenu=createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,getEnvironment:target=>target.id===map.id?state.environment:readMapState(target).environment,getProject:()=>project,setProject,deleteMap:removeCustomMap,applyMap:(target,environment)=>prepareMap(target.id,environment).catch(error=>announce(error.message))});
+    mapMenu=createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,getEnvironment:target=>target.id===map.id?state.environment:readMapState(target).environment,getProject:()=>project,setProject,deleteMap:removeCustomMap,editMap:applyMapEdit,applyMap:(target,environment)=>prepareMap(target.id,environment).catch(error=>announce(error.message))});
   }
   const key = `lanternford:${map.id}:${map.version}:${session}`;
   function readMapState(content){
-    const previous=readStored(`lanternford:${content.id}:${content.version}:${session}`)||(content.previousVersions||[]).map(version=>readStored(`lanternford:${content.id}:${version}:${session}`)).find(Boolean);
+    const previous=readStored(`lanternford:${content.id}:${content.version}:${session}`)||[...(content.previousVersions||[])].sort((a,b)=>b.localeCompare(a,undefined,{numeric:true})).map(version=>readStored(`lanternford:${content.id}:${version}:${session}`)).find(Boolean);
     let next=sanitizeState(content,previous);
     if(!player){
       const campaign=normalizeCampaign(readStored(`${sessionKey}:campaign`)||next.campaign,next.roster);
@@ -238,7 +246,7 @@ async function start() {
     send({type:'state',state:playerProjection(state)});
     send({type:'ruler',mapId:map.id,points:ruler});
     const storyAsset=storyCatalog(project).find(s=>s.id===project.vibe);
-    const presentation={...(storyAsset?.asset?{storyAsset}:{}),mode:project.mode,vibe:project.vibe,mapId:map.id,sceneRevision:state.revision,revision:++presentationRevision};
+    const presentation={...(storyAsset?.asset?{storyAsset}:{}),mode:project.mode,vibe:project.vibe,mapId:map.id,mapContent:mapContentKey(map),sceneRevision:state.revision,revision:++presentationRevision};
     writeStored(`${sessionKey}:presentation`,presentation);send({type:'presentation',presentation});
   }
   function reportScene(){if(embedded&&sceneReady)window.parent.postMessage({type:'scene-ready',mapId:map.id,revision:state.revision},location.origin);}
@@ -308,14 +316,16 @@ async function start() {
     $('redo').disabled = !history.canRedo;
     const overview = Math.abs(state.camera.zoom-1)<.001 && Math.abs(state.camera.x-.5)<.001 && Math.abs(state.camera.y-.5)<.001;
     const place=map.places.find(p=>p.id===focusedPlace);
-    if(!place||selected!==focusedPlace||Math.abs(state.camera.x-place.point[0])>.00001||Math.abs(state.camera.y-place.point[1])>.00001||Math.abs(state.camera.zoom-Math.min(3,place.focusZoom))>.00001)focusedPlace=null;
+    const focus=place?boundedCamera(map,{x:place.point[0],y:place.point[1],zoom:place.focusZoom},viewportSize()):null;
+    if(!focus||selected!==focusedPlace||Math.abs(state.camera.x-focus.x)>.00001||Math.abs(state.camera.y-focus.y)>.00001||Math.abs(state.camera.zoom-focus.zoom)>.00001)focusedPlace=null;
     $('focus-place').textContent=focusedPlace?'Overview':'Focus';
     $('fit-map').disabled = overview;
   }
+  const viewportSize=()=>[$('map').clientWidth,$('map').clientHeight];
   function cameraView(){
-    const { x, y, zoom } = state.camera;
-    const w = map.width / zoom, h = map.height / zoom;
-    const viewBox=`${x * map.width - w / 2} ${y * map.height - h / 2} ${w} ${h}`;$('map').setAttribute('viewBox',viewBox);$('party-overlay')?.setAttribute('viewBox',viewBox);
+    const view=cameraViewBox(map,state.camera,viewportSize()),{zoom}=view.camera;
+    if(!player)state={...state,camera:view.camera};
+    const viewBox=view.viewBox.join(' ');$('map').setAttribute('viewBox',viewBox);$('party-overlay')?.setAttribute('viewBox',viewBox);
     $('zoom-value').textContent = `${Math.round(zoom * 100)}%`;
     $('zoom-out').disabled = zoom <= 1;
     $('zoom-in').disabled = zoom >= 3;
@@ -374,7 +384,7 @@ async function start() {
     const zoom = clamp(before.zoom * factor, 1, 3);
     const ratio = before.zoom / zoom;
     const camera = zoom === 1 ? { x: .5, y: .5, zoom } : { x: clamp(anchor ? anchor[0] + (before.x-anchor[0])*ratio : before.x, 0, 1), y: clamp(anchor ? anchor[1] + (before.y-anchor[1])*ratio : before.y, 0, 1), zoom };
-    state = { ...state, camera, revision: state.revision+1 };if(immediate){renderCamera();if(!player)send({type:'camera',mapId:map.id,camera,revision:state.revision});}else queueCamera();
+    state = { ...state, camera, revision: state.revision+1 };if(immediate){renderCamera();if(!player)send({type:'camera',mapId:map.id,camera:state.camera,revision:state.revision});}else queueCamera();
     clearTimeout(zoomSave); zoomSave = setTimeout(save, 100);
   }
 
@@ -421,7 +431,7 @@ async function start() {
       $('dm-hotspots').append(node);hotspots.set(place.id,node);
 
     }
-    document.addEventListener('pointerdown',e=>{if(expandedPlace&&!placeExpansions.get(expandedPlace)?.row.contains(e.target)){placeExpansions.get(expandedPlace)?.collapse();expandedPlace=null;}},true);
+    document.addEventListener('pointerdown',e=>{if(expandedPlace&&!placeExpansions.get(expandedPlace)?.row.contains(e.target)){placeExpansions.get(expandedPlace)?.collapse();expandedPlace=null;consumeMapDismissal(e,$('map-stage'));}},true);
     selectPlace(selected);
     if(!map.places.length){$('places').previousElementSibling.hidden=true;$('places').hidden=true;announce('Custom map ready. Paint fog or add tokens and spell areas.');}
     setupSidebarResize();
@@ -457,7 +467,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'29',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'30',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
@@ -469,11 +479,15 @@ async function start() {
       const p = pointAt(event);
       if(measuring){if(inBounds(p)){ruler=[p,p];drag={id:event.pointerId,measure:true,start:structuredClone(state),moved:false};$('map').setPointerCapture(event.pointerId);renderRuler(true);}return;}
       const token = party.contains(event.target);
+      if(!token&&!event.ctrlKey&&!event.metaKey)return;
       const ctm = $('map').getScreenCTM();
       drag = { id: event.pointerId, x: event.clientX, y: event.clientY, camera: { ...state.camera }, scale: ctm.a, point: p, start: structuredClone(state), token, moved: false, hotspot: !!event.target.closest('.hotspot,.map-door') };
-      if (token) event.preventDefault();
+      event.preventDefault();
       $('map').setPointerCapture(event.pointerId);
     });
+    $('map').addEventListener('contextmenu',event=>{if(event.ctrlKey)event.preventDefault();});
+    const panCursor=event=>$('map-stage').classList.toggle('can-pan',event.ctrlKey||event.metaKey);
+    document.addEventListener('keydown',panCursor);document.addEventListener('keyup',panCursor);window.addEventListener('blur',()=>$('map-stage').classList.remove('can-pan'));
     $('map').addEventListener('pointermove', event => {
       if (!drag || drag.id !== event.pointerId) return;
       if(drag.measure){const p=pointAt(event);if(p){ruler=[ruler[0],p.map(n=>clamp(n,0,1))];drag.moved=true;renderRuler(true);}return;}
@@ -486,7 +500,7 @@ async function start() {
         let position=drag.start.party.map((n,axis)=>clamp(n+p[axis]-drag.point[axis],0,1));if(state.snap)position=snapPoint(map,position);state=moveParty(state,position);
         if(!partyFrame)partyFrame=requestAnimationFrame(paintParty);return;
       }
-      else state = { ...state, camera: { x: clamp(drag.camera.x-dx/drag.scale/map.width, 0, 1), y: clamp(drag.camera.y-dy/drag.scale/map.height, 0, 1), zoom: drag.camera.zoom } };
+      else {focusedPlace=null;const camera=boundedCamera(map,{x:drag.camera.x-dx/drag.scale/map.width,y:drag.camera.y-dy/drag.scale/map.height,zoom:drag.camera.zoom},viewportSize());state={...state,camera};drag.x=event.clientX;drag.y=event.clientY;drag.camera=camera;}
       queueCamera();
     });
     const endDrag = event => {
@@ -584,6 +598,7 @@ async function start() {
   }
 
   runtimeReady=true;if(!player)save();
+  new ResizeObserver(()=>{if(runtimeReady)queueCamera();}).observe($('map-stage'));
   window.addEventListener('pageshow',event=>{if(event.persisted){render();updateConnection();if(player){send({type:'scene-hello'});reportScene();}else save();}});
   if(dmFrame)window.parent.postMessage({type:'dm-ready',url:location.href,title:document.title},location.origin);
 

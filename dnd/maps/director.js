@@ -1,8 +1,9 @@
-import {createSceneGroups} from './scene-groups-ui.js?v=29';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=29';
-import {storyCatalog} from './story-assets.js?v=29';
-import {createStoryPlayer} from './story-player.js?v=29';
-import {uploadImage,assetURL} from './local-assets.js?v=29';
+import {editTokenImage} from './token-image-editor.js?v=30';
+import {createSceneGroups} from './scene-groups-ui.js?v=30';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=30';
+import {storyCatalog} from './story-assets.js?v=30';
+import {createStoryPlayer} from './story-player.js?v=30';
+import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=30';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 
@@ -27,6 +28,7 @@ export function createDirector({catalog,mapId,getProject,setProject,prepareMap,a
   const groups=createSceneGroups({kind:'stories',panel:dialog,content:dialog.querySelector('.story-menu-layout'),getProject,setProject,catalog:library,onChange:()=>render()});
   let selected=getProject().vibe,librarySource='factory';
   const remove=el('button','Delete','danger'),actions=el('div',null,'asset-actions');remove.type='button';$('add-story').before(actions);actions.append($('add-story'),remove);
+  const edit=el('button','Edit');edit.type='button';actions.insertBefore(edit,remove);edit.addEventListener('click',async()=>{const scene=library.find(s=>s.id===selected);if(!scene?.asset)return;edit.disabled=true;error.textContent='';try{const asset=await assetRecord(scene.asset);if(!asset)throw new Error('The story image is missing.');const image=await editTokenImage(asset,{story:true,editing:true,title:scene.title});if(!image)return;setProject({...getProject(),storyAssets:getProject().storyAssets.map(s=>s.id===scene.id?{...s,title:image.title,asset:image.id}:s)});select(scene.id);}catch(e){error.textContent=e.message;}finally{edit.disabled=false;}});
   function filter(){factory.setAttribute('aria-pressed',librarySource==='factory');user.setAttribute('aria-pressed',librarySource==='user');uploadButton.hidden=librarySource!=='user';for(const card of $('story-grid').querySelectorAll('[data-scene]'))card.hidden=!!library.find(s=>s.id===card.dataset.scene)?.asset!==(librarySource==='user');}
   function changeSource(value){librarySource=value;filter();const scene=library.find(s=>!!s.asset===(value==='user'));if(scene)select(scene.id);else{selected=null;$('story-title').textContent='';$('story-description').textContent='';animation.stop();$('story-preview').hidden=true;render();}}
   factory.addEventListener('click',()=>changeSource('factory'));user.addEventListener('click',()=>changeSource('user'));
@@ -49,12 +51,12 @@ export function createDirector({catalog,mapId,getProject,setProject,prepareMap,a
   function options(select,label,ids,library){select.replaceChildren();const placeholder=el('option',label);placeholder.value='';placeholder.disabled=true;placeholder.selected=true;select.append(placeholder);ids.forEach((id,index)=>{const option=el('option',`${index+1}. ${library.find(item=>item.id===id)?.title||id}`);option.value=id;select.append(option);});}
   function render(){
     const project=getProject(),scenes=storyCatalog(project);
-    if(JSON.stringify(scenes.map(s=>[s.id,s.asset]))!==JSON.stringify(library.map(s=>[s.id,s.asset]))){library.splice(0,library.length,...scenes);$('story-grid').replaceChildren(uploadButton);library.forEach(addCard);}
+    if(JSON.stringify(scenes.map(s=>[s.id,s.asset,s.title]))!==JSON.stringify(library.map(s=>[s.id,s.asset,s.title]))){library.splice(0,library.length,...scenes);$('story-grid').replaceChildren(uploadButton);library.forEach(addCard);}
     $('show-battle').setAttribute('aria-pressed',project.mode==='battle');$('show-story').setAttribute('aria-pressed',project.mode==='story');
     options(mapSelect,`Map (${Math.max(0,project.maps.indexOf(mapId)+1)}/${project.maps.length})`,project.maps,catalog);options(storySelect,`Story (${Math.max(0,project.stories.indexOf(project.vibe)+1)}/${project.stories.length})`,project.stories,library);
     const vibe=library.find(scene=>scene.id===project.vibe)||library[0];status.textContent=project.mode==='story'?`Players: ${vibe.title} · Map is private`:'Players: battle map';status.classList.toggle('is-story',project.mode==='story');
     mapSelect.title=`Prepare a map · Current: ${catalog.find(entry=>entry.id===mapId)?.title}`;storySelect.title=`Story: ${vibe.title}`;
-    filter();remove.hidden=!library.find(s=>s.id===selected)?.asset;$('apply-story').disabled=!selected;
+    filter();edit.hidden=remove.hidden=!library.find(s=>s.id===selected)?.asset;$('apply-story').disabled=!selected;
     $('add-story').disabled=!selected||!groups.selected()||groups.entries().includes(selected);$('add-story').textContent=groups.entries().includes(selected)?'Added to session':'Add to session';
     groups.renderSequence();
   }
