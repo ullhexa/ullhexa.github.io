@@ -1,8 +1,8 @@
-import {createSceneGroups} from './scene-groups-ui.js?v=28';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=28';
-import {storyCatalog} from './story-assets.js?v=28';
-import {createStoryPlayer} from './story-player.js?v=28';
-import {uploadImage,assetURL} from './local-assets.js?v=28';
+import {createSceneGroups} from './scene-groups-ui.js?v=29';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=29';
+import {storyCatalog} from './story-assets.js?v=29';
+import {createStoryPlayer} from './story-player.js?v=29';
+import {uploadImage,assetURL} from './local-assets.js?v=29';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 

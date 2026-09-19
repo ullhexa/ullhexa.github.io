@@ -1,4 +1,5 @@
-import {normalizeItems, normalizeMembers, normalizeCampaign, syncCampaign, fiveFeet, initiativeOrder} from './combat-state.js?v=28';
+import {itemOnSelectedFloor} from './floors.js?v=29';
+import {normalizeItems, normalizeMembers, normalizeCampaign, syncCampaign, fiveFeet, initiativeOrder} from './combat-state.js?v=29';
 export const PORTRAITS = ['Human warrior','Silver-haired elf','Dwarven adventurer','Halfling ranger','Half-orc guardian','Human wizard','Tiefling wanderer','Elven mage','Dragonborn',
   'Copper-haired elf','Human paladin','Dwarven shieldmaiden','Halfling bard','Half-orc veteran','Violet tiefling','Blue dragonborn','Gnome tinkerer',
   'Human cleric','Human monk','Elven scholar','Feline ranger','Lizardfolk druid','Veteran knight','Human rogue','Dwarven cleric','Human druid','Elder sorcerer','Golden dragonborn','Gnome scout','Orc fighter'];
@@ -91,6 +92,6 @@ export function rotateShape(map,shape,point,offset=0) {
 }
 export function playerProjection(state) {
   const {campaign,...rest}=state;
-  const publicMember=m=>{const {hp,maxHp,statCard,statText,...safe}=m;return safe;};
-  return {...rest,public:true,turnId:state.public?state.turnId:initiativeOrder(state).some(m=>m.id===state.turnId)?state.turnId:initiativeOrder(state)[0]?.id||null,roster:state.roster.map(publicMember),items:(state.items||[]).filter(m=>m.visible).map(({comment,templateId,...safe})=>safe),monsters:(state.monsters||[]).filter(m=>m.visible).map(m=>({...publicMember(m),initiative:null})),shapes:state.shapes.map(s=>({...s,visible:true}))};
+  const publicMember=m=>{const {hp,maxHp,hpLinked,statCard,statText,...safe}=m;return safe;};
+  return {...rest,public:true,turnId:state.public?state.turnId:initiativeOrder(state).some(m=>m.id===state.turnId)?state.turnId:initiativeOrder(state)[0]?.id||null,roster:state.roster.map(publicMember),items:(state.items||[]).filter(m=>m.visible&&itemOnSelectedFloor(m,state)).map(({comment,templateId,...safe})=>safe),monsters:(state.monsters||[]).filter(m=>m.visible).map(m=>({...publicMember(m),initiative:null})),shapes:state.shapes.map(s=>({...s,visible:true}))};
 }

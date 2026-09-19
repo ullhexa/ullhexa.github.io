@@ -1,7 +1,7 @@
-import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=28';
-import {normalizeFog} from './fog-state.js?v=28';
-import {assetId} from './combat-state.js?v=28';
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=28';
+import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=29';
+import {normalizeFog} from './fog-state.js?v=29';
+import {assetId} from './combat-state.js?v=29';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=29';
 export const GRID_COLORS = ['map','black','white'];
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {
@@ -54,6 +54,7 @@ export function validateMap(map) {
     const lighting=map.lighting,lightIds=new Set();
     if(!lighting||!Array.isArray(lighting.occluders)||!lighting.occluders.every(polygon)||!Array.isArray(lighting.lights)||lighting.lights.length>64)throw new Error('Invalid map lighting.');
     for(const light of lighting.lights){
+      if(light.floor!==undefined&&(!light.floor||!map.places.some(p=>p.id===light.floor.placeId&&p.floors?.some(f=>f.id===light.floor.floorId))))throw new Error('Invalid light floor.');
       if(!light||typeof light.id!=='string'||!/^[-a-zA-Z0-9]+$/.test(light.id)||lightIds.has(light.id)||!validPoint(light.point)||!Number.isFinite(light.radius)||light.radius<=0||light.radius>100||(light.clip!==undefined&&!polygon(light.clip))||!Array.isArray(light.requires||[])||(light.requires||[]).some(id=>!ids.has(id)))throw new Error('Invalid map light.');
       lightIds.add(light.id);
       if(!Array.isArray(light.excludes||[])||(light.excludes||[]).some(id=>!ids.has(id)))throw new Error('Invalid light exclusion.');
@@ -78,7 +79,7 @@ export function sanitizeState(map,input){
   fresh.grid=typeof input.grid==='boolean'?input.grid:true;
   fresh.gridColor=GRID_COLORS.includes(input.gridColor)?input.gridColor:'map';
   fresh.environment=sanitizeEnvironment(input.environment);
-  if(input.camera&&validPoint([input.camera.x,input.camera.y])&&Number.isFinite(input.camera.zoom))fresh.camera={x:input.camera.x,y:input.camera.y,zoom:Math.max(1,Math.min(4,input.camera.zoom))};
+  if(input.camera&&validPoint([input.camera.x,input.camera.y])&&Number.isFinite(input.camera.zoom))fresh.camera={x:input.camera.x,y:input.camera.y,zoom:Math.max(1,Math.min(3,input.camera.zoom))};
   fresh.revision=Number.isSafeInteger(input.revision)&&input.revision>=0?input.revision:0;
   return fresh;
 }

@@ -17,7 +17,7 @@
       "edition": "FIELD TEST 02",
       "category": "Blighted farmstead",
       "subtitle": "Purple blight",
-      "thumbnail": "./maps/blighted-farm/roofs.png",
+      "thumbnail": "./maps/blighted-farm/roofs-v29.png",
       "manifest": "./maps/blighted-farm/map.json"
     }
   ]

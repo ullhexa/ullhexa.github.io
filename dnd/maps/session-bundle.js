@@ -1,8 +1,8 @@
-import {projectMapIds} from './presentation-state.js?v=28';
-import {exportAssets,referencedAssets,validAsset,putAssets} from './local-assets.js?v=28';
-import {validCustomEntry,customCatalog,saveCustomCatalog} from './custom-maps.js?v=28';
-import {restoreSave,MAX_SAVE_BYTES} from './save-file.js?v=28';
-import {validateMap} from './state.js?v=28';
+import {projectMapIds} from './presentation-state.js?v=29';
+import {exportAssets,referencedAssets,validAsset,putAssets} from './local-assets.js?v=29';
+import {validCustomEntry,customCatalog,saveCustomCatalog} from './custom-maps.js?v=29';
+import {restoreSave,MAX_SAVE_BYTES} from './save-file.js?v=29';
+import {validateMap} from './state.js?v=29';
 export function createSessionBundle({sessionKey,catalog,loadMap,getState,readMapState,saveCurrent}){
   const session=sessionKey.split(':').at(-1);
   return {

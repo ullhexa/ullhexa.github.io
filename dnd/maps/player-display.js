@@ -1,9 +1,9 @@
-import {customCatalog} from './custom-maps.js?v=28';
-import { setupFullscreen } from './fullscreen.js?v=28';
-import {storyCatalog} from './story-assets.js?v=28';
-import {createStoryPlayer,MODE_FADE_MS} from './story-player.js?v=28';
-import {fetchJSON} from './resource-loading.js?v=28';
-import { validPresentation, sceneCanShow } from './presentation-state.js?v=28';
+import {customCatalog} from './custom-maps.js?v=29';
+import { setupFullscreen } from './fullscreen.js?v=29';
+import {storyCatalog} from './story-assets.js?v=29';
+import {createStoryPlayer,MODE_FADE_MS} from './story-player.js?v=29';
+import {fetchJSON} from './resource-loading.js?v=29';
+import { validPresentation, sceneCanShow } from './presentation-state.js?v=29';
 const $=id=>document.getElementById(id);
 const read=key=>{try{return JSON.parse(localStorage.getItem(key));}catch{return null;}};
 
@@ -19,14 +19,14 @@ export async function startPlayerDisplay(){
   const canvas=document.createElement('div');canvas.id='story-screen';canvas.className='story-screen';canvas.setAttribute('aria-label','Story scene');stage.append(canvas);
   const animation=createStoryPlayer(canvas,{onError:error=>{send({type:'display-error',message:error.message});$('live-message').textContent=error.message;}});
   const fullscreen=setupFullscreen({player:true,announce:text=>$('live-message').textContent=text});
-  const catalog=(await fetchJSON('./maps/catalog.json?v=28')).maps;
+  const catalog=(await fetchJSON('./maps/catalog.json?v=29')).maps;
   catalog.push(...customCatalog(sessionKey));
   const stored=read(`${sessionKey}:presentation`);
   const initialMap=catalog.find(entry=>entry.id===query.get('map'))||catalog[0];
   let presentation=validPresentation(stored,catalog)?stored:{mode:'battle',vibe:'embers',mapId:initialMap.id,revision:0,sceneRevision:0};
   let current=null,pending=null,lastDM=0,closing=false,showingStory=true,hideMapTimer=0,retiringMap=null,retireMapTimer=0;
   let channel;try{channel=new BroadcastChannel(sessionKey);}catch{}
-  const send=message=>{channel?.postMessage(message);try{localStorage.setItem(`${sessionKey}:signal`,JSON.stringify({...message,nonce:crypto.randomUUID()}));}catch{}};
+  const send=message=>{if(window.ullhexaResetting)return;channel?.postMessage(message);try{localStorage.setItem(`${sessionKey}:signal`,JSON.stringify({...message,nonce:crypto.randomUUID()}));}catch{}};
   function update(){
     const target=pending||current;
     const showMap=sceneCanShow(presentation,target);
@@ -53,7 +53,7 @@ export async function startPlayerDisplay(){
     if(pending?.mapId===presentation.mapId){update();return;}
     pending?.frame.remove();
     const frame=document.createElement('iframe');frame.className='player-scene';frame.title='Battle map';frame.setAttribute('aria-hidden','true');frame.tabIndex=-1;
-    const url=new URL(location.href);url.search=new URLSearchParams({view:'player',scene:'1',session,map:presentation.mapId,build:'28'}).toString();frame.src=url;
+    const url=new URL(location.href);url.search=new URLSearchParams({view:'player',scene:'1',session,map:presentation.mapId,build:'29'}).toString();frame.src=url;
     pending={frame,mapId:presentation.mapId,revision:-1,ready:false};stage.prepend(frame);update();
   }
   async function closeDisplay(){

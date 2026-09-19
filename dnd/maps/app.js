@@ -1,31 +1,33 @@
-import {createDiceTools} from './dice.js?v=28';
-import {fetchJSON,loadRaster} from './resource-loading.js?v=28';
-import {storyCatalog,nextStory} from './story-assets.js?v=28';
-import {createItemsUI} from './items-ui.js?v=28';
-import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=28';
-import {createHistory} from './history.js?v=28';
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=28';
-import {setupSidebarResize} from './sidebar-resize.js?v=28';
-import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=28';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=28';
-import {createFogTools} from './fog-tools.js?v=28';
-import {normalizeFog} from './fog-state.js?v=28';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=28';
-import {createSessionBundle} from './session-bundle.js?v=28';
-import { startDMShell } from './dm-shell.js?v=28';
-import { openPlayerWindow } from './display-window.js?v=28';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=28';
-import { createEncounterTools } from './encounter-tools.js?v=28';
-import { playerProjection, formation, moveParty } from './encounter-state.js?v=28';
-import { createMapMenu } from './map-menu.js?v=28';
-import { createSaveControls } from './save-controls.js?v=28';
-import { parseSave, restoreSave } from './save-file.js?v=28';
-import { createLighting } from './lighting.js?v=28';
-import { setupFullscreen } from './fullscreen.js?v=28';
-import { startPlayerDisplay } from './player-display.js?v=28';
-import { createDirector } from './director.js?v=28';
-import { normalizeProject } from './presentation-state.js?v=28';
+import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=29';
+import {createDiceTools} from './dice.js?v=29';
+import {fetchJSON,loadRaster} from './resource-loading.js?v=29';
+import {storyCatalog,nextStory} from './story-assets.js?v=29';
+import {createItemsUI} from './items-ui.js?v=29';
+import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=29';
+import {createHistory} from './history.js?v=29';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=29';
+import {setupSidebarResize} from './sidebar-resize.js?v=29';
+import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=29';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=29';
+import {createFogTools} from './fog-tools.js?v=29';
+import {normalizeFog} from './fog-state.js?v=29';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt} from './custom-maps.js?v=29';
+import {createSessionBundle} from './session-bundle.js?v=29';
+import { startDMShell } from './dm-shell.js?v=29';
+import { openPlayerWindow } from './display-window.js?v=29';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=29';
+import { createEncounterTools } from './encounter-tools.js?v=29';
+import { playerProjection, formation, moveParty } from './encounter-state.js?v=29';
+import { createMapMenu } from './map-menu.js?v=29';
+import { createSaveControls } from './save-controls.js?v=29';
+import { parseSave, restoreSave } from './save-file.js?v=29';
+import { createLighting } from './lighting.js?v=29';
+import { setupFullscreen } from './fullscreen.js?v=29';
+import { startPlayerDisplay } from './player-display.js?v=29';
+import { createDirector } from './director.js?v=29';
+import { normalizeProject } from './presentation-state.js?v=29';
 
+listenForBoardReset();
 const $ = id => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
 const query = new URLSearchParams(location.search);
@@ -43,7 +45,7 @@ const svgNode = (tag, attrs = {}, text) => {
   return node;
 };
 const readStored = key => { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } };
-const writeStored = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; } };
+const writeStored = (key, value) => { if(window.ullhexaResetting)return false;try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; } };
 
 async function start() {
   document.body.classList.toggle('player-mode', player);
@@ -58,7 +60,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=28')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=29')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -69,7 +71,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=28`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=29`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -200,7 +202,7 @@ async function start() {
 
   for(const [index,decoration] of (map.decorations||[]).entries()){const id=`decoration-${index}`,clip=svgNode('clipPath',{id});clip.append(svgNode('polygon',{points:polygon(decoration.polygon)}));defs.append(clip);$('terrain-layers').append(svgNode('image',{...dimensions,href:artwork[decoration.asset],'clip-path':`url(#${id})`,'pointer-events':'none'}));}
 
-  const floorNodes=new Map(),floorLayer=svgNode('g',{id:'floor-layers'});$('lighting-layer').before(floorLayer);
+  const floorNodes=new Map(),floorLayer=svgNode('g',{id:'floor-layers'});$('terrain-layers').before(floorLayer);
   for(const place of map.places)for(const floor of floorList(place)){if(!floor.asset)continue;const id=`floor-${place.id}-${floor.id}`,clip=svgNode('clipPath',{id});clip.append(svgNode('polygon',{points:polygon(floor.polygon)}));defs.append(clip);const art=svgNode('image',{...dimensions,href:artwork[floor.asset],'clip-path':`url(#${id})`,'pointer-events':'none'});floorLayer.append(art);floorNodes.set(`${place.id}:${floor.id}`,art);}
 
   $('dm-hotspots').after($('discovery-markers'));
@@ -215,13 +217,14 @@ async function start() {
   function livePositions(){send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,party:state.party,positions:mapTokens(playerProjection(state)).map(m=>({id:m.id,position:m.position,stack:m.stack||0}))});}
   function setTool(value){tool=value;measuring=value==='measure';$('map-stage').classList.toggle('is-measuring',measuring);$('measure').setAttribute('aria-pressed',measuring);fog?.setMode(value);$('map').style.cursor=value?'crosshair':'';encounter.clearSelection();}
   const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,setTool,livePositions});
+  if(!player){const overlay=svgNode('svg',{id:'party-overlay',preserveAspectRatio:'xMidYMid meet'});overlay.append($('party-layer'));$('map-stage').append(overlay);}
   fog=createFogTools({map,player,getState:()=>state,preview,finishDrag,pointAt,setTool,sendPreview:strokes=>send({type:'fog-preview',mapId:map.id,revision:state.revision,fog:strokes}),announce});
   if(!player)createDiceTools();
   combat=createCombatUI({map,player,getState:()=>state,commit,announce,getPresentation:()=>project,advanceStory:()=>setProject({...project,vibe:nextStory(project)})});
 
   function remember(view) { history.record(state,view); }
   function save() {
-    if (player) return;
+    if (player||window.ullhexaResetting) return;
     state=syncCampaign(state);
     storageWorks = writeStored(key, state);
     if(state.campaign)storageWorks=writeStored(`${sessionKey}:campaign`,state.campaign)&&storageWorks;
@@ -231,7 +234,7 @@ async function start() {
     publish();
   }
   function publish(){
-    if(player||!runtimeReady)return;
+    if(player||!runtimeReady||window.ullhexaResetting)return;
     send({type:'state',state:playerProjection(state)});
     send({type:'ruler',mapId:map.id,points:ruler});
     const storyAsset=storyCatalog(project).find(s=>s.id===project.vibe);
@@ -305,17 +308,17 @@ async function start() {
     $('redo').disabled = !history.canRedo;
     const overview = Math.abs(state.camera.zoom-1)<.001 && Math.abs(state.camera.x-.5)<.001 && Math.abs(state.camera.y-.5)<.001;
     const place=map.places.find(p=>p.id===focusedPlace);
-    if(!place||selected!==focusedPlace||Math.abs(state.camera.x-place.point[0])>.00001||Math.abs(state.camera.y-place.point[1])>.00001||Math.abs(state.camera.zoom-place.focusZoom)>.00001)focusedPlace=null;
+    if(!place||selected!==focusedPlace||Math.abs(state.camera.x-place.point[0])>.00001||Math.abs(state.camera.y-place.point[1])>.00001||Math.abs(state.camera.zoom-Math.min(3,place.focusZoom))>.00001)focusedPlace=null;
     $('focus-place').textContent=focusedPlace?'Overview':'Focus';
     $('fit-map').disabled = overview;
   }
   function cameraView(){
     const { x, y, zoom } = state.camera;
     const w = map.width / zoom, h = map.height / zoom;
-    $('map').setAttribute('viewBox', `${x * map.width - w / 2} ${y * map.height - h / 2} ${w} ${h}`);
+    const viewBox=`${x * map.width - w / 2} ${y * map.height - h / 2} ${w} ${h}`;$('map').setAttribute('viewBox',viewBox);$('party-overlay')?.setAttribute('viewBox',viewBox);
     $('zoom-value').textContent = `${Math.round(zoom * 100)}%`;
     $('zoom-out').disabled = zoom <= 1;
-    $('zoom-in').disabled = zoom >= 4;
+    $('zoom-in').disabled = zoom >= 3;
   }
   function renderCamera(){cameraFrame=0;cameraView();encounter.renderCamera();fog?.position();renderControls(true);reportScene();}
   function queueCamera(){if(!cameraFrame)cameraFrame=requestAnimationFrame(()=>{renderCamera();if(!player)send({type:'camera',mapId:map.id,camera:state.camera,revision:state.revision});});}
@@ -368,7 +371,7 @@ async function start() {
   function zoomBy(factor, anchor, immediate=false) {
     focusedPlace=null;
     const before = state.camera;
-    const zoom = clamp(before.zoom * factor, 1, 4);
+    const zoom = clamp(before.zoom * factor, 1, 3);
     const ratio = before.zoom / zoom;
     const camera = zoom === 1 ? { x: .5, y: .5, zoom } : { x: clamp(anchor ? anchor[0] + (before.x-anchor[0])*ratio : before.x, 0, 1), y: clamp(anchor ? anchor[1] + (before.y-anchor[1])*ratio : before.y, 0, 1), zoom };
     state = { ...state, camera, revision: state.revision+1 };if(immediate){renderCamera();if(!player)send({type:'camera',mapId:map.id,camera,revision:state.revision});}else queueCamera();
@@ -422,7 +425,7 @@ async function start() {
     selectPlace(selected);
     if(!map.places.length){$('places').previousElementSibling.hidden=true;$('places').hidden=true;announce('Custom map ready. Paint fog or add tokens and spell areas.');}
     setupSidebarResize();
-    $('focus-place').addEventListener('click', () => { const place=map.places.find(p=>p.id===selected);if(!place)return;if(focusedPlace){focusedPlace=null;$('fit-map').click();return;}focusedPlace=place.id;commit({...state,camera:{x:place.point[0],y:place.point[1],zoom:place.focusZoom}},`Focused on ${place.name.toLowerCase()}.`,false); });
+    $('focus-place').addEventListener('click', () => { const place=map.places.find(p=>p.id===selected);if(!place)return;if(focusedPlace){focusedPlace=null;$('fit-map').click();return;}focusedPlace=place.id;commit({...state,camera:{x:place.point[0],y:place.point[1],zoom:Math.min(3,place.focusZoom)}},`Focused on ${place.name.toLowerCase()}.`,false); });
     $('zoom-in').addEventListener('click', () => zoomBy(1.25));
     $('zoom-out').addEventListener('click', () => zoomBy(.8));
     $('fit-map').addEventListener('click', () => commit({ ...state, camera: initialState(map).camera }, 'Showing the whole map.', false));
@@ -447,19 +450,21 @@ async function start() {
       commit(entry.state,direction==='undo'?'Last encounter change undone.':'Last encounter change redone.',false);
       if(entry.view)selectPlace(entry.view.selectedPlace);
     }
+    $('initialize-board').addEventListener('click',async()=>{const b=$('initialize-board');b.disabled=true;b.textContent='Initializing…';try{await initializeControlBoard();}catch(error){announce(error.message);b.disabled=false;b.textContent='Initialize Control Board';}});
     $('undo').addEventListener('click',()=>travelHistory('undo'));
     $('redo').addEventListener('click',()=>travelHistory('redo'));
     $('open-player').addEventListener('click', () => {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'28',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'29',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
     });
     $('map-stage').addEventListener('wheel', event => {if(event.target.closest('.token-status-editor,.shape-palette,.item-comment,.dice-panel')||encounter.isDragging()||fog.isDrawing())return;event.preventDefault();wheelDelta+=event.deltaY;wheelPoint={clientX:event.clientX,clientY:event.clientY};if(!wheelFrame)wheelFrame=requestAnimationFrame(()=>{wheelFrame=0;const delta=wheelDelta;wheelDelta=0;zoomBy(Math.exp(-delta*.0015),pointAt(wheelPoint),true);});}, { passive: false });
-    $('map').addEventListener('pointerdown', event => {
+    $('map-stage').addEventListener('pointerdown', event => {
+      if(!$('map').contains(event.target)&&!party.contains(event.target))return;
       if(event.button!==0||drag||['paint','erase'].includes(tool))return;
       const p = pointAt(event);
       if(measuring){if(inBounds(p)){ruler=[p,p];drag={id:event.pointerId,measure:true,start:structuredClone(state),moved:false};$('map').setPointerCapture(event.pointerId);renderRuler(true);}return;}
@@ -520,7 +525,7 @@ async function start() {
       state={...state,roster:state.roster.map(m=>({...m,...(positions.get(m.id)||{})})),items:(state.items||[]).map(m=>({...m,...(positions.get(m.id)||{})})),monsters:state.monsters.map(m=>({...m,...(positions.get(m.id)||{})}))};
       if(inBounds(message.party)){state.party=message.party;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);}encounter.renderCharacterPositions();
     }
-    if(player&&message.type==='camera'&&message.mapId===map.id&&Number.isSafeInteger(message.revision)&&message.revision>=state.revision&&inBounds([message.camera?.x,message.camera?.y])&&Number.isFinite(message.camera?.zoom)&&message.camera.zoom>=1&&message.camera.zoom<=4){state={...state,camera:message.camera,revision:message.revision};queueCamera();return;}
+    if(player&&message.type==='camera'&&message.mapId===map.id&&Number.isSafeInteger(message.revision)&&message.revision>=state.revision&&inBounds([message.camera?.x,message.camera?.y])&&Number.isFinite(message.camera?.zoom)&&message.camera.zoom>=1&&message.camera.zoom<=3){state={...state,camera:message.camera,revision:message.revision};queueCamera();return;}
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='fog-preview'){state={...state,fog:normalizeFog(message.fog)};fog.render();}
     if(player&&message.type==='ruler'&&message.mapId===map.id&&Array.isArray(message.points)&&message.points.length<=2&&message.points.every(inBounds)){ruler=message.points;renderRuler();}
     if (player && message.type === 'state' && message.state?.mapId === map.id && message.state?.mapVersion === map.version) {

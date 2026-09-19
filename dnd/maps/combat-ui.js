@@ -1,14 +1,14 @@
-import {tokenGallery} from './token-gallery.js?v=28';
-import {createMemberStrip} from './member-strip.js?v=28';
-import {editStatCard} from './stat-card-editor.js?v=28';
-import {groupSelection} from './group-selection.js?v=28';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=28';
-import {conditionIcon} from './condition-icons.js?v=28';
-import {shortcutAction,isTextEntry} from './keyboard.js?v=28';
-import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=28';
-import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=28';
-import {setFace,portraitStyle} from './token-portraits.js?v=28';
-import {uploadImage,assetURL} from './local-assets.js?v=28';
+import {tokenGallery} from './token-gallery.js?v=29';
+import {createMemberStrip} from './member-strip.js?v=29';
+import {editStatCard} from './stat-card-editor.js?v=29';
+import {groupSelection} from './group-selection.js?v=29';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=29';
+import {conditionIcon} from './condition-icons.js?v=29';
+import {shortcutAction,isTextEntry} from './keyboard.js?v=29';
+import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=29';
+import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=29';
+import {setFace,portraitStyle} from './token-portraits.js?v=29';
+import {uploadImage,assetURL} from './local-assets.js?v=29';
 const $=id=>document.getElementById(id);
 export function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 export function button(text,fn,cls){const b=el('button',text,cls);b.type='button';if(fn)b.addEventListener('click',fn);return b;}
@@ -54,7 +54,7 @@ export function createCombatUI({map,player,getState,commit,announce,getPresentat
     for(const[id,row]of rows)if(!order.some(m=>m.id===id)){row.remove();rows.delete(id);}
     let empty=list.querySelector('.initiative-empty');if(!order.length){if(!empty)list.append(el('p','No initiative scores yet.','initiative-empty tool-hint'));}else empty?.remove();
     for(const m of order){let row=rows.get(m.id);if(!row){row=el('div',undefined,'turn-row');row.dataset.turn=m.id;const select=button('',()=>{commit({...getState(),turnId:m.id},'Turn selected.');focusAmount(m.id);},'turn-select');const b=el('span'),img=imageFor(m),name=el('span');select.append(b,img,name);row.append(select);if(m.monster){const hp=el('span',undefined,'hp-display'),box=el('div',undefined,'hp-adjust');const amount=input('',`Damage or healing for ${m.name}`,()=>{},'number');amount.min=0;amount.step=1;amount.placeholder='0';amount.dataset.hpInput=m.id;amount.addEventListener('focus',()=>amount.select());const adjust=heal=>{const member=getState().monsters.find(p=>p.id===m.id);commit(patchMember(getState(),m.id,changeHP(member,amount.value,heal)),`${m.name} HP updated.`);amount.value='';amount.focus({preventScroll:true});};const damage=button('',()=>adjust(false)),heal=button('',()=>adjust(true));damage.dataset.hpAction='damage';heal.dataset.hpAction='heal';const cross=document.createElementNS('http://www.w3.org/2000/svg','svg');cross.setAttribute('viewBox','0 0 24 24');cross.setAttribute('aria-hidden','true');cross.classList.add('heal-icon');const crossPath=document.createElementNS('http://www.w3.org/2000/svg','path');crossPath.setAttribute('d','M9 2H15V9H22V15H15V22H9V15H2V9H9Z');cross.append(crossPath);heal.append(cross);const sword=document.createElementNS('http://www.w3.org/2000/svg','svg');sword.setAttribute('viewBox','0 0 24 24');sword.setAttribute('aria-hidden','true');sword.classList.add('sword-icon');const blade=document.createElementNS('http://www.w3.org/2000/svg','path');blade.setAttribute('d','M14 3h7v7L10 18l-4-4L14 3ZM4 12l8 8M7 17l-4 4M2 19l3 3');sword.append(blade);damage.append(sword);damage.setAttribute('aria-label',`Damage ${m.name}`);heal.setAttribute('aria-label',`Heal ${m.name}`);damage.title="Apply damage";heal.title="Apply healing";box.append(hp,damage,amount,heal);row.append(box);}rows.set(m.id,row);}
-      row.classList.toggle('current',active===m.id);const select=row.firstElementChild;select.setAttribute('aria-label',`${m.name}, initiative ${m.initiative}`);select.children[0].replaceChildren(badgeNodes(m));setFace(select.children[1],m);select.children[2].textContent=m.name;if(m.monster)row.querySelector('.hp-display').textContent=`HP: ${m.hp}/${m.maxHp}`;const index=order.indexOf(m);if(list.children[index]!==row)list.insertBefore(row,list.children[index]||null);
+      row.classList.toggle('current',active===m.id);const select=row.firstElementChild;select.setAttribute('aria-label',`${m.name}, initiative ${m.initiative}`);select.children[0].replaceChildren(badgeNodes(m));setFace(select.children[1],m);select.children[2].textContent=m.name;if(m.monster)row.querySelector('.hp-display').textContent=`HP ${m.hp}/${m.maxHp}`;const index=order.indexOf(m);if(list.children[index]!==row)list.insertBefore(row,list.children[index]||null);
     }
   }
   return {render};
@@ -76,7 +76,14 @@ export function createLibraries({map,getState,commit,announce}){
       members.append(memberStrip.render(group.members,memberId));
       if(!group.members.some(m=>m.id===memberId))memberId=group.members[0]?.id;const m=group.members.find(m=>m.id===memberId);if(!m){members.append(el('p',`Add ${monster?'a monster':'a player'} to this group.`,'tool-hint'));return;}
       const patch=(p,redraw=true)=>editGroup(g=>({...g,members:g.members.map(v=>v.id===memberId?{...v,...p}:v)}),'',redraw);const fields=el('div',undefined,'member-fields');const naming=input(m.name,monster?'Monster name':'Player name',v=>patch({name:v.trim().slice(0,32)||'Unnamed'},false));naming.maxLength=32;fields.append(labeled('Name',naming));
-      if(monster){const size=input(m.size,'Token size in feet',v=>patch({size:fiveFeet(v)},false),'number');size.min=5;size.max=200;size.step=5;size.addEventListener('blur',()=>size.value=fiveFeet(size.value));const maximum=input(m.maxHp,'Maximum HP',v=>{const maxHp=Math.max(0,Math.min(100000,Math.round(Number(v)||0)));patch({maxHp,hp:Math.min(syncCampaign(getState()).campaign[key].find(g=>g.id===selected).members.find(v=>v.id===memberId).hp,maxHp)},false);},'number'),current=input(m.hp,'Current HP',v=>patch({hp:Math.max(0,Math.min(syncCampaign(getState()).campaign[key].find(g=>g.id===selected).members.find(v=>v.id===memberId).maxHp,Math.round(Number(v)||0)))},false),'number');maximum.min=current.min=0;maximum.step=current.step=1;fields.append(labeled('Size · ft',size),labeled('Max HP',maximum),labeled('Current HP',current));}
+      if(monster){
+        const currentMember=()=>syncCampaign(getState()).campaign[key].find(g=>g.id===selected).members.find(v=>v.id===memberId);
+        const size=input(m.size,'Token size in feet',v=>patch({size:fiveFeet(v)},false),'number');size.min=5;size.max=200;size.step=5;size.addEventListener('blur',()=>size.value=fiveFeet(size.value));
+        const current=input(m.hp,'Current HP',v=>patch({hp:Math.max(0,Math.min(currentMember().maxHp,Math.round(Number(v)||0)))},false),'number');current.disabled=m.hpLinked!==false;
+        const maximum=input(m.maxHp,'Maximum HP',v=>{const maxHp=Math.max(0,Math.min(100000,Math.round(Number(v)||0))),member=currentMember(),hp=member.hpLinked!==false?maxHp:Math.min(member.hp,maxHp);patch({maxHp,hp},false);current.value=hp;},'number');
+        const link=button('',()=>{const member=currentMember(),hpLinked=member.hpLinked===false;patch({hpLinked,...(hpLinked?{hp:member.maxHp}:{})});},'hp-link');link.setAttribute('aria-label',m.hpLinked===false?'Link Current HP to Max HP':'Unlink Current HP from Max HP');link.setAttribute('aria-pressed',m.hpLinked!==false);link.title=m.hpLinked===false?'Link HP':'Unlink HP';link.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m9 15 6-6M8 17l-1 1a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0M16 7l1-1a4 4 0 0 1 6 6l-5 5a4 4 0 0 1-6 0"/></svg>';
+        maximum.min=current.min=0;maximum.step=current.step=1;fields.append(labeled('Size · ft',size),labeled('Max HP',maximum),link,labeled('Current HP',current));
+      }
       members.append(fields);
       members.append(tokenGallery({kind:monster?'encounter':'party',mode:librarySource,setMode:value=>librarySource=value,selected:selectedUser||s.campaign.userTokens[monster?'encounter':'party'].find(t=>t.asset===m.avatar)?.id,setSelected:id=>selectedUser=id,getState,commit,onApply:token=>patch({avatar:token.asset}),onRefresh:render,error,factory:()=>{const grid=el('div',undefined,`portrait-options library-portraits${monster?'':' paired-portraits'}`);(monster?MONSTERS.map((name,id)=>({name,id})):PARTY_CHOICES).forEach(({name,id:index})=>{const b=button('',()=>patch({portrait:index,avatar:null,...(monster&&MONSTERS.includes(syncCampaign(getState()).campaign[key].find(g=>g.id===selected).members.find(v=>v.id===memberId).name)?{name}: {})}),'portrait-option');b.setAttribute('aria-label',name);b.title=name;b.setAttribute('aria-pressed',m.portrait===index&&!m.avatar);const face=el('span',undefined,'portrait-thumb');portraitStyle(face,index,monster);b.append(face);grid.append(b);});return grid;}}));
     }
