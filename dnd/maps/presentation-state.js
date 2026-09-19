@@ -1,5 +1,5 @@
-import {storyCatalog,validStoryAsset,validStoryAssets} from './story-assets.js?v=27';
-import { STORY_SCENES } from './story-scenes.js?v=27';
+import {storyCatalog,validStoryAsset,validStoryAssets} from './story-assets.js?v=28';
+import { STORY_SCENES } from './story-scenes.js?v=28';
 const ids=STORY_SCENES.map(scene=>scene.id);
 const validId=value=>typeof value==='string'&&/^[-a-zA-Z0-9]{1,80}$/.test(value);
 const list=value=>Array.isArray(value)&&value.length<=100&&value.every(validId)&&new Set(value).size===value.length;
@@ -15,7 +15,7 @@ export function normalizeProject(value,catalog,activeId) {
   const stories=Array.isArray(value?.stories)?[...new Set(value.stories)].filter(id=>allowedStories.includes(id)):[];
   if(!stories.length)stories.push('embers');
   const result={...(storyAssets.length?{storyAssets}:{}),version:1,mode:value?.mode==='story'?'story':'battle',maps,stories,vibe:stories.includes(value?.vibe)?value.vibe:stories[0]};
-  for(const kind of ['maps','stories']){const {key,active}=sceneKeys(kind),allowed=kind==='maps'?catalog.map(m=>m.id):allowedStories,seen=new Set();const groups=Array.isArray(value?.[key])?value[key]:[{id:`${kind}-default`,name:kind==='maps'?'Map session':'Storytelling session',entries:result[kind]}];result[key]=groups.slice(0,20).filter(g=>g&&validId(g.id)&&!seen.has(g.id)&&seen.add(g.id)).map(g=>({id:g.id,name:typeof g.name==='string'?g.name.trim().slice(0,48)||'Session':'Session',entries:[...new Set(Array.isArray(g.entries)?g.entries:[])].filter(id=>allowed.includes(id)).slice(0,100)}));result[active]=value?.[active]===null?null:result[key].some(g=>g.id===value?.[active])?value[active]:result[key][0]?.id||null;result[key]=result[key].map(g=>g.id===result[active]?{...g,entries:result[kind]}:g);}
+  for(const kind of ['maps','stories']){const {key,active}=sceneKeys(kind),allowed=kind==='maps'?catalog.map(m=>m.id):allowedStories,seen=new Set();const groups=Array.isArray(value?.[key])?value[key]:[{id:`${kind}-default`,name:kind==='maps'?'Map session':'Story session',entries:result[kind]}];result[key]=groups.slice(0,20).filter(g=>g&&validId(g.id)&&!seen.has(g.id)&&seen.add(g.id)).map(g=>({id:g.id,name:typeof g.name==='string'?g.name.trim().slice(0,48)||'Session':'Session',entries:[...new Set(Array.isArray(g.entries)?g.entries:[])].filter(id=>allowed.includes(id)).slice(0,100)}));result[active]=value?.[active]===null?null:result[key].some(g=>g.id===value?.[active])?value[active]:result[key][0]?.id||null;result[key]=result[key].map(g=>g.id===result[active]?{...g,entries:result[kind]}:g);}
   return result;
 }
 export function reorder(items,id,direction){const result=[...items],index=result.indexOf(id),target=index+direction;if(index>=0&&target>=0&&target<result.length)[result[index],result[target]]=[result[target],result[index]];return result;}

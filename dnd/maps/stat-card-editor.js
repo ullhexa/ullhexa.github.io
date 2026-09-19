@@ -1,0 +1,10 @@
+import {el,button} from './editor-dom.js?v=28';
+import {assetURL,uploadImage} from './local-assets.js?v=28';
+export function editStatCard(member){
+  const dialog=el('dialog',undefined,'stat-card-editor'),tabs=el('div',undefined,'source-tabs'),content=el('div',undefined,'stat-card-content'),error=el('p','','save-error'),footer=el('div',undefined,'dialog-actions');let mode=member.statText?'text':'image',asset=member.statCard||null,text=member.statText||'',result=null;
+  const imageButton=button('Upload image',()=>{mode='image';render();file.value='';file.click();}),textButton=button('Text',()=>{mode='text';render();}),file=el('input');file.type='file';file.accept='image/png,image/jpeg,image/webp';file.hidden=true;file.setAttribute('aria-label','Upload stat card image');tabs.append(imageButton,textButton,file);
+  function render(){imageButton.setAttribute('aria-pressed',mode==='image');textButton.setAttribute('aria-pressed',mode==='text');content.replaceChildren();if(mode==='text'){const input=el('textarea');input.value=text;input.rows=14;input.maxLength=20000;input.setAttribute('aria-label','Stat card text');input.addEventListener('input',()=>text=input.value);content.append(input);}else if(asset){const img=el('img');img.alt=`${member.name} stat card`;assetURL(asset).then(url=>{img.src=url;}).catch(e=>error.textContent=e.message);content.append(img);}else content.append(el('div','Upload image','stat-image-empty'));}
+  file.addEventListener('input',async()=>{if(!file.files?.[0])return;const apply=footer.querySelector('.primary');apply.disabled=true;try{asset=(await uploadImage(file.files[0],'stat')).id;mode='image';render();}catch(e){error.textContent=e.message;}finally{apply.disabled=false;}});
+  dialog.append(el('h2',`${member.name} stat card`),tabs,content,error,footer);document.body.append(dialog);
+  return new Promise(resolve=>{footer.append(button('Cancel',()=>dialog.close()),button('Apply stat card',()=>{result=mode==='text'?{statText:text,statCard:null}:{statCard:asset,statText:''};dialog.close();},'primary'));dialog.addEventListener('close',()=>{dialog.remove();resolve(result);},{once:true});render();dialog.showModal();});
+}

@@ -1,4 +1,4 @@
-import {normalizeItems, normalizeMembers, normalizeCampaign, syncCampaign, fiveFeet, initiativeOrder} from './combat-state.js?v=27';
+import {normalizeItems, normalizeMembers, normalizeCampaign, syncCampaign, fiveFeet, initiativeOrder} from './combat-state.js?v=28';
 export const PORTRAITS = ['Human warrior','Silver-haired elf','Dwarven adventurer','Halfling ranger','Half-orc guardian','Human wizard','Tiefling wanderer','Elven mage','Dragonborn',
   'Copper-haired elf','Human paladin','Dwarven shieldmaiden','Halfling bard','Half-orc veteran','Violet tiefling','Blue dragonborn','Gnome tinkerer',
   'Human cleric','Human monk','Elven scholar','Feline ranger','Lizardfolk druid','Veteran knight','Human rogue','Dwarven cleric','Human druid','Elder sorcerer','Golden dragonborn','Gnome scout','Orc fighter'];
@@ -30,12 +30,12 @@ export const worldToFeet = (map,n) => n/map.grid.size*map.grid.distance;
 
 // Nearest grid centers form a compact, non-overlapping group even beside a map edge.
 export function formation(map, anchor, count) {
-  const cols=Math.floor(map.width/map.grid.size), rows=Math.floor(map.height/map.grid.size);
-  const cx=clamp(Math.floor(anchor[0]*map.width/map.grid.size),0,cols-1), cy=clamp(Math.floor(anchor[1]*map.height/map.grid.size),0,rows-1);
+  const [ox,oy]=map.grid.offset||[0,0],cols=Math.max(0,Math.ceil((map.width-ox)/map.grid.size-.5)), rows=Math.max(0,Math.ceil((map.height-oy)/map.grid.size-.5));
+  const cx=clamp(Math.floor((anchor[0]*map.width-ox)/map.grid.size),0,cols-1), cy=clamp(Math.floor((anchor[1]*map.height-oy)/map.grid.size),0,rows-1);
   const cells=[];
   for(let y=0;y<rows;y++)for(let x=0;x<cols;x++)if((x-cx)%2===0&&(y-cy)%2===0)cells.push({x,y,d:(x-cx)**2+(y-cy)**2});
   cells.sort((a,b)=>a.d-b.d||a.y-b.y||a.x-b.x);
-  return cells.slice(0,count).map(({x,y})=>[(x+.5)*map.grid.size/map.width,(y+.5)*map.grid.size/map.height]);
+  return cells.slice(0,count).map(({x,y})=>[((x+.5)*map.grid.size+ox)/map.width,((y+.5)*map.grid.size+oy)/map.height]);
 }
 export function defaultRoster(map, anchor=map.partyStart) {
   return formation(map,anchor,4).map((position,index)=>({id:`player-${index+1}`,name:`Player ${index+1}`,portrait:PARTY_CHOICES[index].id,position}));
@@ -91,6 +91,6 @@ export function rotateShape(map,shape,point,offset=0) {
 }
 export function playerProjection(state) {
   const {campaign,...rest}=state;
-  const publicMember=m=>{const {hp,maxHp,statCard,...safe}=m;return safe;};
+  const publicMember=m=>{const {hp,maxHp,statCard,statText,...safe}=m;return safe;};
   return {...rest,public:true,turnId:state.public?state.turnId:initiativeOrder(state).some(m=>m.id===state.turnId)?state.turnId:initiativeOrder(state)[0]?.id||null,roster:state.roster.map(publicMember),items:(state.items||[]).filter(m=>m.visible).map(({comment,templateId,...safe})=>safe),monsters:(state.monsters||[]).filter(m=>m.visible).map(m=>({...publicMember(m),initiative:null})),shapes:state.shapes.map(s=>({...s,visible:true}))};
 }
