@@ -1,14 +1,19 @@
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=27';
-import {assetId} from './combat-state.js?v=27';
-import {assetURL} from './local-assets.js?v=27';
-import {createSceneGroups} from './scene-groups-ui.js?v=27';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=28';
+import {assetId} from './combat-state.js?v=28';
+import {assetURL} from './local-assets.js?v=28';
+import {createSceneGroups} from './scene-groups-ui.js?v=28';
 const $ = id => document.getElementById(id);
 
-export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject}) {
+export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject,deleteMap}) {
   const formatSize=value=>new Intl.NumberFormat('en',{maximumFractionDigits:1}).format(value);
   const dialog=$('map-dialog'),cache=new Map([[activeId,activeMap]]),buttons=new Map();
-  let selected=null,request=0,environment=null;
+  let selected=null,request=0,environment=null,source='factory',upload=null;
   const textNode=(tag,text,className)=>{const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node;};
+  const sourceBar=textNode('div','','source-tabs'),factory=textNode('button','Factory'),user=textNode('button','User'),create=textNode('button','Upload map','map-card create-token');
+  factory.type=user.type=create.type='button';sourceBar.append(factory,user);dialog.querySelector('.map-menu-heading').after(sourceBar);$('map-grid-menu').append(create);create.addEventListener('click',()=>upload?.());
+  function filter(){factory.setAttribute('aria-pressed',source==='factory');user.setAttribute('aria-pressed',source==='user');create.hidden=source!=='user';for(const [id,button]of buttons)button.hidden=!!catalog.find(e=>e.id===id)?.map?.userMap!==(source==='user');}
+  function changeSource(value){source=value;filter();request++;selected=null;environment=null;$('apply-map').disabled=true;$('map-details').replaceChildren();}
+  factory.addEventListener('click',()=>changeSource('factory'));user.addEventListener('click',()=>changeSource('user'));
   const groups=createSceneGroups({kind:'maps',panel:dialog,content:dialog.querySelector('.map-menu-layout'),getProject,setProject,catalog,onChange:()=>updateAdd()});
   function renderPlan(){groups.renderSequence();}
   function updateAdd(){const button=$('add-map-session');if(button){button.disabled=!groups.selected()||groups.entries().includes(selected);button.textContent=groups.entries().includes(selected)?'Added to session':'Add to session';}}
@@ -48,7 +53,7 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
         if(count)features.append(textNode('li',`${count} ${count===1?singular:plural}`));
       }
       details.append(features,environmentControls(map));
-      const add=textNode('button','Add to session');add.id='add-map-session';add.type='button';add.addEventListener('click',()=>{groups.update([...groups.entries(),entry.id]);renderPlan();updateAdd();});details.append(add);updateAdd();
+      const add=textNode('button','Add to session');add.id='add-map-session';add.type='button';add.addEventListener('click',()=>{groups.update([...groups.entries(),entry.id]);renderPlan();updateAdd();});const actions=textNode('div','','asset-actions');actions.append(add);if(map.userMap){const remove=textNode('button','Delete','danger');remove.type='button';remove.addEventListener('click',async()=>{remove.disabled=true;try{await deleteMap(entry.id);buttons.get(entry.id)?.remove();buttons.delete(entry.id);cache.delete(entry.id);changeSource('user');groups.render();renderPlan();}catch(e){remove.disabled=false;details.append(textNode('p',e.message,'save-error'));}});actions.append(remove);}details.append(actions);updateAdd();
       if(entry.id===activeId)details.append(textNode('p','Currently in play. Your encounter progress will be kept.','map-menu-hint'));
       $('apply-map').disabled=false;
     } catch {
@@ -63,13 +68,13 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
     button.append(image,textNode('span',entry.title,'map-card-title'),textNode('span',entry.id===activeId?'Currently in play':entry.category,'map-card-caption'));
     button.addEventListener('click',()=>select(entry));buttons.set(entry.id,button);$('map-grid-menu').append(button);renderPlan();
   }
-  catalog.forEach(addEntry);
+  catalog.forEach(addEntry);filter();
   registerMenu('maps',dialog,{onShow:fresh=>{groups.render(fresh);if(!fresh){renderPlan();return;}
-    request++;selected=null;environment=null;for(const button of buttons.values())button.setAttribute('aria-pressed','false');
+    source='factory';filter();request++;selected=null;environment=null;for(const button of buttons.values())button.setAttribute('aria-pressed','false');
     $('map-details').replaceChildren(textNode('p','Select a map to see its details.','map-menu-hint'));$('apply-map').disabled=true;renderPlan();
   }});
   $('open-maps').addEventListener('click',()=>openMenu('maps'));
   for(const id of ['close-maps'])$(id).addEventListener('click',()=>closeMenu());
   $('apply-map').addEventListener('click',()=>{if(selected&&environment&&!$('apply-map').disabled){if(groups.selected()){if(!groups.entries().includes(selected))groups.update([...groups.entries(),selected]);groups.activate();}closeMenu();applyMap(cache.get(selected),{...environment});}});
-  return {addEntry};
+  return {addEntry,setUpload:fn=>upload=fn,showEntry:entry=>{source='user';filter();select(entry);}};
 }

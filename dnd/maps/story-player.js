@@ -1,9 +1,9 @@
-import {createStoryAnimation} from './story-scenes.js?v=27';
-import {assetURL} from './local-assets.js?v=27';
-import {loadRaster} from './resource-loading.js?v=27';
+import {createStoryAnimation} from './story-scenes.js?v=28';
+import {assetURL} from './local-assets.js?v=28';
+import {loadRaster} from './resource-loading.js?v=28';
 
-export const STORY_FADE_MS=1000;
-export const MODE_FADE_MS=1500;
+export const STORY_FADE_MS=3000;
+export const MODE_FADE_MS=3000;
 export function createStoryPlayer(container,{onError=()=>{}}={}){
   let current=null,retiring=null,request=0,requested=null,running=false,stopTimer=0,retireTimer=0;
   const dispose=layer=>{layer?.animation?.destroy();layer?.element.remove();};

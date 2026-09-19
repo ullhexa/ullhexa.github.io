@@ -1,7 +1,7 @@
-import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=27';
-import {normalizeFog} from './fog-state.js?v=27';
-import {assetId} from './combat-state.js?v=27';
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=27';
+import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=28';
+import {normalizeFog} from './fog-state.js?v=28';
+import {assetId} from './combat-state.js?v=28';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=28';
 export const GRID_COLORS = ['map','black','white'];
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {
@@ -22,6 +22,7 @@ export function validateMap(map) {
   if (![map.id,map.version,map.title,map.grid?.unit].every(s=>typeof s==='string'&&s.length>0)) throw new Error('Missing map identity or units.');
   if (![map.art?.base,map.art?.roofs].every(s=>typeof s==='string'&&((s.startsWith('./')&&!s.includes('..'))||(map.userMap===true&&assetId(s))))) throw new Error('Artwork must use relative asset paths.');
   if (![map.width,map.height,map.grid?.size,map.grid?.distance].every(n=>Number.isFinite(n)&&n>0)) throw new Error('Invalid map dimensions or scale.');
+  if(map.grid.offset!==undefined&&(!Array.isArray(map.grid.offset)||map.grid.offset.length!==2||!map.grid.offset.every(n=>Number.isFinite(n)&&n>=0&&n<map.grid.size)))throw new Error('Invalid map grid offset.');
   if (map.grid.color !== undefined && (typeof map.grid.color !== 'string' || !/^#[0-9a-f]{6}$/i.test(map.grid.color))) throw new Error('Invalid map grid color.');
   if(!Array.isArray(map.places)||!Array.isArray(map.interactions)) throw new Error('Missing map objects.');
   const ids=new Set();

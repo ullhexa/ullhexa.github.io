@@ -1,9 +1,9 @@
-import {customCatalog} from './custom-maps.js?v=27';
-import { setupFullscreen } from './fullscreen.js?v=27';
-import {storyCatalog} from './story-assets.js?v=27';
-import {createStoryPlayer,MODE_FADE_MS} from './story-player.js?v=27';
-import {fetchJSON} from './resource-loading.js?v=27';
-import { validPresentation, sceneCanShow } from './presentation-state.js?v=27';
+import {customCatalog} from './custom-maps.js?v=28';
+import { setupFullscreen } from './fullscreen.js?v=28';
+import {storyCatalog} from './story-assets.js?v=28';
+import {createStoryPlayer,MODE_FADE_MS} from './story-player.js?v=28';
+import {fetchJSON} from './resource-loading.js?v=28';
+import { validPresentation, sceneCanShow } from './presentation-state.js?v=28';
 const $=id=>document.getElementById(id);
 const read=key=>{try{return JSON.parse(localStorage.getItem(key));}catch{return null;}};
 
@@ -16,24 +16,24 @@ export async function startPlayerDisplay(){
   $('map').remove();document.querySelector('.map-controls').remove();
   $('view-label').textContent='PLAYER DISPLAY';$('gesture-hint').textContent='View follows the DM';
   const stage=$('map-stage'),loading=$('map-loading');
-  const canvas=document.createElement('div');canvas.id='story-screen';canvas.className='story-screen';canvas.setAttribute('aria-label','Storytelling scene');stage.append(canvas);
+  const canvas=document.createElement('div');canvas.id='story-screen';canvas.className='story-screen';canvas.setAttribute('aria-label','Story scene');stage.append(canvas);
   const animation=createStoryPlayer(canvas,{onError:error=>{send({type:'display-error',message:error.message});$('live-message').textContent=error.message;}});
   const fullscreen=setupFullscreen({player:true,announce:text=>$('live-message').textContent=text});
-  const catalog=(await fetchJSON('./maps/catalog.json?v=27')).maps;
+  const catalog=(await fetchJSON('./maps/catalog.json?v=28')).maps;
   catalog.push(...customCatalog(sessionKey));
   const stored=read(`${sessionKey}:presentation`);
   const initialMap=catalog.find(entry=>entry.id===query.get('map'))||catalog[0];
   let presentation=validPresentation(stored,catalog)?stored:{mode:'battle',vibe:'embers',mapId:initialMap.id,revision:0,sceneRevision:0};
-  let current=null,pending=null,lastDM=0,closing=false,showingStory=true,hideMapTimer=0;
+  let current=null,pending=null,lastDM=0,closing=false,showingStory=true,hideMapTimer=0,retiringMap=null,retireMapTimer=0;
   let channel;try{channel=new BroadcastChannel(sessionKey);}catch{}
   const send=message=>{channel?.postMessage(message);try{localStorage.setItem(`${sessionKey}:signal`,JSON.stringify({...message,nonce:crypto.randomUUID()}));}catch{}};
   function update(){
     const target=pending||current;
     const showMap=sceneCanShow(presentation,target);
-    if(showMap&&pending){current?.frame.remove();current=pending;pending=null;current.frame.classList.add('is-current');}
+    if(showMap&&pending){clearTimeout(retireMapTimer);retiringMap?.frame.remove();retiringMap=current;current=pending;pending=null;current.frame.classList.add('is-current');if(retiringMap){retiringMap.frame.setAttribute('aria-hidden','true');retiringMap.frame.classList.add('scene-retiring');retireMapTimer=setTimeout(()=>{retiringMap?.frame.remove();retiringMap=null;},MODE_FADE_MS);}}
     if(presentation.mode==='story')showingStory=true;else if(showMap)showingStory=false;
     // The prepared map stays hidden behind the fully opaque story layer.
-    // Visibility changes only after the fade to Storytelling finishes.
+    // Visibility changes only after the fade to Story finishes.
     if(presentation.mode==='story'){if(!hideMapTimer)hideMapTimer=setTimeout(()=>{hideMapTimer=0;if(presentation.mode==='story')stage.classList.add('story-map-hidden');},MODE_FADE_MS);}else if(showMap){clearTimeout(hideMapTimer);hideMapTimer=0;stage.classList.remove('story-map-hidden');}
     const storytelling=showingStory;
     stage.classList.toggle('is-storytelling',storytelling);stage.dataset.displayMode=presentation.mode;stage.dataset.mapId=current?.mapId||'';
@@ -43,7 +43,7 @@ export async function startPlayerDisplay(){
     loading.hidden=presentation.mode==='story'||!!current||showMap;
     const entry=catalog.find(entry=>entry.id===presentation.mapId),vibe=storyCatalog({storyAssets:[presentation.storyAsset]}).find(scene=>scene.id===presentation.vibe);
     document.querySelector('.map-caption').hidden=storytelling;
-    $('map-identity').textContent=storytelling?'STORYTELLING':entry.identity;
+    $('map-identity').textContent=storytelling?'STORY':entry.identity;
     document.querySelector('.map-name').textContent=storytelling?vibe.title:entry.title;
     document.title=`${storytelling?vibe.title:entry.title} — Player display`;
     $('live-message').textContent=storytelling?'The story continues.':'Explore the map. The DM controls what appears here.';
@@ -53,7 +53,7 @@ export async function startPlayerDisplay(){
     if(pending?.mapId===presentation.mapId){update();return;}
     pending?.frame.remove();
     const frame=document.createElement('iframe');frame.className='player-scene';frame.title='Battle map';frame.setAttribute('aria-hidden','true');frame.tabIndex=-1;
-    const url=new URL(location.href);url.search=new URLSearchParams({view:'player',scene:'1',session,map:presentation.mapId,build:'27'}).toString();frame.src=url;
+    const url=new URL(location.href);url.search=new URLSearchParams({view:'player',scene:'1',session,map:presentation.mapId,build:'28'}).toString();frame.src=url;
     pending={frame,mapId:presentation.mapId,revision:-1,ready:false};stage.prepend(frame);update();
   }
   async function closeDisplay(){
@@ -88,7 +88,7 @@ export async function startPlayerDisplay(){
     else if(message?.type==='scene-error'){$('live-message').textContent='This map could not load. The previous scene is kept.';send({type:'display-error',message:'The player map could not load. Reopen the player display to retry.'});}
   });
   const timer=setInterval(()=>{if(!closing)send({type:'hello',playerId});$('connection-status').textContent=Date.now()-lastDM<7000?'Following the DM':'DM disconnected · last scene kept';},1500);
-  window.addEventListener('pagehide',event=>{closing=true;send({type:'bye',playerId});if(event.persisted){animation.stop();return;}clearInterval(timer);clearTimeout(hideMapTimer);animation.destroy();channel?.close();});
+  window.addEventListener('pagehide',event=>{closing=true;send({type:'bye',playerId});if(event.persisted){animation.stop();return;}clearInterval(timer);clearTimeout(hideMapTimer);clearTimeout(retireMapTimer);animation.destroy();channel?.close();});
   window.addEventListener('pageshow',event=>{if(event.persisted){closing=false;lastDM=0;update();send({type:'hello',playerId});}});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!closing)send({type:'hello',playerId});});
   prepare();send({type:'hello',playerId});

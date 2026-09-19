@@ -1,4 +1,4 @@
-import {assetId} from './combat-state.js?v=27';
+import {assetId} from './combat-state.js?v=28';
 let dbPromise;const urls=new Map();
 function database(){return dbPromise??=new Promise((resolve,reject)=>{const request=indexedDB.open('ullhexa-local-assets',1);request.onupgradeneeded=()=>request.result.createObjectStore('assets',{keyPath:'id'});request.onsuccess=()=>{const db=request.result;db.onversionchange=()=>{db.close();dbPromise=null;};db.onclose=()=>{dbPromise=null;};resolve(db);};request.onerror=()=>{dbPromise=null;reject(new Error('Local image storage is unavailable.'));};});}
 export async function assetRecord(id){const db=await database();return new Promise((resolve,reject)=>{const r=db.transaction('assets').objectStore('assets').get(id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
