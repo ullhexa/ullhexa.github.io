@@ -1,4 +1,4 @@
-import {loadRaster} from './resource-loading.js?v=31';
+import {loadRaster} from './resource-loading.js?v=32';
 const NS='http://www.w3.org/2000/svg';
 // Cache static art/light masks once per scene change at the source art resolution.
 // Pan/zoom move the cached plane; they never rebuild clips or light masks.
@@ -7,6 +7,10 @@ export function createScenery(map,svg){
  const defs=svg.querySelector('defs'),overlayDefs=document.createElementNS(NS,'defs');overlayDefs.append(document.getElementById('map-grid'));svg.prepend(overlayDefs);scene.append(defs);
  for(const id of ['artwork','floor-layers','terrain-layers','roof-layers','lighting-layer'])scene.append(document.getElementById(id));svg.before(scene);
  const plane=document.createElement('div');plane.id='scenery-cache';plane.setAttribute('aria-hidden','true');plane.style.width=`${map.width}px`;plane.style.height=`${map.height}px`;plane.hidden=true;scene.before(plane);
+ if(map.userMap){
+  const image=document.createElement('img');image.className='scenery-original';image.alt='';image.src=map.art.base.startsWith('asset-')?scene.querySelector('#artwork image').getAttribute('href'):map.art.base;const darkness=document.createElement('div');darkness.className='scenery-darkness';plane.append(image,darkness);plane.hidden=false;scene.style.visibility='hidden';let transform='';
+  return {render(level){darkness.style.opacity=level/100;},position({scale,x,y}){const next=`translate3d(${x}px,${y}px,0) scale(${scale})`;if(next!==transform){plane.style.transform=next;transform=next;}}};
+ }
  const art=document.createElement('canvas'),light=document.createElement('canvas');art.className='scenery-art';light.className='scenery-light';plane.append(art,light);
  const images=[...scene.querySelectorAll('image')],sources=new Map();let transform='',artKey='',lightKey='',request=0,ready=false;
  const load=url=>{if(!sources.has(url))sources.set(url,loadRaster(url).catch(e=>{sources.delete(url);throw e;}));return sources.get(url);};

@@ -1,5 +1,7 @@
-import {identityTransform,transformPoint,composeTransform,imageOperation} from './map-orientation.js?v=31';
-import {el,button,label} from './editor-dom.js?v=31';
+import {showDialog} from './dialogs.js?v=32';
+import {imageTypeNote} from './image-import.js?v=32';
+import {identityTransform,transformPoint,composeTransform,imageOperation} from './map-orientation.js?v=32';
+import {el,button,label} from './editor-dom.js?v=32';
 export const gridOrigin=(value,size)=>((value%size)+size)%size;
 export function zoomAt(view,point,next,frame=[960,540]){
   const zoom=Math.max(1,Math.min(20,next)),factor=view.fit*view.zoom,scale=view.fit*zoom;
@@ -45,7 +47,7 @@ export async function editMapGrid(asset,title,grid=null){
     });
     canvas.addEventListener('contextmenu',e=>e.preventDefault());
     const end=e=>{if(drag?.id!==e.pointerId)return;drag=null;canvas.classList.remove('is-dragging');if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);};canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
-    const actions=el('div',null,'dialog-actions');actions.append(button('Cancel',()=>dialog.close()),button('Apply grid',()=>{const changed=matrix.some((n,i)=>n!==identityTransform()[i]);let data=changed?art.toDataURL('image/png'):null;if(data?.length>20*1024*1024)data=art.toDataURL('image/webp',.95);result={...(changed?{asset:{id:`asset-${crypto.randomUUID()}`,width:dimensions[0],height:dimensions[1],data}}:{}),title:name.value.trim()||'Custom map',grid:{size,distance:5,unit:'ft',color:'#ffffff',offset:origin.map(n=>gridOrigin(n,size))}};dialog.close();},'primary'));
-    dialog.append(el('h2','Align map grid'),label('Map title',name),controls,orientation,canvas,actions);document.body.append(dialog);dialog.addEventListener('close',()=>{cancelAnimationFrame(frame);dialog.remove();resolve(result);},{once:true});dialog.showModal();sync();
+    const actions=el('div',null,'dialog-actions');actions.append(button('Cancel',()=>dialog.close()),button('Apply grid',()=>{const changed=matrix.some((n,i)=>n!==identityTransform()[i]);let data=changed?art.toDataURL('image/png'):null;result={...(changed?{asset:{id:`asset-${crypto.randomUUID()}`,width:dimensions[0],height:dimensions[1],data}}:{}),title:name.value.trim()||'Custom map',grid:{size,distance:5,unit:'ft',color:'#ffffff',offset:origin.map(n=>gridOrigin(n,size))}};dialog.close();},'primary'));
+    dialog.append(el('h2','Align map grid'),imageTypeNote(),label('Map title',name),controls,orientation,canvas,actions);document.body.append(dialog);dialog.addEventListener('close',()=>{cancelAnimationFrame(frame);dialog.remove();resolve(result);},{once:true});showDialog(dialog);sync();
   });
 }

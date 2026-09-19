@@ -1,5 +1,5 @@
-import {consumeMapDismissal} from './map-dismissal.js?v=31';
-import {el,button} from './editor-dom.js?v=31';
+import {consumeMapDismissal} from './map-dismissal.js?v=32';
+import {el,button} from './editor-dom.js?v=32';
 export const DICE=[4,6,8,10,20,100];
 export function dieValue(sides,random=()=>crypto.getRandomValues(new Uint32Array(1))[0]){
   if(!DICE.includes(sides))throw new Error('Unsupported die.');
@@ -17,4 +17,5 @@ export function createDiceTools(){
   function open(){panel.hidden=false;toggle.setAttribute('aria-pressed','true');}function close(){panel.hidden=true;toggle.setAttribute('aria-pressed','false');}
   document.addEventListener('pointerdown',e=>{if(!panel.hidden&&stage.contains(e.target)&&!panel.contains(e.target)&&!toggle.contains(e.target)){close();consumeMapDismissal(e,stage);}},true);
   document.addEventListener('keydown',e=>{if(!panel.hidden&&e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();}},true);
+  return {close};
 }

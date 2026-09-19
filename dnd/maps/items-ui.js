@@ -1,17 +1,16 @@
-import {itemFloorAt} from './floors.js?v=31';
-import {tokenGallery} from './token-gallery.js?v=31';
-import {createMemberStrip} from './member-strip.js?v=31';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=31';
-import {el,button} from './combat-ui.js?v=31';
-import {ITEMS,searchItems} from './items-catalog.js?v=31';
-import {setFace} from './token-portraits.js?v=31';
-import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=31';
-import {uploadImage} from './local-assets.js?v=31';
-import {groupSelection} from './group-selection.js?v=31';
+import {itemFloorAt} from './floors.js?v=32';
+import {tokenGallery} from './token-gallery.js?v=32';
+import {createMemberStrip} from './member-strip.js?v=32';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=32';
+import {el,button} from './combat-ui.js?v=32';
+import {ITEMS,searchItems} from './items-catalog.js?v=32';
+import {setFace} from './token-portraits.js?v=32';
+import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=32';
+import {groupSelection} from './group-selection.js?v=32';
 const $=id=>document.getElementById(id);
 function face(item){const img=el('img');img.alt='';img.width=img.height=40;img.draggable=false;setFace(img,item);return img;}
 function field(label,value,change,type='text'){const wrap=el('label',label,'field-label'),input=el('input');input.type=type;input.value=value;input.setAttribute('aria-label',label);input.addEventListener('input',()=>change(input.value));wrap.append(input);return {wrap,input};}
-export function createItemsUI({map,getState,commit,announce,pointAt,setTool,selectItem}){
+export function createItemsUI({map,getState,commit,announce,pointAt,setTool,selectItem,showNotes,locate}){
   let selected=null,itemId=null,signature='',traySignature='',query='',expanded=false,drag=null,librarySource='factory',selectedUser=null;const selection=groupSelection();
   const sidebar=el('section',undefined,'items-roster');sidebar.id='items-roster';$('combat-roster').after(sidebar);
   const tray=el('section',undefined,'item-tray');tray.id='item-tray';tray.setAttribute('aria-label','Reusable item tray');const traySurface=el('div',undefined,'item-tray-surface'),trayGrid=el('div',undefined,'item-tray-grid'),expand=button('⌃',()=>{expanded=!expanded;layoutTray();},'item-tray-expand');expand.setAttribute('aria-label','Expand item tray');traySurface.append(trayGrid,expand);tray.append(traySurface);
@@ -48,7 +47,7 @@ export function createItemsUI({map,getState,commit,announce,pointAt,setTool,sele
   function finish(e,cancel=false){if(!drag||drag.pointer!==e.pointerId)return;const d=drag;drag=null;d.ghost.remove();if(d.source.hasPointerCapture(e.pointerId))d.source.releasePointerCapture(e.pointerId);if(cancel||Math.hypot(e.clientX-d.x,e.clientY-d.y)<3)return;const stage=$('map-stage'),r=stage.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)return;let position=pointAt(e);if(!position||position.some(n=>n<0||n>1))return;if(getState().snap)position=snapPoint(map,position,d.item.size);const id=crypto.randomUUID(),next=placeItem(getState(),d.item,id,position,itemFloorAt(map,getState(),position));if(next===getState()){announce('Up to 500 placed items per map.');return;}commit(next,'Item placed.');selectItem(id);expanded=false;layoutTray();}
   tray.addEventListener('pointermove',moveDrag);tray.addEventListener('pointerup',e=>finish(e));tray.addEventListener('pointercancel',e=>finish(e,true));
   function render(){const s=getState(),g=s.campaign.itemLists.find(g=>g.id===s.campaign.activeItems),traySig=JSON.stringify(g?.members||[]);if(traySig!==traySignature){traySignature=traySig;trayGrid.replaceChildren();for(const item of g?.members||[]){const b=button('',()=>{},'tray-item');b.title=item.name;b.setAttribute('aria-label',`Drag ${item.name} onto map`);b.append(face(item));b.addEventListener('pointerdown',e=>beginDrag(e,item));trayGrid.append(b);}if(!g?.members.length){const b=button('Items',()=>openMenu('items'),'tray-empty');trayGrid.append(b);}requestAnimationFrame(layoutTray);}
-    const sig=JSON.stringify((s.items||[]).map(({position,stack,...m})=>m));if(sig===signature)return;signature=sig;sidebar.replaceChildren(el('h3','Items'));const grid=el('div',undefined,'item-roster-grid');grid.setAttribute('aria-label','Placed items');for(const m of s.items||[]){const row=el('div',undefined,'item-roster-row'),b=button('',()=>{setTool(null);selectItem(m.id);},'roster-portrait');b.setAttribute('aria-label',`Select item ${m.name}`);b.append(face(m),el('span',m.name));const visible=el('input');visible.type='checkbox';visible.checked=m.visible;visible.title='Visible to players';visible.setAttribute('aria-label',`Show item ${m.name} to players`);visible.addEventListener('change',()=>commit(patchToken(getState(),m.id,{visible:visible.checked}),'Item visibility updated.'));row.append(b,visible);grid.append(row);}sidebar.append(grid);
+    const sig=JSON.stringify((s.items||[]).map(({position,stack,...m})=>m));if(sig===signature)return;signature=sig;sidebar.replaceChildren(el('h3','Items'));const grid=el('div',undefined,'item-roster-grid');grid.setAttribute('aria-label','Placed items');for(const m of s.items||[]){const row=el('div',undefined,'item-roster-row'),b=button('',()=>{setTool(null);showNotes(m.id);},'roster-portrait');b.setAttribute('aria-label',`Open ${m.name} notes`);b.append(face(m));const name=button(m.name,()=>selectItem(m.id),'roster-name');name.addEventListener('dblclick',()=>locate(m.id));const visible=el('input');visible.type='checkbox';visible.checked=m.visible;visible.title='Visible to players';visible.setAttribute('aria-label',`Show item ${m.name} to players`);visible.addEventListener('change',()=>commit(patchToken(getState(),m.id,{visible:visible.checked}),'Item visibility updated.'));row.append(b,name,visible);grid.append(row);}sidebar.append(grid);
   }
   registerMenu('items',panel,{onShow:fresh=>{error.textContent='';if(fresh){librarySource='factory';selectedUser=null;selected=getState().campaign.activeItems;selection.reset(selected);}renderMenu();}});
   render();return {render};

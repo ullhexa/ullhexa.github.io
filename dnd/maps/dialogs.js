@@ -1,0 +1,9 @@
+// In-page modal layers keep library/editor transitions inside the DM fullscreen document.
+const stack=[];let installed=false;
+function refresh(){const active=stack.at(-1);for(const node of document.body.children){if(node.tagName==='SCRIPT')continue;node.inert=!!active&&node!==active.dialog&&node!==active.backdrop;}}
+export function showDialog(dialog){
+ if(dialog.open)return;const previous=document.activeElement,backdrop=document.createElement('div');backdrop.className='app-dialog-backdrop';const entry={dialog,backdrop,previous};stack.push(entry);dialog.before(backdrop);backdrop.style.zIndex=String(1000+stack.length*2);dialog.style.zIndex=String(1001+stack.length*2);dialog.classList.add('app-dialog');dialog.setAttribute('aria-modal','true');dialog.show();refresh();
+ dialog.addEventListener('close',()=>{const i=stack.indexOf(entry);if(i>=0)stack.splice(i,1);backdrop.remove();refresh();if(previous?.isConnected)previous.focus({preventScroll:true});},{once:true});
+ if(!installed){installed=true;document.addEventListener('keydown',event=>{const current=stack.at(-1);if(!current)return;if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();const cancel=new Event('cancel',{cancelable:true});if(current.dialog.dispatchEvent(cancel))current.dialog.close();}else if(event.key==='Tab'){const focusable=[...current.dialog.querySelectorAll('button,input,select,textarea,a[href],[tabindex]')].filter(n=>!n.disabled&&n.tabIndex>=0&&n.getClientRects().length);if(!focusable.length){event.preventDefault();return;}const first=focusable[0],last=focusable.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}},true);}
+ const initial=dialog.querySelector('[autofocus],button:not([disabled]),input:not([disabled])');initial?.focus({preventScroll:true});
+}

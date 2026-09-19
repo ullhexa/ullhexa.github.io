@@ -1,6 +1,6 @@
-import {createStoryAnimation} from './story-scenes.js?v=31';
-import {assetURL} from './local-assets.js?v=31';
-import {loadRaster} from './resource-loading.js?v=31';
+import {createStoryAnimation} from './story-scenes.js?v=32';
+import {assetURL,assetRecord} from './local-assets.js?v=32';
+import {loadRaster} from './resource-loading.js?v=32';
 
 export const STORY_FADE_MS=3000;
 export const MODE_FADE_MS=3000;
@@ -12,7 +12,7 @@ export function createStoryPlayer(container,{onError=()=>{}}={}){
     requested=key;const version=++request;
     try{
       let element,animation;
-      if(scene.asset){element=await loadRaster(await assetURL(scene.asset));element.alt=scene.title;}
+      if(scene.asset){element=await loadRaster(await assetURL(scene.asset));element.alt=scene.title;const framing=(await assetRecord(scene.asset))?.framing;if(framing)element.style.transform=`translate(${framing.x*100}%,${framing.y*100}%) scale(${framing.zoom})`;}
       else{element=document.createElement('canvas');element.setAttribute('aria-label',scene.title);animation=createStoryAnimation(element);}
       if(version!==request){animation?.destroy();return;}
       clearTimeout(retireTimer);dispose(retiring);retiring=current;

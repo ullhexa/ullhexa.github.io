@@ -1,22 +1,16 @@
-import {autoSaveEnabled,memoryAsset,rememberAssets,requestMemoryAsset} from './session-storage.js?v=31';
-import {assetId} from './combat-state.js?v=31';
+import {readRaster,rasterRecord,validImageDimensions} from './image-import.js?v=32';
+import {autoSaveEnabled,memoryAsset,rememberAssets,requestMemoryAsset} from './session-storage.js?v=32';
+import {assetId} from './combat-state.js?v=32';
 let dbPromise;const urls=new Map();
 function database(){return dbPromise??=new Promise((resolve,reject)=>{const request=indexedDB.open('ullhexa-local-assets',1);request.onupgradeneeded=()=>request.result.createObjectStore('assets',{keyPath:'id'});request.onsuccess=()=>{const db=request.result;db.onversionchange=()=>{db.close();dbPromise=null;};db.onclose=()=>{dbPromise=null;};resolve(db);};request.onerror=()=>{dbPromise=null;reject(new Error('Local image storage is unavailable.'));};});}
 async function storedAsset(id){const db=await database();return new Promise((resolve,reject)=>{const r=db.transaction('assets').objectStore('assets').get(id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 export async function assetRecord(id){const cached=memoryAsset(id);if(cached)return cached;const stored=await storedAsset(id);return stored||await requestMemoryAsset(id);}
-export function validAsset(a){return a&&assetId(a.id)&&typeof a.data==='string'&&a.data.length<=20*1024*1024&&/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(a.data)&&Number.isFinite(a.width)&&a.width>0&&a.width<=8192&&Number.isFinite(a.height)&&a.height>0&&a.height<=8192&&(a.imageEdit===undefined||(assetId(a.imageEdit?.source)&&a.imageEdit.source!==a.id&&Number.isFinite(a.imageEdit.zoom)&&a.imageEdit.zoom>=1&&a.imageEdit.zoom<=5&&[a.imageEdit.x,a.imageEdit.y].every(n=>Number.isFinite(n)&&Math.abs(n)<=50000)));}
+export function validAsset(a){return a&&assetId(a.id)&&typeof a.data==='string'&&a.data.length<=128*1024*1024&&/^data:image\/(png|jpeg|webp|avif);base64,[A-Za-z0-9+/]+=*$/.test(a.data)&&validImageDimensions(a.width,a.height)&&(a.framing===undefined||(Number.isFinite(a.framing?.zoom)&&a.framing.zoom>=1&&a.framing.zoom<=5&&[a.framing.x,a.framing.y].every(n=>Number.isFinite(n)&&Math.abs(n)<=5)))&&(a.imageEdit===undefined||(assetId(a.imageEdit?.source)&&a.imageEdit.source!==a.id&&Number.isFinite(a.imageEdit.zoom)&&a.imageEdit.zoom>=1&&a.imageEdit.zoom<=5&&[a.imageEdit.x,a.imageEdit.y].every(n=>Number.isFinite(n)&&Math.abs(n)<=50000)));}
 export async function persistAssets(records){if(!records.length)return;if(!records.every(validAsset))throw new Error('Invalid image in this save.');const db=await database();await new Promise((resolve,reject)=>{const tx=db.transaction('assets','readwrite');records.forEach(a=>tx.objectStore('assets').put(a));tx.oncomplete=resolve;tx.onerror=()=>reject(new Error('There is not enough browser storage for these images.'));tx.onabort=tx.onerror;});for(const a of records)urls.delete(a.id);}
 export async function putAssets(records){if(!records.every(validAsset))throw new Error('Invalid image in this save.');const saving=autoSaveEnabled();if(saving)await persistAssets(records);rememberAssets(records,{pending:!saving});for(const a of records)urls.delete(a.id);}
 export async function assetURL(id){if(!assetId(id))throw new Error('Invalid image reference.');if(!urls.has(id)){const a=await assetRecord(id);if(!a)throw new Error('A local image is missing. Load the original .ullhexa save to restore it.');urls.set(id,a.data);}return urls.get(id);}
 export async function uploadImage(file,kind='portrait'){
-  if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Choose a PNG, JPEG or WebP image.');
-  if(file.size>20*1024*1024)throw new Error('Choose an image under 20 MB.');
-  const url=URL.createObjectURL(file),image=new Image();
-  try{await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(new Error('This image could not be read.'));image.src=url;});
-    const limit=kind==='portrait'?512:kind==='stat'?2400:4096,ratio=Math.min(1,limit/Math.max(image.width,image.height));
-    const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.width*ratio));canvas.height=Math.max(1,Math.round(image.height*ratio));canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
-    const record={id:`asset-${crypto.randomUUID()}`,width:canvas.width,height:canvas.height,data:canvas.toDataURL('image/webp',.9)};await putAssets([record]);return record;
-  }finally{URL.revokeObjectURL(url);}
+ const raster=await readRaster(file);try{const record=rasterRecord(raster,{maxSide:kind==='portrait'?256:kind==='stat'?2400:Infinity});await putAssets([record]);return record;}finally{raster.dispose();}
 }
 export function referencedAssets(value,found=new Set()){if(assetId(value))found.add(value);else if(Array.isArray(value))value.forEach(v=>referencedAssets(v,found));else if(value&&typeof value==='object')Object.values(value).forEach(v=>referencedAssets(v,found));return found;}
 export async function exportAssets(value){const all=[],seen=new Set(),pending=[...referencedAssets(value)];while(pending.length){const id=pending.pop();if(seen.has(id))continue;seen.add(id);const a=await assetRecord(id);if(!a)throw new Error('A local image is missing. Restore it before saving.');all.push(a);if(a.imageEdit)pending.push(a.imageEdit.source);}return all;}

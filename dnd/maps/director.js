@@ -1,9 +1,10 @@
-import {editTokenImage} from './token-image-editor.js?v=31';
-import {createSceneGroups} from './scene-groups-ui.js?v=31';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=31';
-import {storyCatalog} from './story-assets.js?v=31';
-import {createStoryPlayer} from './story-player.js?v=31';
-import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=31';
+import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=32';
+import {editTokenImage} from './token-image-editor.js?v=32';
+import {createSceneGroups} from './scene-groups-ui.js?v=32';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=32';
+import {storyCatalog} from './story-assets.js?v=32';
+import {createStoryPlayer} from './story-player.js?v=32';
+import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=32';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 
@@ -24,7 +25,7 @@ export function createDirector({catalog,mapId,getProject,setProject,prepareMap,a
   dialog.innerHTML='<div class="map-menu-heading"><div><p class="eyebrow">STORY LIBRARY</p><h2 id="story-menu-title">Choose a scene</h2></div><button id="close-stories" class="quiet" aria-label="Close story menu">×</button></div><div class="story-menu-layout"><div id="story-grid" class="story-grid" role="group" aria-label="Available story scenes"></div><section class="story-details" aria-label="Selected story scene"><div id="story-preview" class="story-preview" aria-label="Story preview"></div><h3 id="story-title"></h3><p id="story-description"></p><button id="add-story">Add to session</button></section></div><div class="dialog-actions"><button id="apply-story" class="primary">Use scene</button></div>';
   document.body.append(dialog);
   const library=storyCatalog(getProject());
-  const source=el('div',null,'source-tabs'),factory=el('button','Factory'),user=el('button','User'),upload=el('input'),uploadButton=el('button','Upload image','story-card create-token'),error=el('p','','save-error');error.setAttribute('role','alert');upload.type='file';upload.accept='image/png,image/jpeg,image/webp';upload.hidden=true;upload.setAttribute('aria-label','Upload story image');uploadButton.type='button';uploadButton.addEventListener('click',()=>{upload.value='';upload.click();});source.append(factory,user,upload);dialog.querySelector('.map-menu-heading').after(source,error);
+  const source=el('div',null,'source-tabs'),factory=el('button','Factory'),user=el('button','User'),upload=el('input'),uploadButton=el('button','Upload image','story-card create-token'),error=el('p','','save-error');error.setAttribute('role','alert');upload.type='file';upload.accept=IMAGE_ACCEPT;upload.hidden=true;upload.setAttribute('aria-label','Upload story image');uploadButton.type='button';uploadButton.addEventListener('click',()=>{upload.value='';upload.click();});source.append(factory,user,upload);dialog.querySelector('.map-menu-heading').after(source,imageTypeNote(),error);
   const groups=createSceneGroups({kind:'stories',panel:dialog,content:dialog.querySelector('.story-menu-layout'),getProject,setProject,catalog:library,onChange:()=>render()});
   let selected=getProject().vibe,librarySource='factory';
   const remove=el('button','Delete','danger'),actions=el('div',null,'asset-actions');remove.type='button';$('add-story').before(actions);actions.append($('add-story'),remove);

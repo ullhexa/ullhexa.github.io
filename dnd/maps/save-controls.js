@@ -1,5 +1,6 @@
-import {chooseSaveDestination,writeGameFile} from './file-destination.js?v=31';
-import { MAX_SAVE_BYTES, parseSave, restoreSave, serializeSave, saveFilename } from './save-file.js?v=31';
+import {showDialog} from './dialogs.js?v=32';
+import {chooseSaveDestination,writeGameFile} from './file-destination.js?v=32';
+import { MAX_SAVE_BYTES, parseSave, restoreSave, serializeSave, saveFilename } from './save-file.js?v=32';
 const $=id=>document.getElementById(id);
 
 export function createSaveControls({map,catalog,loadMap,bundle,getState,getView,getProject,applySave,announce}) {
@@ -7,11 +8,11 @@ export function createSaveControls({map,catalog,loadMap,bundle,getState,getView,
   let lastName=`${map.title} - ${new Date().toLocaleDateString('en-CA')}`;
   function showError(message) {
     $('save-error-message').textContent=message;
-    $('save-error-dialog').showModal();
+    showDialog($('save-error-dialog'));
   }
   $('save-game').disabled=false;$('load-game').disabled=false;
   $('save-game').addEventListener('click',()=>{
-    $('save-name').value=lastName;$('save-name-error').textContent='';$('save-game-dialog').showModal();$('save-name').focus();$('save-name').select();
+    $('save-name').value=lastName;$('save-name-error').textContent='';showDialog($('save-game-dialog'));$('save-name').focus();$('save-name').select();
   });
   $('cancel-save').addEventListener('click',()=>$('save-game-dialog').close());
   $('save-game-form').addEventListener('submit',async event=>{

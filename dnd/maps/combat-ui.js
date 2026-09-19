@@ -1,14 +1,13 @@
-import {tokenGallery} from './token-gallery.js?v=31';
-import {createMemberStrip} from './member-strip.js?v=31';
-import {editStatCard} from './stat-card-editor.js?v=31';
-import {groupSelection} from './group-selection.js?v=31';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=31';
-import {conditionIcon} from './condition-icons.js?v=31';
-import {shortcutAction,isTextEntry} from './keyboard.js?v=31';
-import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=31';
-import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=31';
-import {setFace,portraitStyle} from './token-portraits.js?v=31';
-import {uploadImage,assetURL} from './local-assets.js?v=31';
+import {tokenGallery} from './token-gallery.js?v=32';
+import {createMemberStrip} from './member-strip.js?v=32';
+import {editStatCard} from './stat-card-editor.js?v=32';
+import {groupSelection} from './group-selection.js?v=32';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=32';
+import {conditionIcon} from './condition-icons.js?v=32';
+import {shortcutAction,isTextEntry} from './keyboard.js?v=32';
+import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=32';
+import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=32';
+import {setFace,portraitStyle} from './token-portraits.js?v=32';
 const $=id=>document.getElementById(id);
 export function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 export function button(text,fn,cls){const b=el('button',text,cls);b.type='button';if(fn)b.addEventListener('click',fn);return b;}
@@ -16,14 +15,14 @@ export function badgeNodes(member){const container=el('span',undefined,'conditio
 function imageFor(member){const img=el('img');img.alt='';img.width=img.height=40;img.draggable=false;setFace(img,member);return img;}
 function input(value,label,change,type='text'){const field=el('input');field.type=type;field.value=value??'';field.setAttribute('aria-label',label);field.addEventListener('input',()=>change(field.value));return field;}
 function labeled(label,field){const wrap=el('label',label,'field-label');wrap.append(field);return wrap;}
-export function createCombatUI({map,player,getState,commit,announce,getPresentation,advanceStory}){
+export function createCombatUI({map,player,getState,commit,announce,getPresentation,advanceStory,showStat,showAssigned,locate}){
   const stage=$('map-stage'),overlay=el('div',undefined,player?'player-initiative':'initiative-preview');overlay.id='initiative-overlay';stage.append(overlay);
   const rows=new Map();let panel,list,left,signature='',overlayDrag=null;
   if(!player){
     left=el('section',undefined,'combat-roster');left.id='combat-roster';document.querySelector('.encounter-heading').after(left);
     panel=el('aside',undefined,'initiative-panel');panel.id='initiative-panel';panel.tabIndex=0;panel.setAttribute('aria-label','Initiative turn order');const heading=el('div',undefined,'initiative-heading');heading.append(el('h2','Initiative'),button('↑',()=>advance(-1)),button('↓',()=>advance(1)));heading.children[1].setAttribute('aria-label','Previous turn');heading.children[2].setAttribute('aria-label','Next turn');list=el('div');list.id='initiative-list';
     const visibility=el('label',undefined,'check-label');const check=input('', 'Show player order',()=>{const s=getState();commit({...s,initiativeOverlay:{...s.initiativeOverlay,visible:check.checked}},'Player order visibility updated.');},'checkbox');check.id='initiative-visible';visibility.append(check,document.createTextNode('Player order'));panel.append(heading,visibility,list);document.querySelector('.workspace').append(panel);
-    document.addEventListener('keydown',e=>{if(e.defaultPrevented)return;const field=isTextEntry(e.target)?e.target:null,hp=field?.hasAttribute('data-hp-input');const action=shortcutAction({key:e.key,typing:!!field,hp,story:getPresentation?.().mode==='story',conditions:!!document.querySelector('.token-status-editor'),modal:!!document.querySelector('dialog[open],.dice-panel:not([hidden])'),meta:e.metaKey,ctrl:e.ctrlKey,alt:e.altKey,shift:e.shiftKey,composing:e.isComposing});if(!action)return;if(action==='next-story'){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)advanceStory?.();}else if(['next-turn','previous-turn'].includes(action)){if(!initiativeOrder(getState()).length)return;e.preventDefault();e.stopImmediatePropagation();advance(action==='next-turn'?1:-1);}else if(action==='damage'||action==='heal'){e.preventDefault();e.stopImmediatePropagation();field.closest('.turn-row').querySelector(`[data-hp-action="${action}"]`).click();}else if(action==='undo'||action==='redo'){e.preventDefault();e.stopImmediatePropagation();$(action).click();}},true);
+    document.addEventListener('keydown',e=>{if(e.defaultPrevented||e.target.closest('.reference-suite'))return;const field=isTextEntry(e.target)?e.target:null,hp=field?.hasAttribute('data-hp-input');const action=shortcutAction({key:e.key,typing:!!field,hp,story:getPresentation?.().mode==='story',conditions:!!document.querySelector('.token-status-editor'),modal:!!document.querySelector('dialog[open],.dice-panel:not([hidden])'),meta:e.metaKey,ctrl:e.ctrlKey,alt:e.altKey,shift:e.shiftKey,composing:e.isComposing});if(!action)return;if(action==='next-story'){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)advanceStory?.();}else if(['next-turn','previous-turn'].includes(action)){if(!initiativeOrder(getState()).length)return;e.preventDefault();e.stopImmediatePropagation();advance(action==='next-turn'?1:-1);}else if(action==='damage'||action==='heal'){e.preventDefault();e.stopImmediatePropagation();field.closest('.turn-row').querySelector(`[data-hp-action="${action}"]`).click();}else if(action==='undo'||action==='redo'){e.preventDefault();e.stopImmediatePropagation();$(action).click();}},true);
 
     overlay.tabIndex=0;overlay.setAttribute('aria-label','Player initiative position. Drag to place.');
     overlay.addEventListener('pointerdown',e=>{if(e.button!==0)return;e.stopPropagation();e.preventDefault();overlayDrag={id:e.pointerId,x:e.clientX,y:e.clientY,start:{...getState().initiativeOverlay},rect:stage.getBoundingClientRect()};overlay.setPointerCapture(e.pointerId);});
@@ -34,11 +33,10 @@ export function createCombatUI({map,player,getState,commit,announce,getPresentat
   }
   function focusAmount(id){const field=rows.get(id)?.querySelector('[data-hp-input]');if(field){field.focus({preventScroll:true});field.select();}else if(document.activeElement?.hasAttribute('data-hp-input'))document.activeElement.blur();}
   function advance(delta){const next=stepTurn(getState(),delta);commit(next,delta<0?'Previous turn.':'Next turn.');focusAmount(next.turnId);}
-  async function showStat(member){if(!member.statCard&&!member.statText){announce('Add a stat card in Encounter.');return;}let d=$('stat-card-dialog');if(!d){d=el('dialog');d.id='stat-card-dialog';document.body.append(d);}d.replaceChildren(button('Close',()=>d.close()));if(member.statText){const text=el('div',member.statText,'stat-card-text');d.append(text);d.showModal();return;}const img=el('img');img.alt=`${member.name} stat card`;try{img.src=await assetURL(member.statCard);d.append(img);d.showModal();}catch(e){announce(e.message);}}
   function rosterSection(title,members,monster){const section=el('div',undefined,'static-roster');const heading=el('div',undefined,'roster-heading'),reset=button('Reset',()=>commit(resetInitiative(getState(),monster),`${monster?'Encounter':'Party'} initiative scores reset.`),'reset-initiative');reset.dataset.reset=monster?'encounter':'party';reset.setAttribute('aria-label',`Reset ${monster?'encounter':'party'} initiative scores`);reset.title='Clear initiative scores';heading.append(el('h3',title),reset);section.append(heading);if(!members.length)section.append(el('p',monster?'Choose an encounter above.':'Add players in Party.','tool-hint'));
-    for(const m of members){const row=el('div',undefined,'combat-roster-row');row.dataset.member=m.id;const face=button('',()=>monster?showStat(combatants(getState()).find(p=>p.id===m.id)):document.dispatchEvent(new CustomEvent('edit-party-member',{detail:m.id})),'roster-portrait');face.setAttribute('aria-label',monster?`Open ${m.name} stat card`:`Edit ${m.name}`);face.append(imageFor(m),el('span',m.name));
+    for(const m of members){const row=el('div',undefined,'combat-roster-row');row.dataset.member=m.id;const face=button('',()=>monster?showStat(combatants(getState()).find(p=>p.id===m.id)):showAssigned(m.id),'roster-portrait');face.setAttribute('aria-label',monster?`Open ${m.name} stat card`:`Open ${m.name} assigned spells`);face.append(imageFor(m));const name=button(m.name,()=>{score.focus({preventScroll:true});score.select();},'roster-name');name.setAttribute('aria-label',`Initiative for ${m.name}: focus score`);name.addEventListener('dblclick',()=>locate(m.id));
       const score=input(m.initiative,`Initiative for ${m.name}`,v=>{const parsed=parseInitiative(v);if(/^-$|^-?\d+[.,]$/.test(v))return;if(v.trim()&&parsed===null){score.value=combatants(getState()).find(p=>p.id===m.id)?.initiative??'';announce('Enter a number, using a dot or comma for decimals.');return;}commit(patchMember(getState(),m.id,{initiative:parsed}),'Initiative updated.');});score.addEventListener('blur',()=>score.value=combatants(getState()).find(p=>p.id===m.id)?.initiative??'');score.addEventListener('keydown',e=>{if(e.key!=='Enter'||e.isComposing)return;e.preventDefault();e.stopPropagation();const fields=[...section.querySelectorAll('.initiative-input')],next=fields[fields.indexOf(score)+1];if(next){next.focus({preventScroll:true});next.select();}else score.blur();});score.inputMode='decimal';score.placeholder='—';score.className='initiative-input';
-      row.append(face,score);if(monster){const visible=input('',`Show ${m.name} to players`,()=>commit(patchMember(getState(),m.id,{visible:visible.checked}),'Monster visibility updated.'),'checkbox');visible.checked=m.visible;visible.title='Visible to players';row.append(visible);}section.append(row);
+      row.append(face,name,score);if(monster){const visible=input('',`Show ${m.name} to players`,()=>commit(patchMember(getState(),m.id,{visible:visible.checked}),'Monster visibility updated.'),'checkbox');visible.checked=m.visible;visible.title='Visible to players';row.append(visible);}section.append(row);
     }return section;
   }
   function render(){const s=getState(),order=initiativeOrder(s),active=player?s.turnId:(order.some(m=>m.id===s.turnId)?s.turnId:order[0]?.id),players=initiativeOrder(s,true);
