@@ -1,8 +1,9 @@
-import {projectMapIds} from './presentation-state.js?v=30';
-import {exportAssets,referencedAssets,validAsset,putAssets} from './local-assets.js?v=30';
-import {validCustomEntry,customCatalog,saveCustomCatalog} from './custom-maps.js?v=30';
-import {restoreSave,MAX_SAVE_BYTES} from './save-file.js?v=30';
-import {validateMap} from './state.js?v=30';
+import {writeSessionValue} from './session-storage.js?v=31';
+import {projectMapIds} from './presentation-state.js?v=31';
+import {exportAssets,referencedAssets,validAsset,putAssets} from './local-assets.js?v=31';
+import {validCustomEntry,customCatalog,saveCustomCatalog} from './custom-maps.js?v=31';
+import {restoreSave,MAX_SAVE_BYTES} from './save-file.js?v=31';
+import {validateMap} from './state.js?v=31';
 export function createSessionBundle({sessionKey,catalog,loadMap,getState,readMapState,saveCurrent}){
   const session=sessionKey.split(':').at(-1);
   return {
@@ -20,6 +21,6 @@ export function createSessionBundle({sessionKey,catalog,loadMap,getState,readMap
       for(const a of assets){const image=new Image();image.src=a.data;try{await image.decode();}catch{throw new Error('An image in this save is damaged.');}if(image.naturalWidth!==a.width||image.naturalHeight!==a.height)throw new Error('An image has invalid dimensions.');}
       return {catalog:combined,states:validated,assets,customMaps};
     },
-    async apply(prepared,data){if(data.version===1)return;await putAssets(prepared.assets);saveCustomCatalog(sessionKey,prepared.customMaps);catalog.splice(0,catalog.length,...prepared.catalog);for(const{map,state}of prepared.states)localStorage.setItem(`lanternford:${map.id}:${map.version}:${session}`,JSON.stringify(state));localStorage.setItem(`${sessionKey}:campaign`,JSON.stringify(data.state.campaign));}
+    async apply(prepared,data){if(data.version===1)return;await putAssets(prepared.assets);saveCustomCatalog(sessionKey,prepared.customMaps);catalog.splice(0,catalog.length,...prepared.catalog);for(const{map,state}of prepared.states)writeSessionValue(`lanternford:${map.id}:${map.version}:${session}`,state);writeSessionValue(`${sessionKey}:campaign`,data.state.campaign);}
   };
 }

@@ -1,4 +1,5 @@
-import {clearAssets} from './local-assets.js?v=30';
+import {clearSessionMemory} from './session-storage.js?v=31';
+import {clearAssets} from './local-assets.js?v=31';
 export const isBoardStorageKey=key=>key.startsWith('lanternford:')||['ullhexa:initiative-width','ullhexa:dm-sidebar-width'].includes(key);
 const channelName='ullhexa-control-board-reset',signalKey='lanternford:reset-signal';
 let channel;
@@ -10,5 +11,5 @@ export function listenForBoardReset(){
 function notify(message){channel?.postMessage(message);localStorage.setItem(signalKey,JSON.stringify({...message,nonce:crypto.randomUUID()}));}
 export async function initializeControlBoard(){
   window.ullhexaResetting=true;notify({type:'begin'});
-  try{await clearAssets();const keys=Object.keys(localStorage).filter(isBoardStorageKey);keys.forEach(key=>localStorage.removeItem(key));const session=crypto.randomUUID();notify({type:'complete',session});localStorage.removeItem(signalKey);const url=new URL(location.href);url.search=new URLSearchParams({session}).toString();window.top.location.replace(url);}catch(error){window.ullhexaResetting=false;notify({type:'cancel'});localStorage.removeItem(signalKey);throw error;}
+  try{await clearAssets();clearSessionMemory();const keys=Object.keys(localStorage).filter(isBoardStorageKey);keys.forEach(key=>localStorage.removeItem(key));const session=crypto.randomUUID();notify({type:'complete',session});localStorage.removeItem(signalKey);const url=new URL(location.href);url.search=new URLSearchParams({session}).toString();window.top.location.replace(url);}catch(error){window.ullhexaResetting=false;notify({type:'cancel'});localStorage.removeItem(signalKey);throw error;}
 }

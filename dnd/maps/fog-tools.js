@@ -1,4 +1,4 @@
-import {FOG_SIZES,FOG_FEATHER} from './fog-state.js?v=30';
+import {FOG_SIZES,FOG_FEATHER} from './fog-state.js?v=31';
 export function createFogTools({map,player,getState,preview,finishDrag,pointAt,setTool,sendPreview,announce}){
   const stage=document.getElementById('map-stage'),svg=document.getElementById('map'),canvas=document.createElement('canvas');canvas.id='painted-fog';stage.append(canvas);
   const ratio=Math.min(1,2048/map.width,2048/map.height);canvas.width=Math.round(map.width*ratio);canvas.height=Math.round(map.height*ratio);
@@ -22,7 +22,7 @@ export function createFogTools({map,player,getState,preview,finishDrag,pointAt,s
     }
     lastFog=fog;c.clearRect(0,0,canvas.width,canvas.height);c.globalCompositeOperation='source-over';if(texture.complete&&texture.naturalWidth)c.drawImage(texture,0,0,canvas.width,canvas.height);else{c.fillStyle='#38443f';c.fillRect(0,0,canvas.width,canvas.height);}c.globalCompositeOperation='destination-in';c.drawImage(mask,0,0);c.globalCompositeOperation='source-over';position();
   }
-  function position(){if(canvas.hidden)return;const matrix=svg.getScreenCTM(),r=stage.getBoundingClientRect();if(!matrix)return;canvas.style.transform=`matrix(${matrix.a/ratio},${matrix.b/ratio},${matrix.c/ratio},${matrix.d/ratio},${matrix.e-r.left-stage.clientLeft},${matrix.f-r.top-stage.clientTop})`;}
+  function position(view){if(canvas.hidden)return;if(view?.scale){canvas.style.transform=`translate3d(${view.x}px,${view.y}px,0) scale(${view.scale/ratio})`;return;}const matrix=svg.getScreenCTM(),r=stage.getBoundingClientRect();if(!matrix)return;canvas.style.transform=`translate3d(${matrix.e-r.left-stage.clientLeft}px,${matrix.f-r.top-stage.clientTop}px,0) scale(${matrix.a/ratio})`;}
   new ResizeObserver(position).observe(stage);
   function flush(){cancelAnimationFrame(frame);frame=0;if(!drag)return;preview({...getState(),fog:[...drag.start.fog,drag.stroke]},'fog');draw();if(performance.now()-lastSignal>65){lastSignal=performance.now();sendPreview(getState().fog);}}
   if(!player){const controls=document.createElement('div');controls.className='fog-controls';controls.setAttribute('aria-label','Fog of war');const caption=document.createElement('span');caption.textContent='Fog:';controls.append(caption);

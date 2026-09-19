@@ -1,9 +1,9 @@
-import {editTokenImage} from './token-image-editor.js?v=30';
-import {createSceneGroups} from './scene-groups-ui.js?v=30';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=30';
-import {storyCatalog} from './story-assets.js?v=30';
-import {createStoryPlayer} from './story-player.js?v=30';
-import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=30';
+import {editTokenImage} from './token-image-editor.js?v=31';
+import {createSceneGroups} from './scene-groups-ui.js?v=31';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=31';
+import {storyCatalog} from './story-assets.js?v=31';
+import {createStoryPlayer} from './story-player.js?v=31';
+import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=31';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 

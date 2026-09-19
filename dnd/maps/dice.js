@@ -1,5 +1,5 @@
-import {consumeMapDismissal} from './map-dismissal.js?v=30';
-import {el,button} from './editor-dom.js?v=30';
+import {consumeMapDismissal} from './map-dismissal.js?v=31';
+import {el,button} from './editor-dom.js?v=31';
 export const DICE=[4,6,8,10,20,100];
 export function dieValue(sides,random=()=>crypto.getRandomValues(new Uint32Array(1))[0]){
   if(!DICE.includes(sides))throw new Error('Unsupported die.');
