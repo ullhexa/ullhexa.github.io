@@ -1,4 +1,5 @@
-import {el,button} from './editor-dom.js?v=29';
+import {consumeMapDismissal} from './map-dismissal.js?v=30';
+import {el,button} from './editor-dom.js?v=30';
 export const DICE=[4,6,8,10,20,100];
 export function dieValue(sides,random=()=>crypto.getRandomValues(new Uint32Array(1))[0]){
   if(!DICE.includes(sides))throw new Error('Unsupported die.');
@@ -14,6 +15,6 @@ export function createDiceTools(){
   controls.append(button('Reset',reset));for(const sides of DICE){const b=button('',()=>{counts[sides]=Math.min(20,(counts[sides]||0)+1);refresh();},'die-choice');b.append(el('output',''),el('span',`D${sides}`));controls.append(b);buttons.set(sides,b);}
   const throwButton=button('Throw',()=>{const result=rollDice(counts);if(!result.length)return;rolling=true;panel.classList.add('rolling');tray.replaceChildren();total.textContent='…';refresh();for(const [index,die]of result.entries()){const face=el('div','',`rolled-die die-${die.sides}`);face.style.setProperty('--i',index%9);face.append(el('small',`D${die.sides}`),el('strong','?'));tray.append(face);}timer=setTimeout(()=>{[...tray.children].forEach((face,i)=>face.querySelector('strong').textContent=result[i].value);total.textContent=String(result.reduce((sum,d)=>sum+d.value,0));rolling=false;panel.classList.remove('rolling');refresh();},matchMedia('(prefers-reduced-motion:reduce)').matches?0:950);},'primary');controls.append(throwButton);refresh();
   function open(){panel.hidden=false;toggle.setAttribute('aria-pressed','true');}function close(){panel.hidden=true;toggle.setAttribute('aria-pressed','false');}
-  document.addEventListener('pointerdown',e=>{if(!panel.hidden&&stage.contains(e.target)&&!panel.contains(e.target)&&!toggle.contains(e.target)){close();if(stage.contains(e.target)){e.preventDefault();e.stopImmediatePropagation();}}},true);
+  document.addEventListener('pointerdown',e=>{if(!panel.hidden&&stage.contains(e.target)&&!panel.contains(e.target)&&!toggle.contains(e.target)){close();consumeMapDismissal(e,stage);}},true);
   document.addEventListener('keydown',e=>{if(!panel.hidden&&e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();}},true);
 }

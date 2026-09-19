@@ -1,4 +1,4 @@
-import {clearAssets} from './local-assets.js?v=29';
+import {clearAssets} from './local-assets.js?v=30';
 export const isBoardStorageKey=key=>key.startsWith('lanternford:')||['ullhexa:initiative-width','ullhexa:dm-sidebar-width'].includes(key);
 const channelName='ullhexa-control-board-reset',signalKey='lanternford:reset-signal';
 let channel;

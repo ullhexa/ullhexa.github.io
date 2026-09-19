@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "id": "blighted-farm",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "title": "The Blighted Farm",
   "width": 3840,
   "height": 2160,
   "grid": {
-    "size": 30,
+    "size": 60,
     "distance": 5,
     "unit": "ft",
     "color": "#dcd5bb"
@@ -1017,7 +1017,8 @@
     "0.1.1",
     "0.1.0",
     "0.2.0",
-    "0.3.0"
+    "0.3.0",
+    "0.4.0"
   ],
   "retiredInteractions": [
     "barn-cellar"

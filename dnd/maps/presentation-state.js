@@ -1,5 +1,5 @@
-import {storyCatalog,validStoryAsset,validStoryAssets} from './story-assets.js?v=29';
-import { STORY_SCENES } from './story-scenes.js?v=29';
+import {storyCatalog,validStoryAsset,validStoryAssets} from './story-assets.js?v=30';
+import { STORY_SCENES } from './story-scenes.js?v=30';
 const ids=STORY_SCENES.map(scene=>scene.id);
 const validId=value=>typeof value==='string'&&/^[-a-zA-Z0-9]{1,80}$/.test(value);
 const list=value=>Array.isArray(value)&&value.length<=100&&value.every(validId)&&new Set(value).size===value.length;
@@ -19,8 +19,8 @@ export function normalizeProject(value,catalog,activeId) {
   return result;
 }
 export function reorder(items,id,direction){const result=[...items],index=result.indexOf(id),target=index+direction;if(index>=0&&target>=0&&target<result.length)[result[index],result[target]]=[result[target],result[index]];return result;}
-export function validPresentation(value,catalog){return !!value&&['battle','story'].includes(value.mode)&&(ids.includes(value.vibe)||(validStoryAsset(value.storyAsset)&&value.storyAsset.id===value.vibe))&&catalog.some(map=>map.id===value.mapId)&&Number.isSafeInteger(value.revision)&&value.revision>=0&&Number.isSafeInteger(value.sceneRevision)&&value.sceneRevision>=0;}
-export function sceneCanShow(presentation,scene){return presentation?.mode==='battle'&&scene?.mapId===presentation.mapId&&scene.ready&&scene.revision>=presentation.sceneRevision;}
+export function validPresentation(value,catalog){return !!value&&(value.mapContent===undefined||(typeof value.mapContent==='string'&&value.mapContent.length<=2000))&&['battle','story'].includes(value.mode)&&(ids.includes(value.vibe)||(validStoryAsset(value.storyAsset)&&value.storyAsset.id===value.vibe))&&catalog.some(map=>map.id===value.mapId)&&Number.isSafeInteger(value.revision)&&value.revision>=0&&Number.isSafeInteger(value.sceneRevision)&&value.sceneRevision>=0;}
+export function sceneCanShow(presentation,scene){return presentation?.mode==='battle'&&scene?.mapId===presentation.mapId&&(scene.content||'')===(presentation.mapContent||'')&&scene.ready&&scene.revision>=presentation.sceneRevision;}
 
 export function sceneKeys(kind){return kind==='maps'?{key:'mapGroups',active:'activeMapGroup'}:{key:'storyGroups',active:'activeStoryGroup'};}
 function validSceneGroups(value,kind){const{key,active}=sceneKeys(kind);if(value[key]===undefined)return value[active]===undefined;return Array.isArray(value[key])&&value[key].length<=20&&new Set(value[key].map(g=>g?.id)).size===value[key].length&&value[key].every(g=>g&&validId(g.id)&&typeof g.name==='string'&&g.name.trim()&&g.name.length<=48&&list(g.entries)&&(kind!=='stories'||g.entries.every(id=>storyCatalog(value).some(s=>s.id===id))))&&(value[active]===null||value[key].some(g=>g.id===value[active]));}

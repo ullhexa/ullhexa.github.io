@@ -1,8 +1,8 @@
-import {projectMapIds} from './presentation-state.js?v=29';
-import {exportAssets,referencedAssets,validAsset,putAssets} from './local-assets.js?v=29';
-import {validCustomEntry,customCatalog,saveCustomCatalog} from './custom-maps.js?v=29';
-import {restoreSave,MAX_SAVE_BYTES} from './save-file.js?v=29';
-import {validateMap} from './state.js?v=29';
+import {projectMapIds} from './presentation-state.js?v=30';
+import {exportAssets,referencedAssets,validAsset,putAssets} from './local-assets.js?v=30';
+import {validCustomEntry,customCatalog,saveCustomCatalog} from './custom-maps.js?v=30';
+import {restoreSave,MAX_SAVE_BYTES} from './save-file.js?v=30';
+import {validateMap} from './state.js?v=30';
 export function createSessionBundle({sessionKey,catalog,loadMap,getState,readMapState,saveCurrent}){
   const session=sessionKey.split(':').at(-1);
   return {
@@ -15,7 +15,7 @@ export function createSessionBundle({sessionKey,catalog,loadMap,getState,readMap
       if(!Array.isArray(states)||states.length>100||new Set(states.map(s=>s.mapId)).size!==states.length)throw new Error('This save contains invalid map states.');
       const combined=[...catalog.filter(e=>!customMaps.some(m=>m.id===e.id)),...customMaps],validated=[];
       for(const state of states){const entry=combined.find(e=>e.id===state.mapId);if(!entry)throw new Error('A saved map is unavailable.');const map=entry.map?validateMap(entry.map):await loadMap(entry);restoreSave(map,{...data,state,view:{selectedPlace:map.places[0]?.id||null,ruler:[]}});validated.push({map,state});}
-      const refs=referencedAssets({...data,assets:undefined});if([...refs].some(id=>!assets.some(a=>a.id===id)))throw new Error('This save is missing an uploaded image.');
+      const refs=referencedAssets({...data,assets:assets.map(a=>a.imageEdit)});if([...refs].some(id=>!assets.some(a=>a.id===id)))throw new Error('This save is missing an uploaded image.');
       // Decode all uploaded raster data before any encounter or library is changed.
       for(const a of assets){const image=new Image();image.src=a.data;try{await image.decode();}catch{throw new Error('An image in this save is damaged.');}if(image.naturalWidth!==a.width||image.naturalHeight!==a.height)throw new Error('An image has invalid dimensions.');}
       return {catalog:combined,states:validated,assets,customMaps};

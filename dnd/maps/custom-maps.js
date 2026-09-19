@@ -1,7 +1,7 @@
-import {uploadImage,assetURL} from './local-assets.js?v=29';
-import {el} from './editor-dom.js?v=29';
-import {editMapGrid} from './grid-editor.js?v=29';
-import {assetId,safeId} from './combat-state.js?v=29';
+import {uploadImage,assetURL,assetRecord,putAssets} from './local-assets.js?v=30';
+import {el} from './editor-dom.js?v=30';
+import {editMapGrid} from './grid-editor.js?v=30';
+import {assetId,safeId} from './combat-state.js?v=30';
 export function customCatalog(sessionKey){try{const entries=JSON.parse(localStorage.getItem(`${sessionKey}:custom-maps`))||[];return entries.filter(validCustomEntry);}catch{return [];}}
 export function validCustomEntry(e){const m=e?.map;return !!(e&&safeId(e.id)&&e.id.startsWith('custom-')&&m&&m.id===e.id&&m.schemaVersion===1&&m.version==='1'&&e.thumbnail===m.art?.base&&e.title===m.title&&Object.keys(m.art||{}).every(k=>['base','roofs'].includes(k))&&m.lighting===undefined&&m.userMap===true&&typeof m.title==='string'&&m.title.length<=80&&m.width>=100&&m.width<=4096&&m.height>=100&&m.height<=4096&&Number.isFinite(m.grid?.size)&&m.grid.size>=1&&m.grid.distance===5&&(m.grid.offset===undefined||(Array.isArray(m.grid.offset)&&m.grid.offset.length===2&&m.grid.offset.every(n=>Number.isFinite(n)&&n>=0&&n<m.grid.size)))&&assetId(m.art?.base)&&m.art.base===m.art.roofs&&Array.isArray(m.places)&&m.places.length===0&&Array.isArray(m.interactions)&&m.interactions.length===0);}
 export function saveCustomCatalog(sessionKey,entries){if(!entries.every(validCustomEntry)||entries.length>40)throw new Error('Invalid custom map library.');localStorage.setItem(`${sessionKey}:custom-maps`,JSON.stringify(entries));}
@@ -11,10 +11,19 @@ export function createMapUpload({sessionKey,catalog,onAdded,announce}){
   upload.addEventListener('input',async()=>{const file=upload.files?.[0];if(!file||busy)return;busy=true;error.textContent='';try{
     if(customCatalog(sessionKey).length>=40)throw new Error('Up to 40 custom maps per game.');
     const asset=await uploadImage(file,'map'),edit=await editMapGrid(asset,file.name.replace(/\.[^.]+$/,'').slice(0,80));if(!edit)return;
-    const id=`custom-${crypto.randomUUID()}`,map={schemaVersion:1,userMap:true,id,version:'1',title:edit.title,width:asset.width,height:asset.height,grid:edit.grid,art:{base:asset.id,roofs:asset.id},partyStart:[.5,.5],places:[],interactions:[]};
-    const entry={id,title:edit.title,identity:edit.title,edition:'CUSTOM MAP',category:'User maps',subtitle:'Uploaded image',thumbnail:asset.id,map};
+    const prepared=edit.asset||asset;if(edit.asset)await putAssets([prepared]);
+    const id=`custom-${crypto.randomUUID()}`,map={schemaVersion:1,userMap:true,id,version:'1',title:edit.title,width:prepared.width,height:prepared.height,grid:edit.grid,art:{base:prepared.id,roofs:prepared.id},partyStart:[.5,.5],places:[],interactions:[]};
+    const entry={id,title:edit.title,identity:edit.title,edition:'CUSTOM MAP',category:'User maps',subtitle:'Uploaded image',thumbnail:prepared.id,map};
     saveCustomCatalog(sessionKey,[...customCatalog(sessionKey),entry]);catalog.push(entry);onAdded(entry);announce('Map added.');
   }catch(e){error.textContent=e.message;announce(e.message);}finally{busy=false;}});
   return ()=>{if(!busy){upload.value='';upload.click();}};
 }
 export async function resolveMapArt(map){const entries=await Promise.all(Object.entries(map.art).map(async([key,value])=>[key,assetId(value)?await assetURL(value):value]));return Object.fromEntries(entries);}
+
+export async function editCustomMap(entry){
+  if(!entry?.map?.userMap)return null;const asset=await assetRecord(entry.map.art.base);if(!asset)throw new Error('The uploaded map image is missing.');
+  const edit=await editMapGrid(asset,entry.title,entry.map.grid);if(!edit)return null;
+  const prepared=edit.asset||asset;if(edit.asset)await putAssets([prepared]);
+  return {...entry,title:edit.title,identity:edit.title,thumbnail:prepared.id,map:{...entry.map,title:edit.title,width:prepared.width,height:prepared.height,grid:edit.grid,art:{base:prepared.id,roofs:prepared.id}}};
+}
+export const mapContentKey=map=>map.userMap?JSON.stringify([map.art.base,map.width,map.height,map.grid]):'';

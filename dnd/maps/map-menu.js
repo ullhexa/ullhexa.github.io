@@ -1,10 +1,11 @@
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=29';
-import {assetId} from './combat-state.js?v=29';
-import {assetURL} from './local-assets.js?v=29';
-import {createSceneGroups} from './scene-groups-ui.js?v=29';
+import {editCustomMap} from './custom-maps.js?v=30';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=30';
+import {assetId} from './combat-state.js?v=30';
+import {assetURL} from './local-assets.js?v=30';
+import {createSceneGroups} from './scene-groups-ui.js?v=30';
 const $ = id => document.getElementById(id);
 
-export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject,deleteMap}) {
+export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject,deleteMap,editMap}) {
   const formatSize=value=>new Intl.NumberFormat('en',{maximumFractionDigits:1}).format(value);
   const dialog=$('map-dialog'),cache=new Map([[activeId,activeMap]]),buttons=new Map();
   let selected=null,request=0,environment=null,source='factory',upload=null;
@@ -53,7 +54,7 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
         if(count)features.append(textNode('li',`${count} ${count===1?singular:plural}`));
       }
       details.append(features,environmentControls(map));
-      const add=textNode('button','Add to session');add.id='add-map-session';add.type='button';add.addEventListener('click',()=>{groups.update([...groups.entries(),entry.id]);renderPlan();updateAdd();});const actions=textNode('div','','asset-actions');actions.append(add);if(map.userMap){const remove=textNode('button','Delete','danger');remove.type='button';remove.addEventListener('click',async()=>{remove.disabled=true;try{await deleteMap(entry.id);buttons.get(entry.id)?.remove();buttons.delete(entry.id);cache.delete(entry.id);changeSource('user');groups.render();renderPlan();}catch(e){remove.disabled=false;details.append(textNode('p',e.message,'save-error'));}});actions.append(remove);}details.append(actions);updateAdd();
+      const add=textNode('button','Add to session');add.id='add-map-session';add.type='button';add.addEventListener('click',()=>{groups.update([...groups.entries(),entry.id]);renderPlan();updateAdd();});const actions=textNode('div','','asset-actions');actions.append(add);if(map.userMap){const edit=textNode('button','Edit');edit.type='button';edit.addEventListener('click',async()=>{edit.disabled=true;try{const next=await editCustomMap(entry);if(!next)return;await editMap(next);cache.delete(entry.id);buttons.get(entry.id)?.remove();buttons.delete(entry.id);addEntry(next);filter();await select(next);}catch(e){details.append(textNode('p',e.message,'save-error'));}finally{edit.disabled=false;}});actions.append(edit);const remove=textNode('button','Delete','danger');remove.type='button';remove.addEventListener('click',async()=>{remove.disabled=true;try{await deleteMap(entry.id);buttons.get(entry.id)?.remove();buttons.delete(entry.id);cache.delete(entry.id);changeSource('user');groups.render();renderPlan();}catch(e){remove.disabled=false;details.append(textNode('p',e.message,'save-error'));}});actions.append(remove);}details.append(actions);updateAdd();
       if(entry.id===activeId)details.append(textNode('p','Currently in play. Your encounter progress will be kept.','map-menu-hint'));
       $('apply-map').disabled=false;
     } catch {

@@ -1,5 +1,5 @@
-import {el,button} from './editor-dom.js?v=29';
-import {setFace} from './token-portraits.js?v=29';
+import {el,button} from './editor-dom.js?v=30';
+import {setFace} from './token-portraits.js?v=30';
 // Keep tile DOM stable across editor updates so a real double click survives.
 export function createMemberStrip({items=false,monster=false,onSelect,onRemove,onStat}){
   const root=el('div',undefined,`library-member-strip${items?' item-member-strip':''}`),nodes=new Map();let selected=null,expanded=null;

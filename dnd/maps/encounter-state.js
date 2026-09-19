@@ -1,5 +1,5 @@
-import {itemOnSelectedFloor} from './floors.js?v=29';
-import {normalizeItems, normalizeMembers, normalizeCampaign, syncCampaign, fiveFeet, initiativeOrder} from './combat-state.js?v=29';
+import {itemOnSelectedFloor} from './floors.js?v=30';
+import {normalizeItems, normalizeMembers, normalizeCampaign, syncCampaign, fiveFeet, initiativeOrder} from './combat-state.js?v=30';
 export const PORTRAITS = ['Human warrior','Silver-haired elf','Dwarven adventurer','Halfling ranger','Half-orc guardian','Human wizard','Tiefling wanderer','Elven mage','Dragonborn',
   'Copper-haired elf','Human paladin','Dwarven shieldmaiden','Halfling bard','Half-orc veteran','Violet tiefling','Blue dragonborn','Gnome tinkerer',
   'Human cleric','Human monk','Elven scholar','Feline ranger','Lizardfolk druid','Veteran knight','Human rogue','Dwarven cleric','Human druid','Elder sorcerer','Golden dragonborn','Gnome scout','Orc fighter'];
@@ -29,14 +29,18 @@ export const boundedPoint = p => Array.isArray(p) && p.length === 2 && p.every(n
 export const feetToWorld = (map,n) => n/map.grid.distance*map.grid.size;
 export const worldToFeet = (map,n) => n/map.grid.size*map.grid.distance;
 
-// Nearest grid centers form a compact, non-overlapping group even beside a map edge.
+// Keep the first player at the party anchor, then fill alternating nearby squares.
 export function formation(map, anchor, count) {
-  const [ox,oy]=map.grid.offset||[0,0],cols=Math.max(0,Math.ceil((map.width-ox)/map.grid.size-.5)), rows=Math.max(0,Math.ceil((map.height-oy)/map.grid.size-.5));
-  const cx=clamp(Math.floor((anchor[0]*map.width-ox)/map.grid.size),0,cols-1), cy=clamp(Math.floor((anchor[1]*map.height-oy)/map.grid.size),0,rows-1);
-  const cells=[];
-  for(let y=0;y<rows;y++)for(let x=0;x<cols;x++)if((x-cx)%2===0&&(y-cy)%2===0)cells.push({x,y,d:(x-cx)**2+(y-cy)**2});
-  cells.sort((a,b)=>a.d-b.d||a.y-b.y||a.x-b.x);
-  return cells.slice(0,count).map(({x,y})=>[((x+.5)*map.grid.size+ox)/map.width,((y+.5)*map.grid.size+oy)/map.height]);
+  const step=map.grid.size,half=step/2,center=anchor.map((n,i)=>clamp(n*[map.width,map.height][i],Math.min(half,[map.width,map.height][i]/2),Math.max([map.width,map.height][i]/2,[map.width,map.height][i]-half))),cells=[];
+  const limit=Math.ceil(Math.max(map.width,map.height)/step);
+  for(let r=0;r<=limit&&cells.length<count;r++)for(let y=-r;y<=r;y++)for(let x=-r;x<=r;x++){
+    if(Math.max(Math.abs(x),Math.abs(y))!==r||(x+y)%2!==0)continue;
+    const px=center[0]+x*step,py=center[1]+y*step;
+    if(px<half||py<half||px>map.width-half||py>map.height-half)continue;
+    cells.push({x,y,px,py,d:x*x+y*y});
+  }
+  cells.sort((a,b)=>a.d-b.d||a.y-b.y||b.x-a.x);
+  return cells.slice(0,count).map(({px,py})=>[px/map.width,py/map.height]);
 }
 export function defaultRoster(map, anchor=map.partyStart) {
   return formation(map,anchor,4).map((position,index)=>({id:`player-${index+1}`,name:`Player ${index+1}`,portrait:PARTY_CHOICES[index].id,position}));
