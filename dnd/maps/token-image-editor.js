@@ -1,5 +1,5 @@
-import {el,button,label} from './editor-dom.js?v=28';
-import {putAssets} from './local-assets.js?v=28';
+import {el,button,label} from './editor-dom.js?v=29';
+import {putAssets} from './local-assets.js?v=29';
 export function cropTransform(width,height,zoom=1,x=0,y=0,size=512){const scale=Math.max(size/width,size/height)*Math.max(1,zoom);return {scale,x:Math.max(-(width*scale-size)/2,Math.min((width*scale-size)/2,x)),y:Math.max(-(height*scale-size)/2,Math.min((height*scale-size)/2,y))};}
 export async function readRasterFile(file){
   if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type))throw new Error('Choose a PNG, JPEG or WebP image.');

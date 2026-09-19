@@ -1,4 +1,4 @@
-import {el,button,label} from './editor-dom.js?v=28';
+import {el,button,label} from './editor-dom.js?v=29';
 export const gridOrigin=(value,size)=>((value%size)+size)%size;
 export function zoomAt(view,point,next,frame=[960,540]){
   const zoom=Math.max(1,Math.min(20,next)),factor=view.fit*view.zoom,scale=view.fit*zoom;
@@ -18,7 +18,7 @@ export async function editMapGrid(asset,title){
     const c=canvas.getContext('2d'),dimensions=[asset.width,asset.height];
     let size=asset.width/32,origin=[0,0],baseSize=size,view={fit:Math.min(960/asset.width,540/asset.height),zoom:1,center:dimensions.map(n=>n/2)},drag=null,frame=0,result=null;
     const scale=()=>view.fit*view.zoom,screen=p=>p.map((n,i)=>(n-view.center[i])*scale()+[480,270][i]);
-    const corners=()=>[[0,0],[asset.width,0],[asset.width,asset.height],[0,asset.height]].map(screen);
+    const corners=()=>[[8,8],[952,8],[952,532],[8,532]];
     const point=e=>{const r=canvas.getBoundingClientRect();return [(e.clientX-r.left)*960/r.width,(e.clientY-r.top)*540/r.height];};
     function draw(){frame=0;c.fillStyle='#090c10';c.fillRect(0,0,960,540);const p=screen([0,0]),s=scale();c.drawImage(image,p[0],p[1],asset.width*s,asset.height*s);
       const step=size*s,start=screen(origin);c.beginPath();for(let x=gridOrigin(start[0],step);x<960;x+=step){c.moveTo(x,0);c.lineTo(x,540);}for(let y=gridOrigin(start[1],step);y<540;y+=step){c.moveTo(0,y);c.lineTo(960,y);}c.strokeStyle='#000b';c.lineWidth=2.5;c.stroke();c.strokeStyle='#fffd';c.lineWidth=1;c.stroke();

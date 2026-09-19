@@ -1,4 +1,4 @@
-import {assetId} from './combat-state.js?v=28';
+import {assetId} from './combat-state.js?v=29';
 let dbPromise;const urls=new Map();
 function database(){return dbPromise??=new Promise((resolve,reject)=>{const request=indexedDB.open('ullhexa-local-assets',1);request.onupgradeneeded=()=>request.result.createObjectStore('assets',{keyPath:'id'});request.onsuccess=()=>{const db=request.result;db.onversionchange=()=>{db.close();dbPromise=null;};db.onclose=()=>{dbPromise=null;};resolve(db);};request.onerror=()=>{dbPromise=null;reject(new Error('Local image storage is unavailable.'));};});}
 export async function assetRecord(id){const db=await database();return new Promise((resolve,reject)=>{const r=db.transaction('assets').objectStore('assets').get(id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
@@ -17,3 +17,4 @@ export async function uploadImage(file,kind='portrait'){
 }
 export function referencedAssets(value,found=new Set()){if(assetId(value))found.add(value);else if(Array.isArray(value))value.forEach(v=>referencedAssets(v,found));else if(value&&typeof value==='object')Object.values(value).forEach(v=>referencedAssets(v,found));return found;}
 export async function exportAssets(value){const all=await Promise.all([...referencedAssets(value)].map(assetRecord));if(all.some(a=>!a))throw new Error('A local image is missing. Restore it before saving.');return all;}
+export async function clearAssets(){const db=await database();await new Promise((resolve,reject)=>{const tx=db.transaction('assets','readwrite');tx.objectStore('assets').clear();tx.oncomplete=resolve;tx.onerror=()=>reject(new Error('Browser images could not be cleared.'));tx.onabort=tx.onerror;});urls.clear();}

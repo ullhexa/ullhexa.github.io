@@ -1,7 +1,7 @@
-import {uploadImage,assetURL} from './local-assets.js?v=28';
-import {el} from './editor-dom.js?v=28';
-import {editMapGrid} from './grid-editor.js?v=28';
-import {assetId,safeId} from './combat-state.js?v=28';
+import {uploadImage,assetURL} from './local-assets.js?v=29';
+import {el} from './editor-dom.js?v=29';
+import {editMapGrid} from './grid-editor.js?v=29';
+import {assetId,safeId} from './combat-state.js?v=29';
 export function customCatalog(sessionKey){try{const entries=JSON.parse(localStorage.getItem(`${sessionKey}:custom-maps`))||[];return entries.filter(validCustomEntry);}catch{return [];}}
 export function validCustomEntry(e){const m=e?.map;return !!(e&&safeId(e.id)&&e.id.startsWith('custom-')&&m&&m.id===e.id&&m.schemaVersion===1&&m.version==='1'&&e.thumbnail===m.art?.base&&e.title===m.title&&Object.keys(m.art||{}).every(k=>['base','roofs'].includes(k))&&m.lighting===undefined&&m.userMap===true&&typeof m.title==='string'&&m.title.length<=80&&m.width>=100&&m.width<=4096&&m.height>=100&&m.height<=4096&&Number.isFinite(m.grid?.size)&&m.grid.size>=1&&m.grid.distance===5&&(m.grid.offset===undefined||(Array.isArray(m.grid.offset)&&m.grid.offset.length===2&&m.grid.offset.every(n=>Number.isFinite(n)&&n>=0&&n<m.grid.size)))&&assetId(m.art?.base)&&m.art.base===m.art.roofs&&Array.isArray(m.places)&&m.places.length===0&&Array.isArray(m.interactions)&&m.interactions.length===0);}
 export function saveCustomCatalog(sessionKey,entries){if(!entries.every(validCustomEntry)||entries.length>40)throw new Error('Invalid custom map library.');localStorage.setItem(`${sessionKey}:custom-maps`,JSON.stringify(entries));}
