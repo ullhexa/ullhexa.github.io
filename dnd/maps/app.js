@@ -1,36 +1,38 @@
-import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=31';
-import {persistAssets} from './local-assets.js?v=31';
-import {createScenery} from './scenery.js?v=31';
-import {consumeMapDismissal} from './map-dismissal.js?v=31';
-import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=31';
-import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=31';
-import {createDiceTools} from './dice.js?v=31';
-import {fetchJSON,loadRaster} from './resource-loading.js?v=31';
-import {storyCatalog,nextStory} from './story-assets.js?v=31';
-import {createItemsUI} from './items-ui.js?v=31';
-import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=31';
-import {createHistory} from './history.js?v=31';
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=31';
-import {setupSidebarResize} from './sidebar-resize.js?v=31';
-import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=31';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=31';
-import {createFogTools} from './fog-tools.js?v=31';
-import {normalizeFog} from './fog-state.js?v=31';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=31';
-import {createSessionBundle} from './session-bundle.js?v=31';
-import { startDMShell } from './dm-shell.js?v=31';
-import { openPlayerWindow } from './display-window.js?v=31';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=31';
-import { createEncounterTools } from './encounter-tools.js?v=31';
-import { playerProjection, formation, moveParty } from './encounter-state.js?v=31';
-import { createMapMenu } from './map-menu.js?v=31';
-import { createSaveControls } from './save-controls.js?v=31';
-import { parseSave, restoreSave } from './save-file.js?v=31';
-import { createLighting } from './lighting.js?v=31';
-import { setupFullscreen } from './fullscreen.js?v=31';
-import { startPlayerDisplay } from './player-display.js?v=31';
-import { createDirector } from './director.js?v=31';
-import { normalizeProject } from './presentation-state.js?v=31';
+import {createSpellLibrary} from './spell-library.js?v=32';
+import {createReferenceViewers} from './reference-viewers.js?v=32';
+import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=32';
+import {persistAssets} from './local-assets.js?v=32';
+import {createScenery} from './scenery.js?v=32';
+import {consumeMapDismissal} from './map-dismissal.js?v=32';
+import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=32';
+import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=32';
+import {createDiceTools} from './dice.js?v=32';
+import {fetchJSON,loadRaster} from './resource-loading.js?v=32';
+import {storyCatalog,nextStory} from './story-assets.js?v=32';
+import {createItemsUI} from './items-ui.js?v=32';
+import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=32';
+import {createHistory} from './history.js?v=32';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=32';
+import {setupSidebarResize} from './sidebar-resize.js?v=32';
+import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=32';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=32';
+import {createFogTools} from './fog-tools.js?v=32';
+import {normalizeFog} from './fog-state.js?v=32';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=32';
+import {createSessionBundle} from './session-bundle.js?v=32';
+import { startDMShell } from './dm-shell.js?v=32';
+import { openPlayerWindow } from './display-window.js?v=32';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=32';
+import { createEncounterTools } from './encounter-tools.js?v=32';
+import { playerProjection, formation, moveParty } from './encounter-state.js?v=32';
+import { createMapMenu } from './map-menu.js?v=32';
+import { createSaveControls } from './save-controls.js?v=32';
+import { parseSave, restoreSave } from './save-file.js?v=32';
+import { createLighting } from './lighting.js?v=32';
+import { setupFullscreen } from './fullscreen.js?v=32';
+import { startPlayerDisplay } from './player-display.js?v=32';
+import { createDirector } from './director.js?v=32';
+import { normalizeProject } from './presentation-state.js?v=32';
 
 listenForBoardReset();
 const $ = id => document.getElementById(id);
@@ -65,7 +67,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=31')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=32')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -78,7 +80,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=31`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=32`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -230,11 +232,12 @@ async function start() {
   let positionSequence=0,lastPositionSequence=-1;
   function livePositions(id){const members=mapTokens(state).filter(m=>(!id||m.id===id)&&(!(m.monster||m.item)||m.visible&&(!m.item||!m.floor||state.floors?.[m.floor.placeId]===m.floor.floorId)));send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,...(!id?{party:state.party}:{}),positions:members.map(m=>({id:m.id,position:m.position,stack:m.stack||0}))});}
   function setTool(value){tool=value;measuring=value==='measure';$('map-stage').classList.toggle('is-measuring',measuring);$('measure').setAttribute('aria-pressed',measuring);fog?.setMode(value);$('map').style.cursor=value?'crosshair':'';encounter.clearSelection();}
+  let references;
   const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,setTool,livePositions});
   if(!player){const overlay=svgNode('svg',{id:'party-overlay',preserveAspectRatio:'xMidYMid meet'});overlay.append($('party-layer'));$('map-stage').append(overlay);}
   fog=createFogTools({map,player,getState:()=>state,preview,finishDrag,pointAt,setTool,sendPreview:strokes=>send({type:'fog-preview',mapId:map.id,revision:state.revision,fog:strokes}),announce});
-  if(!player)createDiceTools();
-  combat=createCombatUI({map,player,getState:()=>state,commit,announce,getPresentation:()=>project,advanceStory:()=>setProject({...project,vibe:nextStory(project)})});
+  const dice=player?null:createDiceTools();
+  combat=createCombatUI({map,player,getState:()=>state,commit,announce,showStat:m=>references?.showStat(m),showAssigned:id=>references?.showAssigned(id),locate:id=>{references?.close();encounter.locateToken(id);},getPresentation:()=>project,advanceStory:()=>setProject({...project,vibe:nextStory(project)})});
 
   function remember(view) { history.record(state,view); }
   function save() {
@@ -475,12 +478,12 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'31',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'32',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
     });
-    $('map-stage').addEventListener('wheel', event => {if(event.target.closest('.token-status-editor,.shape-palette,.item-comment,.dice-panel')||encounter.isDragging()||fog.isDrawing())return;event.preventDefault();wheelDelta+=event.deltaY;wheelPoint={clientX:event.clientX,clientY:event.clientY};if(!wheelFrame)wheelFrame=requestAnimationFrame(()=>{wheelFrame=0;const delta=wheelDelta;wheelDelta=0;zoomBy(Math.exp(-delta*.0015),pointAt(wheelPoint),true);});}, { passive: false });
+    $('map-stage').addEventListener('wheel', event => {if(event.target.closest('.token-status-editor,.shape-palette,.item-comment,.dice-panel,.reference-suite')||encounter.isDragging()||fog.isDrawing())return;event.preventDefault();wheelDelta+=event.deltaY;wheelPoint={clientX:event.clientX,clientY:event.clientY};if(!wheelFrame)wheelFrame=requestAnimationFrame(()=>{wheelFrame=0;const delta=wheelDelta;wheelDelta=0;zoomBy(Math.exp(-delta*.0015),pointAt(wheelPoint),true);});}, { passive: false });
     $('map-stage').addEventListener('pointerdown', event => {
       if(!$('map').contains(event.target)&&!party.contains(event.target))return;
       if(event.button!==0||drag||['paint','erase'].includes(tool))return;
@@ -569,7 +572,7 @@ async function start() {
   }
   if(!embedded)setInterval(updateConnection,1000);
   window.addEventListener('pagehide',()=>{if(!player&&runtimeReady)save();});
-  if(!player){director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});createLibraries({map,getState:()=>state,commit,announce});itemsUI=createItemsUI({map,getState:()=>state,commit,announce,pointAt,setTool,selectItem:id=>encounter.selectItem(id)});mapMenu.setUpload(createMapUpload({sessionKey,catalog,onAdded:entry=>{mapMenu.addEntry(entry);mapMenu.showEntry(entry);},announce}));}
+  if(!player){director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});createLibraries({map,getState:()=>state,commit,announce});itemsUI=createItemsUI({map,getState:()=>state,commit,announce,pointAt,setTool,selectItem:id=>encounter.selectItem(id),showNotes:id=>{references?.close();encounter.openItemNotes(id);},locate:id=>{references?.close();encounter.locateToken(id);}});createSpellLibrary({getState:()=>state,commit,announce});references=createReferenceViewers({getState:()=>state,commit,announce,prepare:()=>{dice?.close();setTool(null);}});mapMenu.setUpload(createMapUpload({sessionKey,catalog,onAdded:entry=>{mapMenu.addEntry(entry);mapMenu.showEntry(entry);},announce}));}
   if(embedded){
     let lastActivity=0;
     const activity=()=>{if(performance.now()-lastActivity>100){lastActivity=performance.now();window.parent.postMessage({type:'player-activity'},location.origin);}};

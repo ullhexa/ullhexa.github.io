@@ -1,5 +1,7 @@
-import {el,button} from './editor-dom.js?v=31';
-import {assetURL,uploadImage,putAssets} from './local-assets.js?v=31';
+import {showDialog} from './dialogs.js?v=32';
+import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=32';
+import {el,button} from './editor-dom.js?v=32';
+import {assetURL,uploadImage,putAssets} from './local-assets.js?v=32';
 export function editStatCard(member){
   const dialog=el('dialog',undefined,'stat-card-editor'),tabs=el('div',undefined,'source-tabs'),content=el('div',undefined,'stat-card-content'),error=el('p','','save-error'),footer=el('div',undefined,'dialog-actions');
   let mode=member.statText?'text':'image',asset=member.statCard||null,text=member.statText||'',result=null,image=null,request=0,zoom=1,offset=[0,0],drag=null,changed=false;
@@ -11,11 +13,11 @@ export function editStatCard(member){
   canvas.addEventListener('pointerdown',e=>{if(e.button!==0||!image)return;e.preventDefault();const r=canvas.getBoundingClientRect();drag={id:e.pointerId,x:e.clientX,y:e.clientY,start:[...offset],scale:900/r.width};canvas.setPointerCapture(e.pointerId);canvas.classList.add('dragging');});
   canvas.addEventListener('pointermove',e=>{if(drag?.id!==e.pointerId)return;offset=[drag.start[0]+(e.clientX-drag.x)*drag.scale,drag.start[1]+(e.clientY-drag.y)*drag.scale];changed=true;paint();});
   const end=e=>{if(drag?.id!==e.pointerId)return;drag=null;canvas.classList.remove('dragging');if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);};canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
-  const imageButton=button('Upload image',()=>{mode='image';render();file.value='';file.click();}),textButton=button('Text',()=>{mode='text';render();}),file=el('input');file.type='file';file.accept='image/png,image/jpeg,image/webp';file.hidden=true;file.setAttribute('aria-label','Upload stat card image');tabs.append(imageButton,textButton,file);
+  const imageButton=button('Upload image',()=>{mode='image';render();file.value='';file.click();}),textButton=button('Text',()=>{mode='text';render();}),file=el('input');file.type='file';file.accept=IMAGE_ACCEPT;file.hidden=true;file.setAttribute('aria-label','Upload stat card image');tabs.append(imageButton,textButton,file);
   async function load(){const ticket=++request;apply.disabled=true;try{const url=await assetURL(asset),next=new Image();next.src=url;await next.decode();if(ticket!==request||!dialog.isConnected)return;image=next;zoom=1;offset=[0,0];slider.value=1;paint();}catch(e){error.textContent=e.message;}finally{if(ticket===request)apply.disabled=false;}}
   function render(){imageButton.setAttribute('aria-pressed',mode==='image');textButton.setAttribute('aria-pressed',mode==='text');content.replaceChildren();if(mode==='text'){const input=el('textarea');input.value=text;input.rows=14;input.maxLength=20000;input.setAttribute('aria-label','Stat card text');input.addEventListener('input',()=>text=input.value);content.append(input);}else if(asset){content.append(canvas,zoomRow);paint();}else content.append(el('div','Upload image','stat-image-empty'));}
   file.addEventListener('input',async()=>{if(!file.files?.[0])return;apply.disabled=true;error.textContent='';try{asset=(await uploadImage(file.files[0],'stat')).id;changed=true;mode='image';await load();render();}catch(e){error.textContent=e.message;}finally{apply.disabled=false;}});
   const apply=button('Apply stat card',async()=>{apply.disabled=true;try{if(mode==='image'&&asset&&image&&changed){const record={id:`asset-${crypto.randomUUID()}`,width:900,height:1200,data:canvas.toDataURL('image/webp',.95)};await putAssets([record]);asset=record.id;}result=mode==='text'?{statText:text,statCard:null}:{statCard:asset,statText:''};dialog.close();}catch(e){error.textContent=e.message;apply.disabled=false;}},'primary');
-  dialog.append(el('h2',`${member.name} stat card`),tabs,content,error,footer);document.body.append(dialog);
-  return new Promise(resolve=>{footer.append(button('Cancel',()=>dialog.close()),apply);dialog.addEventListener('close',()=>{request++;dialog.remove();resolve(result);},{once:true});render();dialog.showModal();if(asset)load();});
+  dialog.append(el('h2',`${member.name} stat card`),imageTypeNote(),tabs,content,error,footer);document.body.append(dialog);
+  return new Promise(resolve=>{footer.append(button('Cancel',()=>dialog.close()),apply);dialog.addEventListener('close',()=>{request++;dialog.remove();resolve(result);},{once:true});render();showDialog(dialog);if(asset)load();});
 }
