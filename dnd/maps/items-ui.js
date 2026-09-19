@@ -1,13 +1,13 @@
-import {itemFloorAt} from './floors.js?v=30';
-import {tokenGallery} from './token-gallery.js?v=30';
-import {createMemberStrip} from './member-strip.js?v=30';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=30';
-import {el,button} from './combat-ui.js?v=30';
-import {ITEMS,searchItems} from './items-catalog.js?v=30';
-import {setFace} from './token-portraits.js?v=30';
-import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=30';
-import {uploadImage} from './local-assets.js?v=30';
-import {groupSelection} from './group-selection.js?v=30';
+import {itemFloorAt} from './floors.js?v=31';
+import {tokenGallery} from './token-gallery.js?v=31';
+import {createMemberStrip} from './member-strip.js?v=31';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=31';
+import {el,button} from './combat-ui.js?v=31';
+import {ITEMS,searchItems} from './items-catalog.js?v=31';
+import {setFace} from './token-portraits.js?v=31';
+import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=31';
+import {uploadImage} from './local-assets.js?v=31';
+import {groupSelection} from './group-selection.js?v=31';
 const $=id=>document.getElementById(id);
 function face(item){const img=el('img');img.alt='';img.width=img.height=40;img.draggable=false;setFace(img,item);return img;}
 function field(label,value,change,type='text'){const wrap=el('label',label,'field-label'),input=el('input');input.type=type;input.value=value;input.setAttribute('aria-label',label);input.addEventListener('input',()=>change(input.value));wrap.append(input);return {wrap,input};}
@@ -30,7 +30,7 @@ export function createItemsUI({map,getState,commit,announce,pointAt,setTool,sele
   function addItem(picture=0,avatar=null,groupId=selected){const g=getState().campaign.itemLists.find(g=>g.id===groupId);if(!g)return;if(g.members.length>=500){announce('Up to 500 items per list.');return;}itemId=crypto.randomUUID();const item=normalizeItem({id:itemId,name:avatar?'Custom item':ITEMS[picture],portrait:picture,avatar,size:5,visible:false});edit(g=>({...g,members:[...g.members,item]}),true,groupId);}
   function renderMenu(){const s=getState();if(!s.campaign.itemLists.some(g=>g.id===selected))selected=s.campaign.activeItems||s.campaign.itemLists[0]?.id||null;selection.prune(s.campaign.itemLists.map(g=>g.id),selected);const g=group();groups.replaceChildren(el('h3','Item lists'),button('+ New item list',()=>{const s=syncCampaign(getState());if(s.campaign.itemLists.length>=20)return;selected=crypto.randomUUID();selection.reset(selected);itemId=null;commit({...s,campaign:{...s.campaign,itemLists:[...s.campaign.itemLists,{id:selected,name:'Items',members:[]}]}},'Item list created.');renderMenu();}));
     for(const list of s.campaign.itemLists){const b=button(`${list.name}${list.id===s.campaign.activeItems?' · Active':''}`,e=>{selected=selection.click(list.id,e,s.campaign.itemLists.map(g=>g.id));itemId=null;renderMenu();},'library-group');b.dataset.itemGroup=list.id;b.setAttribute('aria-pressed',selection.has(list.id));b.classList.toggle('editing-group',list.id===selected);groups.append(b);}
-    main.replaceChildren();remove.disabled=!selection.ids.length;remove.textContent=selection.ids.length>1?`Delete ${selection.ids.length} item lists`:'Delete item list';apply.textContent=!g||s.campaign.activeItems===selected?'Done':'Activate item list';hint.textContent=g&&s.campaign.activeItems===selected?'Changes save to the active item tray. Placed copies keep their own details.':'Changes save to this list. Activate to use it in the item tray.';if(!g){main.append(el('p','Create an item list to choose its items.','tool-hint'));return;}
+    main.replaceChildren();remove.disabled=!selection.ids.length;remove.textContent=selection.ids.length>1?`Delete ${selection.ids.length} item lists`:'Delete item list';apply.textContent=!g||s.campaign.activeItems===selected?'Done':'Activate item list';hint.textContent='';if(!g){main.append(el('p','Create an item list to choose its items.','tool-hint'));return;}
     const naming=field('Item list name',g.name,value=>edit(g=>({...g,name:value.trim().slice(0,48)||'Items'}),false));naming.input.maxLength=48;const top=el('div',undefined,'library-member-actions');top.append(naming.wrap,button('+ Add item',()=>addItem()));main.append(top);
     if(!g.members.some(m=>m.id===itemId))itemId=g.members[0]?.id;
     main.append(memberStrip.render(g.members,itemId));

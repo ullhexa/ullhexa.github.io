@@ -33,6 +33,7 @@ export function setupFullscreen({player,announce}) {
   let fullscreenControlsTimer,wasPlayerFullscreen=false;
   const hideFullscreenControls=()=>{
     clearTimeout(fullscreenControlsTimer);
+    if(exitFullscreen?.matches(':hover,:focus-visible'))return;
     $('map-stage').classList.remove('fullscreen-controls-visible');
   };
   const showFullscreenControls=()=>{
@@ -45,6 +46,8 @@ export function setupFullscreen({player,announce}) {
     fullscreenTarget.addEventListener('pointermove',showFullscreenControls);
     fullscreenTarget.addEventListener('pointerdown',showFullscreenControls);
     fullscreenTarget.addEventListener('pointerleave',hideFullscreenControls);
+    exitFullscreen.addEventListener('pointerenter',showFullscreenControls);
+    exitFullscreen.addEventListener('focus',showFullscreenControls);
     exitFullscreen.addEventListener('click',async()=>{
       if(document.fullscreenElement)await document.exitFullscreen();
     });
@@ -59,7 +62,7 @@ export function setupFullscreen({player,announce}) {
     hideFullscreenControls();
     const active=player&&document.fullscreenElement===fullscreenTarget;
     if(wasPlayerFullscreen&&!active)$('fullscreen').focus({preventScroll:true});
-    wasPlayerFullscreen=active;
+    wasPlayerFullscreen=active;if(active)showFullscreenControls();
   });
   return {showControls:showFullscreenControls};
 }

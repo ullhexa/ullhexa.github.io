@@ -1,5 +1,5 @@
-import {identityTransform,transformPoint,composeTransform,imageOperation} from './map-orientation.js?v=30';
-import {el,button,label} from './editor-dom.js?v=30';
+import {identityTransform,transformPoint,composeTransform,imageOperation} from './map-orientation.js?v=31';
+import {el,button,label} from './editor-dom.js?v=31';
 export const gridOrigin=(value,size)=>((value%size)+size)%size;
 export function zoomAt(view,point,next,frame=[960,540]){
   const zoom=Math.max(1,Math.min(20,next)),factor=view.fit*view.zoom,scale=view.fit*zoom;

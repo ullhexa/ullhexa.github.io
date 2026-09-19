@@ -1,5 +1,5 @@
-import {chooseSaveDestination,writeGameFile} from './file-destination.js?v=30';
-import { MAX_SAVE_BYTES, parseSave, restoreSave, serializeSave, saveFilename } from './save-file.js?v=30';
+import {chooseSaveDestination,writeGameFile} from './file-destination.js?v=31';
+import { MAX_SAVE_BYTES, parseSave, restoreSave, serializeSave, saveFilename } from './save-file.js?v=31';
 const $=id=>document.getElementById(id);
 
 export function createSaveControls({map,catalog,loadMap,bundle,getState,getView,getProject,applySave,announce}) {

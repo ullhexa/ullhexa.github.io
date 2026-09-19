@@ -1,14 +1,14 @@
-import {tokenGallery} from './token-gallery.js?v=30';
-import {createMemberStrip} from './member-strip.js?v=30';
-import {editStatCard} from './stat-card-editor.js?v=30';
-import {groupSelection} from './group-selection.js?v=30';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=30';
-import {conditionIcon} from './condition-icons.js?v=30';
-import {shortcutAction,isTextEntry} from './keyboard.js?v=30';
-import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=30';
-import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=30';
-import {setFace,portraitStyle} from './token-portraits.js?v=30';
-import {uploadImage,assetURL} from './local-assets.js?v=30';
+import {tokenGallery} from './token-gallery.js?v=31';
+import {createMemberStrip} from './member-strip.js?v=31';
+import {editStatCard} from './stat-card-editor.js?v=31';
+import {groupSelection} from './group-selection.js?v=31';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=31';
+import {conditionIcon} from './condition-icons.js?v=31';
+import {shortcutAction,isTextEntry} from './keyboard.js?v=31';
+import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=31';
+import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=31';
+import {setFace,portraitStyle} from './token-portraits.js?v=31';
+import {uploadImage,assetURL} from './local-assets.js?v=31';
 const $=id=>document.getElementById(id);
 export function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 export function button(text,fn,cls){const b=el('button',text,cls);b.type='button';if(fn)b.addEventListener('click',fn);return b;}
@@ -70,7 +70,7 @@ export function createLibraries({map,getState,commit,announce}){
     function editGroup(fn,message='',redraw=true,groupId=selected){const s=syncCampaign(getState()),list=s.campaign[key].map(g=>g.id===groupId?fn(g):g),campaign={...s.campaign,[key]:list};let next={...s,campaign};if(campaign[active]===groupId)next={...next,[monster?'monsters':'roster']:list.find(g=>g.id===groupId)?.members||[]};commit(next,message);if(redraw)render();else{const updated=list.find(g=>g.id===selected);for(const b of groups.querySelectorAll('[data-group]')){const g=list.find(g=>g.id===b.dataset.group);if(g)b.textContent=`${g.name}${g.id===campaign[active]?' · Active':''}`;}for(const b of members.querySelectorAll('[data-member-id]')){const m=updated?.members.find(m=>m.id===b.dataset.memberId);if(m)b.lastElementChild.textContent=m.name;}}}
     function addGroup(){const id=crypto.randomUUID(),s=syncCampaign(getState());if(s.campaign[key].length>=20){announce('Up to 20 groups per library.');return;}selected=id;selection.reset(id);memberId=null;commit({...s,campaign:{...s.campaign,[key]:[...s.campaign[key],{id,name:title,members:[]}]}},`${title} created.`);render();}
     function render(){const s=syncCampaign(getState()),items=s.campaign[key];if(!items.some(g=>g.id===selected))selected=s.campaign[active]||items[0]?.id;selection.prune(items.map(g=>g.id),selected);const group=items.find(g=>g.id===selected);groups.replaceChildren(el('h3',monster?'Encounters':'Parties'),button(`+ New ${kind}`,addGroup));
-      for(const g of items){const b=button(`${g.name}${g.id===s.campaign[active]?' · Active':''}`,e=>{selected=selection.click(g.id,e,items.map(g=>g.id));memberId=null;render();},'library-group');b.dataset.group=g.id;b.setAttribute('aria-pressed',selection.has(g.id));b.classList.toggle('editing-group',g.id===selected);groups.append(b);}members.replaceChildren();const isActive=group?.id===s.campaign[active];remove.disabled=!selection.ids.length;remove.textContent=selection.ids.length>1?`Delete ${selection.ids.length} ${monster?'encounters':'parties'}`:`Delete ${kind}`;apply.disabled=false;apply.textContent=!group||isActive?'Done':`Activate ${kind}`;hint.textContent=!group?'Groups are saved as you edit.':isActive?'Changes save and update the active game immediately.':`Changes save to this library. Activate to use this ${kind} in the game.`;if(!group){members.append(el('p','Create a group to add its members.','tool-hint'));return;}
+      for(const g of items){const b=button(`${g.name}${g.id===s.campaign[active]?' · Active':''}`,e=>{selected=selection.click(g.id,e,items.map(g=>g.id));memberId=null;render();},'library-group');b.dataset.group=g.id;b.setAttribute('aria-pressed',selection.has(g.id));b.classList.toggle('editing-group',g.id===selected);groups.append(b);}members.replaceChildren();const isActive=group?.id===s.campaign[active];remove.disabled=!selection.ids.length;remove.textContent=selection.ids.length>1?`Delete ${selection.ids.length} ${monster?'encounters':'parties'}`:`Delete ${kind}`;apply.disabled=false;apply.textContent=!group||isActive?'Done':`Activate ${kind}`;hint.textContent='';if(!group){members.append(el('p','Create a group to add its members.','tool-hint'));return;}
       const name=input(group.name,`${title} name`,v=>editGroup(g=>({...g,name:v.trim().slice(0,48)||title}),'',false));name.maxLength=48;const actions=el('div',undefined,'library-member-actions');actions.append(labeled(`${title} name`,name),button(monster?'+ Add monster':'+ Add player',()=>{if(group.members.length>=60){announce('Up to 60 members per group.');return;}memberId=crypto.randomUUID();const point=formation(map,getState().party,60)[group.members.length]||getState().party;editGroup(g=>({...g,members:[...g.members,normalizeMember({id:memberId,name:monster?'Goblin':`Player ${g.members.length+1}`,portrait:monster?0:PARTY_CHOICES[g.members.length%PARTY_CHOICES.length].id,position:point,visible:false},0,monster)]}));}));members.append(actions);
       if(!group.members.some(m=>m.id===memberId))memberId=group.members[0]?.id;
       members.append(memberStrip.render(group.members,memberId));

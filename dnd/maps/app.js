@@ -1,33 +1,36 @@
-import {consumeMapDismissal} from './map-dismissal.js?v=30';
-import {boundedCamera,cameraViewBox} from './camera.js?v=30';
-import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=30';
-import {createDiceTools} from './dice.js?v=30';
-import {fetchJSON,loadRaster} from './resource-loading.js?v=30';
-import {storyCatalog,nextStory} from './story-assets.js?v=30';
-import {createItemsUI} from './items-ui.js?v=30';
-import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=30';
-import {createHistory} from './history.js?v=30';
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=30';
-import {setupSidebarResize} from './sidebar-resize.js?v=30';
-import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=30';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=30';
-import {createFogTools} from './fog-tools.js?v=30';
-import {normalizeFog} from './fog-state.js?v=30';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=30';
-import {createSessionBundle} from './session-bundle.js?v=30';
-import { startDMShell } from './dm-shell.js?v=30';
-import { openPlayerWindow } from './display-window.js?v=30';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=30';
-import { createEncounterTools } from './encounter-tools.js?v=30';
-import { playerProjection, formation, moveParty } from './encounter-state.js?v=30';
-import { createMapMenu } from './map-menu.js?v=30';
-import { createSaveControls } from './save-controls.js?v=30';
-import { parseSave, restoreSave } from './save-file.js?v=30';
-import { createLighting } from './lighting.js?v=30';
-import { setupFullscreen } from './fullscreen.js?v=30';
-import { startPlayerDisplay } from './player-display.js?v=30';
-import { createDirector } from './director.js?v=30';
-import { normalizeProject } from './presentation-state.js?v=30';
+import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=31';
+import {persistAssets} from './local-assets.js?v=31';
+import {createScenery} from './scenery.js?v=31';
+import {consumeMapDismissal} from './map-dismissal.js?v=31';
+import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=31';
+import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=31';
+import {createDiceTools} from './dice.js?v=31';
+import {fetchJSON,loadRaster} from './resource-loading.js?v=31';
+import {storyCatalog,nextStory} from './story-assets.js?v=31';
+import {createItemsUI} from './items-ui.js?v=31';
+import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=31';
+import {createHistory} from './history.js?v=31';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=31';
+import {setupSidebarResize} from './sidebar-resize.js?v=31';
+import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=31';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=31';
+import {createFogTools} from './fog-tools.js?v=31';
+import {normalizeFog} from './fog-state.js?v=31';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=31';
+import {createSessionBundle} from './session-bundle.js?v=31';
+import { startDMShell } from './dm-shell.js?v=31';
+import { openPlayerWindow } from './display-window.js?v=31';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=31';
+import { createEncounterTools } from './encounter-tools.js?v=31';
+import { playerProjection, formation, moveParty } from './encounter-state.js?v=31';
+import { createMapMenu } from './map-menu.js?v=31';
+import { createSaveControls } from './save-controls.js?v=31';
+import { parseSave, restoreSave } from './save-file.js?v=31';
+import { createLighting } from './lighting.js?v=31';
+import { setupFullscreen } from './fullscreen.js?v=31';
+import { startPlayerDisplay } from './player-display.js?v=31';
+import { createDirector } from './director.js?v=31';
+import { normalizeProject } from './presentation-state.js?v=31';
 
 listenForBoardReset();
 const $ = id => document.getElementById(id);
@@ -46,8 +49,8 @@ const svgNode = (tag, attrs = {}, text) => {
   if (text !== undefined) node.textContent = text;
   return node;
 };
-const readStored = key => { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } };
-const writeStored = (key, value) => { if(window.ullhexaResetting)return false;try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; } };
+const readStored=readSessionValue;
+const writeStored=writeSessionValue;
 
 async function start() {
   document.body.classList.toggle('player-mode', player);
@@ -62,10 +65,12 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=30')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=31')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
+  await configureSession(session,{player});
+  if(!player)$('auto-save').checked=autoSaveEnabled();
   if (!player && !query.has('session')) writeStored('lanternford:last-session', session);
   const sessionKey = `lanternford:session:${session}`;
   catalog.push(...customCatalog(sessionKey));
@@ -73,7 +78,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=30`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=31`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -213,6 +218,7 @@ async function start() {
   const floorNodes=new Map(),floorLayer=svgNode('g',{id:'floor-layers'});$('terrain-layers').before(floorLayer);
   for(const place of map.places)for(const floor of floorList(place)){if(!floor.asset)continue;const id=`floor-${place.id}-${floor.id}`,clip=svgNode('clipPath',{id});clip.append(svgNode('polygon',{points:polygon(floor.polygon)}));defs.append(clip);const art=svgNode('image',{...dimensions,href:artwork[floor.asset],'clip-path':`url(#${id})`,'pointer-events':'none'});floorLayer.append(art);floorNodes.set(`${place.id}:${floor.id}`,art);}
 
+  const scenery=createScenery(map,$('map'));
   $('dm-hotspots').after($('discovery-markers'));
   const party = svgNode('g', { class: 'party-token', ...(player ? {} : { role: 'button', tabindex: 0, 'aria-label': 'Party marker. Drag to move.' }) });
   party.append(svgNode('circle', { r: 21, fill: '#203d48', stroke: '#e9e7bb', 'stroke-width': 3 }));
@@ -220,9 +226,9 @@ async function start() {
   party.append(svgNode('text', { 'text-anchor': 'middle', y: 5, fill: '#fff9dc', 'font-size': 14, 'font-weight': 700 }, 'P'));
   $('party-layer').append(party);
   function finishDrag(before,message){history.record(before);state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
-  function preview(next,mode=false){state=next;if(mode===true)encounter.renderCharacterPositions();else if(mode==='fog')fog?.render();else render();}
+  function preview(next,mode=false){state=next;if(mode==='fog')fog?.render();else if(mode)encounter.renderCharacterPositions(typeof mode==='string'?mode:null);else render();}
   let positionSequence=0,lastPositionSequence=-1;
-  function livePositions(){send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,party:state.party,positions:mapTokens(playerProjection(state)).map(m=>({id:m.id,position:m.position,stack:m.stack||0}))});}
+  function livePositions(id){const members=mapTokens(state).filter(m=>(!id||m.id===id)&&(!(m.monster||m.item)||m.visible&&(!m.item||!m.floor||state.floors?.[m.floor.placeId]===m.floor.floorId)));send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,...(!id?{party:state.party}:{}),positions:members.map(m=>({id:m.id,position:m.position,stack:m.stack||0}))});}
   function setTool(value){tool=value;measuring=value==='measure';$('map-stage').classList.toggle('is-measuring',measuring);$('measure').setAttribute('aria-pressed',measuring);fog?.setMode(value);$('map').style.cursor=value?'crosshair':'';encounter.clearSelection();}
   const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,setTool,livePositions});
   if(!player){const overlay=svgNode('svg',{id:'party-overlay',preserveAspectRatio:'xMidYMid meet'});overlay.append($('party-layer'));$('map-stage').append(overlay);}
@@ -237,7 +243,7 @@ async function start() {
     storageWorks = writeStored(key, state);
     if(state.campaign)storageWorks=writeStored(`${sessionKey}:campaign`,state.campaign)&&storageWorks;
     writeStored(`${sessionKey}:map`,map.id);
-    $('save-status').textContent = storageWorks ? 'Saved in this browser' : 'Session only · storage unavailable';
+    $('save-status').textContent = !autoSaveEnabled()?'Temporary session':storageWorks?'Saved in this browser':'Session only · storage unavailable';
     writeStored(`${sessionKey}:project`,project);
     publish();
   }
@@ -312,25 +318,27 @@ async function start() {
 
     }
     sizeHotspots();
-    $('undo').disabled = !history.canUndo;
-    $('redo').disabled = !history.canRedo;
+    if($('undo').disabled!==(!history.canUndo))$('undo').disabled=!history.canUndo;
+    if($('redo').disabled!==(!history.canRedo))$('redo').disabled=!history.canRedo;
     const overview = Math.abs(state.camera.zoom-1)<.001 && Math.abs(state.camera.x-.5)<.001 && Math.abs(state.camera.y-.5)<.001;
     const place=map.places.find(p=>p.id===focusedPlace);
     const focus=place?boundedCamera(map,{x:place.point[0],y:place.point[1],zoom:place.focusZoom},viewportSize()):null;
     if(!focus||selected!==focusedPlace||Math.abs(state.camera.x-focus.x)>.00001||Math.abs(state.camera.y-focus.y)>.00001||Math.abs(state.camera.zoom-focus.zoom)>.00001)focusedPlace=null;
-    $('focus-place').textContent=focusedPlace?'Overview':'Focus';
-    $('fit-map').disabled = overview;
+    const focusLabel=focusedPlace?'Overview':'Focus';if($('focus-place').textContent!==focusLabel)$('focus-place').textContent=focusLabel;
+    if($('fit-map').disabled!==(overview))$('fit-map').disabled=overview;
   }
-  const viewportSize=()=>[$('map').clientWidth,$('map').clientHeight];
+  let viewport=[$('map').clientWidth,$('map').clientHeight],viewGeometry;
+  const viewportSize=()=>viewport;
   function cameraView(){
     const view=cameraViewBox(map,state.camera,viewportSize()),{zoom}=view.camera;
     if(!player)state={...state,camera:view.camera};
-    const viewBox=view.viewBox.join(' ');$('map').setAttribute('viewBox',viewBox);$('party-overlay')?.setAttribute('viewBox',viewBox);
-    $('zoom-value').textContent = `${Math.round(zoom * 100)}%`;
-    $('zoom-out').disabled = zoom <= 1;
-    $('zoom-in').disabled = zoom >= 3;
+    viewGeometry=cameraGeometry(map,view.camera,viewport);scenery.position(viewGeometry);
+    const viewBox=view.viewBox.join(' ');if($('map').getAttribute('viewBox')!==viewBox)$('map').setAttribute('viewBox',viewBox);$('party-overlay')?.setAttribute('viewBox',viewBox);
+    const label=`${Math.round(zoom * 100)}%`;if($('zoom-value').textContent!==label)$('zoom-value').textContent=label;
+    if($('zoom-out').disabled!==(zoom <= 1))$('zoom-out').disabled=zoom <= 1;
+    if($('zoom-in').disabled!==(zoom >= 3))$('zoom-in').disabled=zoom >= 3;
   }
-  function renderCamera(){cameraFrame=0;cameraView();encounter.renderCamera();fog?.position();renderControls(true);reportScene();}
+  function renderCamera(){cameraFrame=0;cameraView();encounter.renderCamera(viewGeometry);fog?.position(viewGeometry);renderControls(true);reportScene();}
   function queueCamera(){if(!cameraFrame)cameraFrame=requestAnimationFrame(()=>{renderCamera();if(!player)send({type:'camera',mapId:map.id,camera:state.camera,revision:state.revision});});}
   function render() {
     renderLighting(state);
@@ -346,6 +354,7 @@ async function start() {
     }
     for(const [key,node] of floorNodes){const [placeId,floorId]=key.split(':');const p=map.places.find(p=>p.id===placeId);node.style.display=selectedFloor(p,state)?.id===floorId?'':'none';}
     if(!player&&selectedOptionsFloor!==selectedFloor(map.places.find(p=>p.id===selected)||{},state)?.id){selectPlace(selected);}
+    scenery.render(state.environment.darkness);
     cameraView();
     $('grid-overlay').style.display = state.grid ? '' : 'none';
     $('show-grid').checked = state.grid;
@@ -394,8 +403,7 @@ async function start() {
     else{const next=cyclePlace(place,state,event.shiftKey||event.metaKey?-1:1);commit(next,`${place.name}: ${placeView(place,next).sequence?.[placeStep(place,next)]?.label||'Updated'}.`);}
   }
   function sizeHotspots(){
-    const matrix=$('map').getScreenCTM();if(!matrix)return;
-    const scale=.8/Math.hypot(matrix.a,matrix.b);
+    const scale=.8/(viewGeometry?.scale||cameraGeometry(map,state.camera,viewport).scale);
     for(const node of hotspots.values()){const glyph=node.querySelector('.hotspot-glyph');if(glyph._scale!==scale){glyph._scale=scale;glyph.setAttribute('transform',`translate(${glyph.dataset.x} ${glyph.dataset.y}) scale(${scale})`);}}
   }
   function makeHotspot(place,point,number,area,action){
@@ -467,7 +475,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'30',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'31',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
@@ -537,7 +545,7 @@ async function start() {
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='positions'&&Number.isSafeInteger(message.sequence)&&message.sequence>lastPositionSequence){
       lastPositionSequence=message.sequence;const positions=new Map((Array.isArray(message.positions)?message.positions:[]).filter(p=>p&&typeof p.id==='string'&&inBounds(p.position)).map(p=>[p.id,{position:p.position,...(Number.isSafeInteger(p.stack)&&p.stack>=0?{stack:p.stack}:{})}]));
       state={...state,roster:state.roster.map(m=>({...m,...(positions.get(m.id)||{})})),items:(state.items||[]).map(m=>({...m,...(positions.get(m.id)||{})})),monsters:state.monsters.map(m=>({...m,...(positions.get(m.id)||{})}))};
-      if(inBounds(message.party)){state.party=message.party;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);}encounter.renderCharacterPositions();
+      if(inBounds(message.party)){state.party=message.party;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);}encounter.renderCharacterPositions(positions.size===1?[...positions.keys()][0]:null);
     }
     if(player&&message.type==='camera'&&message.mapId===map.id&&Number.isSafeInteger(message.revision)&&message.revision>=state.revision&&inBounds([message.camera?.x,message.camera?.y])&&Number.isFinite(message.camera?.zoom)&&message.camera.zoom>=1&&message.camera.zoom<=3){state={...state,camera:message.camera,revision:message.revision};queueCamera();return;}
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='fog-preview'){state={...state,fog:normalizeFog(message.fog)};fog.render();}
@@ -568,6 +576,7 @@ async function start() {
     document.addEventListener('pointermove',activity);document.addEventListener('pointerdown',activity);
     document.addEventListener('keydown',event=>{if(event.key==='Escape')window.parent.postMessage({type:'player-escape'},location.origin);});
   }
+  if(!player){const auto=$('auto-save');auto.checked=autoSaveEnabled();auto.disabled=false;auto.addEventListener('change',async()=>{auto.disabled=true;try{await setAutoSave(auto.checked,persistAssets);save();}catch(error){auto.checked=autoSaveEnabled();announce(error.message);}finally{auto.disabled=false;}});}
   if(!embedded)setupFullscreen({player,announce});
   render(); updateConnection();
   if(player)send({type:'scene-hello'});
@@ -598,7 +607,7 @@ async function start() {
   }
 
   runtimeReady=true;if(!player)save();
-  new ResizeObserver(()=>{if(runtimeReady)queueCamera();}).observe($('map-stage'));
+  new ResizeObserver(entries=>{const r=entries[0].contentRect;viewport=[r.width,r.height];if(runtimeReady)queueCamera();}).observe($('map-stage'));
   window.addEventListener('pageshow',event=>{if(event.persisted){render();updateConnection();if(player){send({type:'scene-hello'});reportScene();}else save();}});
   if(dmFrame)window.parent.postMessage({type:'dm-ready',url:location.href,title:document.title},location.origin);
 
