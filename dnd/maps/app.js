@@ -1,40 +1,40 @@
-import {createMapNavigation} from './map-navigation.js?v=33';
-import {chevronIcon} from './control-icons.js?v=33';
-import {createSpellLibrary} from './spell-library.js?v=33';
-import {createReferenceViewers} from './reference-viewers.js?v=33';
-import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=33';
-import {persistAssets} from './local-assets.js?v=33';
-import {createScenery} from './scenery.js?v=33';
-import {consumeMapDismissal} from './map-dismissal.js?v=33';
-import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=33';
-import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=33';
-import {createDiceTools} from './dice.js?v=33';
-import {fetchJSON,loadRaster} from './resource-loading.js?v=33';
-import {storyCatalog,nextStory} from './story-assets.js?v=33';
-import {createItemsUI} from './items-ui.js?v=33';
-import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=33';
-import {createHistory} from './history.js?v=33';
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=33';
-import {setupSidebarResize} from './sidebar-resize.js?v=33';
-import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=33';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=33';
-import {createFogTools} from './fog-tools.js?v=33';
-import {normalizeFog} from './fog-state.js?v=33';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=33';
-import {createSessionBundle} from './session-bundle.js?v=33';
-import { startDMShell } from './dm-shell.js?v=33';
-import { openPlayerWindow } from './display-window.js?v=33';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=33';
-import { createEncounterTools } from './encounter-tools.js?v=33';
-import { playerProjection, formation, moveParty } from './encounter-state.js?v=33';
-import { createMapMenu } from './map-menu.js?v=33';
-import { createSaveControls } from './save-controls.js?v=33';
-import { parseSave, restoreSave } from './save-file.js?v=33';
-import { createLighting } from './lighting.js?v=33';
-import { setupFullscreen } from './fullscreen.js?v=33';
-import { startPlayerDisplay } from './player-display.js?v=33';
-import { createDirector } from './director.js?v=33';
-import { normalizeProject } from './presentation-state.js?v=33';
+import {createMapNavigation} from './map-navigation.js?v=34';
+import {chevronIcon} from './control-icons.js?v=34';
+import {createSpellLibrary} from './spell-library.js?v=34';
+import {createReferenceViewers} from './reference-viewers.js?v=34';
+import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=34';
+import {persistAssets} from './local-assets.js?v=34';
+import {createScenery} from './scenery.js?v=34';
+import {consumeMapDismissal} from './map-dismissal.js?v=34';
+import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=34';
+import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=34';
+import {createDiceTools} from './dice.js?v=34';
+import {fetchJSON,loadRaster} from './resource-loading.js?v=34';
+import {storyCatalog,nextStory} from './story-assets.js?v=34';
+import {createItemsUI} from './items-ui.js?v=34';
+import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=34';
+import {createHistory} from './history.js?v=34';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=34';
+import {setupSidebarResize} from './sidebar-resize.js?v=34';
+import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=34';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=34';
+import {createFogTools} from './fog-tools.js?v=34';
+import {normalizeFog} from './fog-state.js?v=34';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=34';
+import {createSessionBundle} from './session-bundle.js?v=34';
+import { startDMShell } from './dm-shell.js?v=34';
+import { openPlayerWindow } from './display-window.js?v=34';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=34';
+import { createEncounterTools } from './encounter-tools.js?v=34';
+import { playerProjection, formation, moveParty } from './encounter-state.js?v=34';
+import { createMapMenu } from './map-menu.js?v=34';
+import { createSaveControls } from './save-controls.js?v=34';
+import { parseSave, restoreSave } from './save-file.js?v=34';
+import { createLighting } from './lighting.js?v=34';
+import { setupFullscreen } from './fullscreen.js?v=34';
+import { startPlayerDisplay } from './player-display.js?v=34';
+import { createDirector } from './director.js?v=34';
+import { normalizeProject } from './presentation-state.js?v=34';
 
 listenForBoardReset();
 const $ = id => document.getElementById(id);
@@ -69,7 +69,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=33')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=34')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -82,7 +82,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=33`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=34`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -480,7 +480,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'33',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'34',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
