@@ -1,12 +1,12 @@
-import {editStatCard} from './stat-card-editor.js?v=34';
-import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=34';
-import {statIcon} from './control-icons.js?v=34';
-import {el,button} from './editor-dom.js?v=34';
-import {assetURL} from './local-assets.js?v=34';
-import {loadSpells} from './spell-catalog.js?v=34';
-import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=34';
-import {patchMember} from './combat-state.js?v=34';
-import {consumeMapDismissal} from './map-dismissal.js?v=34';
+import {editStatCard} from './stat-card-editor.js?v=35';
+import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=35';
+import {statIcon} from './control-icons.js?v=35';
+import {el,button} from './editor-dom.js?v=35';
+import {assetURL} from './local-assets.js?v=35';
+import {loadSpells} from './spell-catalog.js?v=35';
+import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=35';
+import {patchMember} from './combat-state.js?v=35';
+import {consumeMapDismissal} from './map-dismissal.js?v=35';
 export function createReferenceViewers({getState,commit,prepare,announce}){
  const stage=document.getElementById('map-stage'),root=el('div',undefined,'reference-suite');root.hidden=true;stage.append(root);new ResizeObserver(()=>root.style.setProperty('--reference-height',`${stage.clientHeight}px`)).observe(stage);let catalog=[],assigned=null,view=null,expanded=false,query='',selected=null,request=0;
  const deck=()=>getState().campaign.spellDecks.find(d=>d.id===getState().campaign.activeSpellDeck),member=()=>getState().roster.find(m=>m.id===assigned);
