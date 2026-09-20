@@ -1,6 +1,8 @@
-import {drawDie,landingMesh,DICE_COLORS} from './dice-geometry.js?v=35';
+import {drawDie,landingMesh,DICE_COLORS} from './dice-geometry.js?v=36';
 
 const banks=new Map(),scratch=new Map();
+const numberLift={4:10,6:5,8:5,10:15,20:5,100:0};
+const numberRowCenter=52;
 const canvasAt=ratio=>{const c=document.createElement('canvas');c.width=c.height=104*ratio;return c;};
 
 // Build every numbered landing face of a chosen die type before Throw. Reuse
@@ -10,8 +12,9 @@ export function diceFaceBank(sides,ratio=Math.min(2,devicePixelRatio||1)){
  const shape=landingMesh(sides===100?10:sides),color=DICE_COLORS[sides],body=canvasAt(ratio);
  drawDie(body,shape,0,[0,0,0],false,color);
  const values=sides===100?[...Array.from({length:10},(_,i)=>String(i*10).padStart(2,'0')),...Array.from({length:10},(_,i)=>String(i))]:Array.from({length:sides},(_,i)=>String(i+1)),faces=new Map();
- for(const value of values){const ink=canvasAt(ratio),anchor=drawDie(ink,shape,value,[0,0,0],true,color,true),image=canvasAt(ratio),ctx=image.getContext('2d');ctx.drawImage(body,0,0);ctx.drawImage(ink,0,0);faces.set(value,{body,ink,image,anchor:anchor.map(n=>n*ratio)});}
- const bank={shape,color,faces,ratio};banks.set(key,bank);return bank;
+ for(const value of values){const ink=canvasAt(ratio),anchor=drawDie(ink,shape,value,[0,0,0],true,color,true,numberLift[sides]),image=canvasAt(ratio),ctx=image.getContext('2d');ctx.drawImage(body,0,0);ctx.drawImage(ink,0,0);faces.set(value,{body,ink,image,anchor:anchor.map(n=>n*ratio)});}
+ const numberY=faces.values().next().value.anchor[1]/ratio;
+ const bank={shape,color,faces,ratio,offsetY:numberRowCenter-numberY};banks.set(key,bank);return bank;
 }
 
 // Fade while the die is slowing to its landing pose, finishing with the roll.

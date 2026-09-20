@@ -1,7 +1,7 @@
-import {consumeMapDismissal} from './map-dismissal.js?v=35';
-import {diceFaceBank,faceReveal,blendDieFace} from './dice-faces.js?v=35';
-import {drawDie,percentileFaces,rollDuration} from './dice-geometry.js?v=35';
-import {el,button} from './editor-dom.js?v=35';
+import {consumeMapDismissal} from './map-dismissal.js?v=36';
+import {diceFaceBank,faceReveal,blendDieFace} from './dice-faces.js?v=36';
+import {drawDie,percentileFaces,rollDuration} from './dice-geometry.js?v=36';
+import {el,button} from './editor-dom.js?v=36';
 export const DICE=[4,6,8,10,20,100];
 export function dieValue(sides,random=()=>crypto.getRandomValues(new Uint32Array(1))[0]){
   if(!DICE.includes(sides))throw new Error('Unsupported die.');
@@ -20,7 +20,7 @@ export function createDiceTools(){
     for(const [index,die]of result.entries()){
       const group=el('div',null,`dice-result${die.sides===100?' percentile-pair':''}`);group.setAttribute('role','img');group.dataset.sides=die.sides;group.dataset.value=die.value;group.setAttribute('aria-label',`D${die.sides}: rolling`);
       const values=die.sides===100?percentileFaces(die.value):[die.value],bank=diceFaceBank(die.sides);
-      for(const [part,value]of values.entries()){const canvas=el('canvas',null,'rolled-die');canvas.width=canvas.height=104*bank.ratio;canvas.setAttribute('aria-hidden','true');group.append(canvas);rendered.push({canvas,shape:bank.shape,plate:bank.faces.get(String(value)),value,index:index*2+part,color:bank.color,duration:reduced?0:rollDuration(),settled:false});}
+      for(const [part,value]of values.entries()){const canvas=el('canvas',null,'rolled-die');canvas.width=canvas.height=104*bank.ratio;canvas.style.marginTop=`${bank.offsetY}px`;canvas.setAttribute('aria-hidden','true');group.append(canvas);rendered.push({canvas,shape:bank.shape,plate:bank.faces.get(String(value)),value,index:index*2+part,color:bank.color,duration:reduced?0:rollDuration(),settled:false});}
       tray.append(group);
     }
     const start=performance.now();
