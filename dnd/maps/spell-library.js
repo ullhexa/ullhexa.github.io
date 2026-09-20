@@ -1,14 +1,15 @@
-import {openDeckPrint} from './spell-print.js?v=33';
-import {el,button,label} from './editor-dom.js?v=33';
-import {showDialog} from './dialogs.js?v=33';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=33';
-import {groupSelection} from './group-selection.js?v=33';
-import {loadSpells} from './spell-catalog.js?v=33';
-import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=33';
+import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=34';
+import {openDeckPrint} from './spell-print.js?v=34';
+import {el,button,label} from './editor-dom.js?v=34';
+import {showDialog} from './dialogs.js?v=34';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=34';
+import {groupSelection} from './group-selection.js?v=34';
+import {loadSpells} from './spell-catalog.js?v=34';
+import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=34';
 export function showSpellPages(spell){
- const dialog=el('dialog',undefined,'spell-page-dialog'),header=el('div',undefined,'reference-heading'),title=el('h2',spell.title),controls=el('div',undefined,'spell-page-controls'),count=el('span'),image=el('img'),body=el('div',undefined,'spell-page-body');let page=0;
+ const dialog=el('dialog',undefined,'spell-page-dialog'),header=el('div',undefined,'reference-heading'),title=el('h2',spell.title),controls=el('div',undefined,'spell-page-controls'),count=el('span'),image=el('img'),body=el('div',undefined,'spell-page-body');let page=0,expanded=false;
  const render=()=>{image.src=spell.cards[page].src;image.alt=`${spell.title}, card ${page+1} of ${spell.cards.length}`;count.textContent=`${page+1} / ${spell.cards.length}`;prev.disabled=next.disabled=spell.cards.length===1;};
- const step=delta=>{page=(page+delta+spell.cards.length)%spell.cards.length;render();},prev=button('←',()=>step(-1)),next=button('→',()=>step(1)),close=button('×',()=>dialog.close());prev.setAttribute('aria-label','Previous spell card');next.setAttribute('aria-label','Next spell card');close.setAttribute('aria-label','Close spell card');controls.append(prev,count,next);header.append(title,controls,close);body.append(image);dialog.append(header,body);image.addEventListener('click',()=>step(1));image.tabIndex=0;image.setAttribute('role','button');image.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();step(1);}});dialog.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();e.stopPropagation();step(e.key==='ArrowLeft'?-1:1);}});document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});showDialog(dialog);render();
+ const step=delta=>{page=(page+delta+spell.cards.length)%spell.cards.length;render();},prev=button('←',()=>step(-1)),next=button('→',()=>step(1)),close=button('×',()=>dialog.close());prev.setAttribute('aria-label','Previous spell card');next.setAttribute('aria-label','Next spell card');close.setAttribute('aria-label','Close spell card');const enlarge=button('',()=>{expanded=!expanded;dialog.classList.toggle('is-expanded',expanded);setExpandButton(enlarge,expanded);});setExpandButton(enlarge,false);const full=fullscreenButton(()=>openCardFullscreen({title:spell.title,pages:spell.cards,index:page}));controls.append(prev,count,next);header.append(title,controls,enlarge,full,close);body.append(image);dialog.append(header,body);image.addEventListener('click',()=>step(1));image.tabIndex=0;image.setAttribute('role','button');image.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();step(1);}});dialog.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();e.stopPropagation();step(e.key==='ArrowLeft'?-1:1);}});document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});showDialog(dialog);render();
 }
 export function createSpellLibrary({getState,commit,announce}){
  let catalog=[],selected=null,query='',chosen=null,loaded=false,loading=false;const selection=groupSelection();

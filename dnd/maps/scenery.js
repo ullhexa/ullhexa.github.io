@@ -1,4 +1,4 @@
-import {loadRaster} from './resource-loading.js?v=33';
+import {loadRaster} from './resource-loading.js?v=34';
 const NS='http://www.w3.org/2000/svg';
 // Cache static art/light masks once per scene change at the source art resolution.
 // Pan/zoom move the cached plane; they never rebuild clips or light masks.

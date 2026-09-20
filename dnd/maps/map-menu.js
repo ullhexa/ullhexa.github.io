@@ -1,8 +1,8 @@
-import {editCustomMap} from './custom-maps.js?v=33';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=33';
-import {assetId} from './combat-state.js?v=33';
-import {assetURL} from './local-assets.js?v=33';
-import {createSceneGroups} from './scene-groups-ui.js?v=33';
+import {editCustomMap} from './custom-maps.js?v=34';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=34';
+import {assetId} from './combat-state.js?v=34';
+import {assetURL} from './local-assets.js?v=34';
+import {createSceneGroups} from './scene-groups-ui.js?v=34';
 const $ = id => document.getElementById(id);
 
 export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject,deleteMap,editMap}) {
