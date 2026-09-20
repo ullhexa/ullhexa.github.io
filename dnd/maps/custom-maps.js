@@ -1,9 +1,9 @@
-import {IMAGE_ACCEPT,imageTypeNote,validImageDimensions} from './image-import.js?v=36';
-import {readSessionValue,writeSessionValue} from './session-storage.js?v=36';
-import {uploadImage,assetURL,assetRecord,putAssets} from './local-assets.js?v=36';
-import {el} from './editor-dom.js?v=36';
-import {editMapGrid} from './grid-editor.js?v=36';
-import {assetId,safeId} from './combat-state.js?v=36';
+import {IMAGE_ACCEPT,imageTypeNote,validImageDimensions} from './image-import.js?v=37';
+import {readSessionValue,writeSessionValue} from './session-storage.js?v=37';
+import {uploadImage,assetURL,assetRecord,putAssets} from './local-assets.js?v=37';
+import {el} from './editor-dom.js?v=37';
+import {editMapGrid} from './grid-editor.js?v=37';
+import {assetId,safeId} from './combat-state.js?v=37';
 export function customCatalog(sessionKey){try{const entries=readSessionValue(`${sessionKey}:custom-maps`)||[];return entries.filter(validCustomEntry);}catch{return [];}}
 export function validCustomEntry(e){const m=e?.map;return !!(e&&safeId(e.id)&&e.id.startsWith('custom-')&&m&&m.id===e.id&&m.schemaVersion===1&&m.version==='1'&&e.thumbnail===m.art?.base&&e.title===m.title&&Object.keys(m.art||{}).every(k=>['base','roofs'].includes(k))&&m.lighting===undefined&&m.userMap===true&&typeof m.title==='string'&&m.title.length<=80&&m.width>=100&&m.height>=100&&validImageDimensions(m.width,m.height)&&Number.isFinite(m.grid?.size)&&m.grid.size>=1&&m.grid.distance===5&&(m.grid.offset===undefined||(Array.isArray(m.grid.offset)&&m.grid.offset.length===2&&m.grid.offset.every(n=>Number.isFinite(n)&&n>=0&&n<m.grid.size)))&&assetId(m.art?.base)&&m.art.base===m.art.roofs&&Array.isArray(m.places)&&m.places.length===0&&Array.isArray(m.interactions)&&m.interactions.length===0);}
 export function saveCustomCatalog(sessionKey,entries){if(!entries.every(validCustomEntry)||entries.length>40)throw new Error('Invalid custom map library.');if(!writeSessionValue(`${sessionKey}:custom-maps`,entries))throw new Error('Browser storage is full. Disable Auto save to keep using this session.');}

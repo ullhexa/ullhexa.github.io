@@ -1,4 +1,4 @@
-import {isVisible} from './state.js?v=36';
+import {isVisible} from './state.js?v=37';
 
 const NS='http://www.w3.org/2000/svg';
 const node=(tag,attrs={})=>{
