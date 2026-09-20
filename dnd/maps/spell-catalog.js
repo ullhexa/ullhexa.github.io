@@ -1,3 +1,3 @@
-import {fetchJSON} from './resource-loading.js?v=37';
+import {fetchJSON} from './resource-loading.js?v=38';
 let pending;
-export function loadSpells(){return pending??=fetchJSON('./spells/catalog.json?v=37').then(data=>data.spells).catch(error=>{pending=null;throw error;});}
+export function loadSpells(){return pending??=fetchJSON('./spells/catalog.json?v=38').then(data=>data.spells).catch(error=>{pending=null;throw error;});}

@@ -1,6 +1,6 @@
-import {normalizeSpells,normalizeSpellLibrary} from './spell-state.js?v=37';
-import {normalizeUserTokens} from './library-assets.js?v=37';
-import {elevation} from './token-options.js?v=37';
+import {normalizeSpells,normalizeSpellLibrary} from './spell-state.js?v=38';
+import {normalizeUserTokens} from './library-assets.js?v=38';
+import {elevation} from './token-options.js?v=38';
 // Small, explicit session model. Roster and monsters are the active map instances.
 export const CONDITIONS=[['blinded','◉̸','Blinded'],['charmed','♡','Charmed'],['deafened','♬̸','Deafened'],['exhaustion','⌛','Exhaustion'],['frightened','!','Frightened'],['grappled','⚓','Grappled'],['incapacitated','×','Incapacitated'],['invisible','◌','Invisible'],['paralyzed','Ⅱ','Paralyzed'],['petrified','◆','Petrified'],['poisoned','☠','Poisoned'],['prone','↘','Prone'],['restrained','⊠','Restrained'],['stunned','✧','Stunned'],['unconscious','☾','Unconscious']];
 export const MONSTERS=['Goblin','Kobold','Orc','Bugbear','Bandit','Cultist','Skeleton','Zombie','Ghoul','Mummy','Vampire','Ghost','Wolf','Bear','Giant spider','Owlbear','Troll','Ogre','Cyclops','Minotaur','Red dragon','Green dragon','Gargoyle','Imp','Fire elemental','Water elemental','Earth elemental','Air elemental','Mimic','Gelatinous cube',"Hobgoblin", "Gnoll", "Giant rat", "Giant bat", "Boar", "Dire wolf", "Giant snake", "Giant scorpion", "Wight", "Wraith", "Lich", "Death knight", "Werewolf", "Harpy", "Griffon", "Basilisk", "Hydra", "Stone golem", "Treant", "Myconid"];
