@@ -1,10 +1,10 @@
-import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=32';
-import {editTokenImage} from './token-image-editor.js?v=32';
-import {createSceneGroups} from './scene-groups-ui.js?v=32';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=32';
-import {storyCatalog} from './story-assets.js?v=32';
-import {createStoryPlayer} from './story-player.js?v=32';
-import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=32';
+import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=33';
+import {editTokenImage} from './token-image-editor.js?v=33';
+import {createSceneGroups} from './scene-groups-ui.js?v=33';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=33';
+import {storyCatalog} from './story-assets.js?v=33';
+import {createStoryPlayer} from './story-player.js?v=33';
+import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=33';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 
@@ -30,7 +30,7 @@ export function createDirector({catalog,mapId,getProject,setProject,prepareMap,a
   let selected=getProject().vibe,librarySource='factory';
   const remove=el('button','Delete','danger'),actions=el('div',null,'asset-actions');remove.type='button';$('add-story').before(actions);actions.append($('add-story'),remove);
   const edit=el('button','Edit');edit.type='button';actions.insertBefore(edit,remove);edit.addEventListener('click',async()=>{const scene=library.find(s=>s.id===selected);if(!scene?.asset)return;edit.disabled=true;error.textContent='';try{const asset=await assetRecord(scene.asset);if(!asset)throw new Error('The story image is missing.');const image=await editTokenImage(asset,{story:true,editing:true,title:scene.title});if(!image)return;setProject({...getProject(),storyAssets:getProject().storyAssets.map(s=>s.id===scene.id?{...s,title:image.title,asset:image.id}:s)});select(scene.id);}catch(e){error.textContent=e.message;}finally{edit.disabled=false;}});
-  function filter(){factory.setAttribute('aria-pressed',librarySource==='factory');user.setAttribute('aria-pressed',librarySource==='user');uploadButton.hidden=librarySource!=='user';for(const card of $('story-grid').querySelectorAll('[data-scene]'))card.hidden=!!library.find(s=>s.id===card.dataset.scene)?.asset!==(librarySource==='user');}
+  function filter(){dialog.dataset.source=librarySource;factory.setAttribute('aria-pressed',librarySource==='factory');user.setAttribute('aria-pressed',librarySource==='user');uploadButton.hidden=librarySource!=='user';for(const card of $('story-grid').querySelectorAll('[data-scene]'))card.hidden=!!library.find(s=>s.id===card.dataset.scene)?.asset!==(librarySource==='user');}
   function changeSource(value){librarySource=value;filter();const scene=library.find(s=>!!s.asset===(value==='user'));if(scene)select(scene.id);else{selected=null;$('story-title').textContent='';$('story-description').textContent='';animation.stop();$('story-preview').hidden=true;render();}}
   factory.addEventListener('click',()=>changeSource('factory'));user.addEventListener('click',()=>changeSource('user'));
   remove.addEventListener('click',()=>{const project=getProject(),id=selected;if(!project.storyAssets?.some(s=>s.id===id))return;setProject({...project,storyAssets:project.storyAssets.filter(s=>s.id!==id),stories:project.stories.filter(s=>s!==id),storyGroups:project.storyGroups.map(g=>({...g,entries:g.entries.filter(s=>s!==id)}))});changeSource('user');});

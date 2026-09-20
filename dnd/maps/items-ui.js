@@ -1,12 +1,12 @@
-import {itemFloorAt} from './floors.js?v=32';
-import {tokenGallery} from './token-gallery.js?v=32';
-import {createMemberStrip} from './member-strip.js?v=32';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=32';
-import {el,button} from './combat-ui.js?v=32';
-import {ITEMS,searchItems} from './items-catalog.js?v=32';
-import {setFace} from './token-portraits.js?v=32';
-import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=32';
-import {groupSelection} from './group-selection.js?v=32';
+import {itemFloorAt} from './floors.js?v=33';
+import {tokenGallery} from './token-gallery.js?v=33';
+import {createMemberStrip} from './member-strip.js?v=33';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=33';
+import {el,button} from './combat-ui.js?v=33';
+import {ITEMS,searchItems} from './items-catalog.js?v=33';
+import {setFace} from './token-portraits.js?v=33';
+import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=33';
+import {groupSelection} from './group-selection.js?v=33';
 const $=id=>document.getElementById(id);
 function face(item){const img=el('img');img.alt='';img.width=img.height=40;img.draggable=false;setFace(img,item);return img;}
 function field(label,value,change,type='text'){const wrap=el('label',label,'field-label'),input=el('input');input.type=type;input.value=value;input.setAttribute('aria-label',label);input.addEventListener('input',()=>change(input.value));wrap.append(input);return {wrap,input};}
@@ -23,16 +23,16 @@ export function createItemsUI({map,getState,commit,announce,pointAt,setTool,sele
   const hint=el('p','','library-save-hint'),error=el('p','','save-error');error.setAttribute('role','alert');
   const actions=el('div',undefined,'dialog-actions'),remove=button('Delete item list',()=>{let s=getState();for(const id of selection.ids)s=deleteGroup(s,'items',id);commit(s,'Item lists deleted. Undo restores them.');selected=null;itemId=null;selection.reset();renderMenu();},'delete-group'),apply=button('Done',()=>{if(selected&&selected!==getState().campaign.activeItems)commit(applyItemList(getState(),selected),'Item tray activated.');closeMenu();},'primary');actions.append(remove,apply);panel.append(error,hint,layout,actions);document.body.append(panel);
   const group=()=>getState().campaign.itemLists.find(g=>g.id===selected);
-  const memberStrip=createMemberStrip({items:true,onSelect:id=>{itemId=id;selectedUser=null;renderMenu();},onRemove:id=>edit(g=>({...g,members:g.members.filter(m=>m.id!==id)}))});
+  const memberStrip=createMemberStrip({items:true,onSelect:id=>{itemId=id;selectedUser=null;renderMenu();},onRemove:id=>edit(g=>({...g,members:g.members.filter(m=>m.id!==id)})),onRemoveMany:ids=>edit(g=>({...g,members:g.members.filter(m=>!ids.includes(m.id))}))});
   function edit(fn,redraw=true,groupId=selected){const s=syncCampaign(getState()),lists=s.campaign.itemLists.map(g=>g.id===groupId?fn(g):g);commit({...s,campaign:{...s.campaign,itemLists:lists}},'Item list updated.');if(redraw)renderMenu();else refreshLabels();}
   function refreshLabels(){const s=getState();for(const b of groups.querySelectorAll('[data-item-group]')){const g=s.campaign.itemLists.find(g=>g.id===b.dataset.itemGroup);if(g)b.textContent=`${g.name}${g.id===s.campaign.activeItems?' · Active':''}`;}for(const b of main.querySelectorAll('[data-item-id]')){const item=group()?.members.find(m=>m.id===b.dataset.itemId);if(item)b.lastElementChild.textContent=item.name;}}
   function addItem(picture=0,avatar=null,groupId=selected){const g=getState().campaign.itemLists.find(g=>g.id===groupId);if(!g)return;if(g.members.length>=500){announce('Up to 500 items per list.');return;}itemId=crypto.randomUUID();const item=normalizeItem({id:itemId,name:avatar?'Custom item':ITEMS[picture],portrait:picture,avatar,size:5,visible:false});edit(g=>({...g,members:[...g.members,item]}),true,groupId);}
   function renderMenu(){const s=getState();if(!s.campaign.itemLists.some(g=>g.id===selected))selected=s.campaign.activeItems||s.campaign.itemLists[0]?.id||null;selection.prune(s.campaign.itemLists.map(g=>g.id),selected);const g=group();groups.replaceChildren(el('h3','Item lists'),button('+ New item list',()=>{const s=syncCampaign(getState());if(s.campaign.itemLists.length>=20)return;selected=crypto.randomUUID();selection.reset(selected);itemId=null;commit({...s,campaign:{...s.campaign,itemLists:[...s.campaign.itemLists,{id:selected,name:'Items',members:[]}]}},'Item list created.');renderMenu();}));
     for(const list of s.campaign.itemLists){const b=button(`${list.name}${list.id===s.campaign.activeItems?' · Active':''}`,e=>{selected=selection.click(list.id,e,s.campaign.itemLists.map(g=>g.id));itemId=null;renderMenu();},'library-group');b.dataset.itemGroup=list.id;b.setAttribute('aria-pressed',selection.has(list.id));b.classList.toggle('editing-group',list.id===selected);groups.append(b);}
     main.replaceChildren();remove.disabled=!selection.ids.length;remove.textContent=selection.ids.length>1?`Delete ${selection.ids.length} item lists`:'Delete item list';apply.textContent=!g||s.campaign.activeItems===selected?'Done':'Activate item list';hint.textContent='';if(!g){main.append(el('p','Create an item list to choose its items.','tool-hint'));return;}
-    const naming=field('Item list name',g.name,value=>edit(g=>({...g,name:value.trim().slice(0,48)||'Items'}),false));naming.input.maxLength=48;const top=el('div',undefined,'library-member-actions');top.append(naming.wrap,button('+ Add item',()=>addItem()));main.append(top);
+    const naming=field('Item list name',g.name,value=>edit(g=>({...g,name:value.trim().slice(0,48)||'Items'}),false));naming.input.maxLength=48;const top=el('div',undefined,'library-member-actions');top.append(naming.wrap,button('+ Add item',()=>addItem()));const memberControls=el('div',undefined,'member-add-remove');memberControls.append(top.lastElementChild,memberStrip.removeSelected);top.append(memberControls);main.append(top);
     if(!g.members.some(m=>m.id===itemId))itemId=g.members[0]?.id;
-    main.append(memberStrip.render(g.members,itemId));
+    main.append(memberStrip.render(g.members,itemId,selected));
     const item=g.members.find(m=>m.id===itemId);
     if(item){const patch=(p,redraw=false)=>edit(g=>({...g,members:g.members.map(m=>m.id===itemId?{...m,...p}:m)}),redraw),fields=el('div',undefined,'member-fields'),name=field('Item name',item.name,value=>patch({name:value.trim().slice(0,32)||'Item'})),size=field('Item size in feet',item.size,value=>patch({size:Math.max(1,Math.min(200,Math.round(Number(value)||1)))}),'number');name.input.maxLength=32;size.input.min=1;size.input.max=200;size.input.step=1;size.input.addEventListener('blur',()=>size.input.value=group()?.members.find(m=>m.id===itemId)?.size||1);fields.append(name.wrap,size.wrap);main.append(fields);const notes=el('label','Comment','field-label'),comment=el('textarea');comment.value=item.comment;comment.maxLength=2000;comment.rows=2;comment.setAttribute('aria-label','Default item comment');comment.addEventListener('input',()=>patch({comment:comment.value}));notes.append(comment);main.append(notes);}
     const assign=(portrait,avatar=null)=>{if(!item){addItem(portrait,avatar);return;}edit(g=>({...g,members:g.members.map(m=>m.id===itemId?{...m,portrait,avatar,...(!avatar&&(ITEMS.includes(m.name)||m.name==='Custom item')?{name:ITEMS[portrait]}:{})}:m)}));};

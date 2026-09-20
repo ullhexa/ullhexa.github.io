@@ -5,7 +5,7 @@ export const MAX_IMAGE_BYTES=20*1024*1024,MAX_IMAGE_SIDE=16384,MAX_IMAGE_PIXELS=
 export const TOKEN_SIZE=256,TOKEN_SOURCE_SIZE=1024;
 export function rasterType(bytes){const b=new Uint8Array(bytes),text=(a,n)=>String.fromCharCode(...b.slice(a,a+n));if(b[0]===255&&b[1]===216&&b[2]===255)return'image/jpeg';if(text(1,3)==='PNG'&&b[0]===137&&b[4]===13&&b[5]===10&&b[6]===26&&b[7]===10)return'image/png';if(text(0,4)==='RIFF'&&text(8,4)==='WEBP')return'image/webp';if(['GIF87a','GIF89a'].includes(text(0,6)))return'image/gif';if(text(0,2)==='BM')return'image/bmp';if(text(4,4)==='ftyp'&&['avif','avis'].some(t=>{for(let i=8;i<Math.min(b.length,64);i+=4)if(text(i,4)===t)return true;return false;}))return'image/avif';return null;}
 export function validImageDimensions(w,h){return Number.isInteger(w)&&Number.isInteger(h)&&w>0&&h>0&&w<=MAX_IMAGE_SIDE&&h<=MAX_IMAGE_SIDE&&w*h<=MAX_IMAGE_PIXELS;}
-export function imageTypeNote(){const p=document.createElement('p');p.className='image-types';p.textContent=`${IMAGE_TYPES} · Up to 20 MB · Animated images use their first frame`;return p;}
+export function imageTypeNote(){const p=document.createElement('p');p.className='image-types';p.textContent=`${IMAGE_TYPES} · Up to 20 MB`;return p;}
 export async function readRaster(file){
  if(!file||!file.size)throw new Error('Choose an image file.');if(file.size>MAX_IMAGE_BYTES)throw new Error('Choose an image under 20 MB.');
  const bytes=await file.arrayBuffer(),mime=rasterType(bytes);if(!mime)throw new Error(`Unsupported image. Choose ${IMAGE_TYPES}.`);
