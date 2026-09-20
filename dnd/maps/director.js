@@ -1,10 +1,10 @@
-import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=36';
-import {editTokenImage} from './token-image-editor.js?v=36';
-import {createSceneGroups} from './scene-groups-ui.js?v=36';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=36';
-import {storyCatalog} from './story-assets.js?v=36';
-import {createStoryPlayer} from './story-player.js?v=36';
-import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=36';
+import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=37';
+import {editTokenImage} from './token-image-editor.js?v=37';
+import {createSceneGroups} from './scene-groups-ui.js?v=37';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=37';
+import {storyCatalog} from './story-assets.js?v=37';
+import {createStoryPlayer} from './story-player.js?v=37';
+import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=37';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 

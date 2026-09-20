@@ -1,7 +1,7 @@
-import {cameraGeometry,boundedCamera} from './camera.js?v=36';
-import {isTextEntry} from './keyboard.js?v=36';
-import {button} from './editor-dom.js?v=36';
-import {icon} from './control-icons.js?v=36';
+import {cameraGeometry,boundedCamera} from './camera.js?v=37';
+import {isTextEntry} from './keyboard.js?v=37';
+import {button} from './editor-dom.js?v=37';
+import {icon} from './control-icons.js?v=37';
 const directions={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
 export function gridCameraStep(map,camera,viewport,direction,align=true){
  const c=boundedCamera(map,camera,viewport),geometry=cameraGeometry(map,c,viewport),dimensions=[map.width,map.height],offset=map.grid.offset||[0,0],left=[c.x*map.width-viewport[0]/geometry.scale/2,c.y*map.height-viewport[1]/geometry.scale/2],movable=dimensions.map((n,i)=>viewport[i]/geometry.scale<n-1e-7);
