@@ -1,6 +1,7 @@
-import {consumeMapDismissal} from './map-dismissal.js?v=34';
-import {drawDie,landingMesh,percentileFaces,rollDuration,DICE_COLORS} from './dice-geometry.js?v=34';
-import {el,button} from './editor-dom.js?v=34';
+import {consumeMapDismissal} from './map-dismissal.js?v=35';
+import {diceFaceBank,faceReveal,blendDieFace} from './dice-faces.js?v=35';
+import {drawDie,percentileFaces,rollDuration} from './dice-geometry.js?v=35';
+import {el,button} from './editor-dom.js?v=35';
 export const DICE=[4,6,8,10,20,100];
 export function dieValue(sides,random=()=>crypto.getRandomValues(new Uint32Array(1))[0]){
   if(!DICE.includes(sides))throw new Error('Unsupported die.');
@@ -13,18 +14,18 @@ export function createDiceTools(){
   let counts={},animation=null,rolling=false;const buttons=new Map();
   function refresh(){for(const [sides,b]of buttons){b.querySelector('output').textContent=counts[sides]||'';b.setAttribute('aria-label',`D${sides}: ${counts[sides]||0} selected`);b.disabled=rolling||(counts[sides]||0)>=20;}throwButton.disabled=rolling||!Object.values(counts).some(Boolean);}
   function reset(){cancelAnimationFrame(animation);rolling=false;counts={};tray.replaceChildren();total.textContent='0';panel.classList.remove('rolling');refresh();}
-  controls.append(button('Reset',reset));for(const sides of DICE){const b=button('',()=>{counts[sides]=Math.min(20,(counts[sides]||0)+1);refresh();},'die-choice');b.append(el('output',''),el('span',`D${sides}`));controls.append(b);buttons.set(sides,b);}
+  controls.append(button('Reset',reset));for(const sides of DICE){const b=button('',()=>{diceFaceBank(sides);counts[sides]=Math.min(20,(counts[sides]||0)+1);refresh();},'die-choice');b.append(el('output',''),el('span',`D${sides}`));controls.append(b);buttons.set(sides,b);}
   const throwButton=button('Throw',()=>{
     const result=rollDice(counts);if(!result.length)return;rolling=true;panel.classList.add('rolling');tray.replaceChildren();total.textContent='…';refresh();const rendered=[],reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
     for(const [index,die]of result.entries()){
       const group=el('div',null,`dice-result${die.sides===100?' percentile-pair':''}`);group.setAttribute('role','img');group.dataset.sides=die.sides;group.dataset.value=die.value;group.setAttribute('aria-label',`D${die.sides}: rolling`);
-      const values=die.sides===100?percentileFaces(die.value):[die.value];
-      for(const [part,value]of values.entries()){const canvas=el('canvas',null,'rolled-die');canvas.width=canvas.height=104*Math.min(2,devicePixelRatio||1);canvas.setAttribute('aria-hidden','true');group.append(canvas);rendered.push({canvas,shape:landingMesh(die.sides===100?10:die.sides),value,index:index*2+part,color:DICE_COLORS[die.sides],duration:reduced?0:rollDuration(),settled:false});}
+      const values=die.sides===100?percentileFaces(die.value):[die.value],bank=diceFaceBank(die.sides);
+      for(const [part,value]of values.entries()){const canvas=el('canvas',null,'rolled-die');canvas.width=canvas.height=104*bank.ratio;canvas.setAttribute('aria-hidden','true');group.append(canvas);rendered.push({canvas,shape:bank.shape,plate:bank.faces.get(String(value)),value,index:index*2+part,color:bank.color,duration:reduced?0:rollDuration(),settled:false});}
       tray.append(group);
     }
     const start=performance.now();
     for(const die of rendered)die.canvas.dataset.duration=String(die.duration);
-    function frame(now){let moving=false;for(const die of rendered){if(die.settled)continue;const progress=die.duration?Math.min(1,(now-start)/die.duration):1,remaining=(1-progress)**3,axes=[[4,1,.5],[3,3,1.5],[.7,4,2]][die.index%3],angles=axes.map(turns=>remaining*(turns+(die.index%5)*.17)*Math.PI*2);drawDie(die.canvas,die.shape,die.value,angles,progress===1,die.color);die.settled=progress===1;if(die.settled)die.canvas.dataset.settled='true';else moving=true;}if(moving){animation=requestAnimationFrame(frame);return;}[...tray.children].forEach((group,i)=>group.setAttribute('aria-label',`D${result[i].sides}: ${result[i].value}`));total.textContent=String(result.reduce((sum,d)=>sum+d.value,0));rolling=false;panel.classList.remove('rolling');refresh();}
+    function frame(now){let moving=false;for(const die of rendered){if(die.settled)continue;const progress=die.duration?Math.min(1,(now-start)/die.duration):1,remaining=(1-progress)**3,axes=[[4,1,.5],[3,3,1.5],[.7,4,2]][die.index%3],angles=axes.map(turns=>remaining*(turns+(die.index%5)*.17)*Math.PI*2);drawDie(die.canvas,die.shape,die.value,angles,false,die.color);blendDieFace(die.canvas,die.plate,faceReveal(now-start,die.duration));die.settled=progress===1;if(die.settled)die.canvas.dataset.settled='true';else moving=true;}if(moving){animation=requestAnimationFrame(frame);return;}[...tray.children].forEach((group,i)=>group.setAttribute('aria-label',`D${result[i].sides}: ${result[i].value}`));total.textContent=String(result.reduce((sum,d)=>sum+d.value,0));rolling=false;panel.classList.remove('rolling');refresh();}
     animation=requestAnimationFrame(frame);
   },'primary');controls.append(throwButton);refresh();
   function open(){panel.hidden=false;toggle.setAttribute('aria-pressed','true');}function close(){panel.hidden=true;toggle.setAttribute('aria-pressed','false');}

@@ -1,14 +1,14 @@
-import {statIcon} from './control-icons.js?v=34';
-import {tokenGallery} from './token-gallery.js?v=34';
-import {createMemberStrip} from './member-strip.js?v=34';
-import {editStatCard} from './stat-card-editor.js?v=34';
-import {groupSelection} from './group-selection.js?v=34';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=34';
-import {conditionIcon} from './condition-icons.js?v=34';
-import {shortcutAction,isTextEntry} from './keyboard.js?v=34';
-import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=34';
-import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=34';
-import {setFace,portraitStyle} from './token-portraits.js?v=34';
+import {statIcon} from './control-icons.js?v=35';
+import {tokenGallery} from './token-gallery.js?v=35';
+import {createMemberStrip} from './member-strip.js?v=35';
+import {editStatCard} from './stat-card-editor.js?v=35';
+import {groupSelection} from './group-selection.js?v=35';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=35';
+import {conditionIcon} from './condition-icons.js?v=35';
+import {shortcutAction,isTextEntry} from './keyboard.js?v=35';
+import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=35';
+import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=35';
+import {setFace,portraitStyle} from './token-portraits.js?v=35';
 const $=id=>document.getElementById(id);
 export function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 export function button(text,fn,cls){const b=el('button',text,cls);b.type='button';if(fn)b.addEventListener('click',fn);return b;}
