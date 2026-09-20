@@ -1,38 +1,40 @@
-import {createSpellLibrary} from './spell-library.js?v=32';
-import {createReferenceViewers} from './reference-viewers.js?v=32';
-import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=32';
-import {persistAssets} from './local-assets.js?v=32';
-import {createScenery} from './scenery.js?v=32';
-import {consumeMapDismissal} from './map-dismissal.js?v=32';
-import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=32';
-import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=32';
-import {createDiceTools} from './dice.js?v=32';
-import {fetchJSON,loadRaster} from './resource-loading.js?v=32';
-import {storyCatalog,nextStory} from './story-assets.js?v=32';
-import {createItemsUI} from './items-ui.js?v=32';
-import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=32';
-import {createHistory} from './history.js?v=32';
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=32';
-import {setupSidebarResize} from './sidebar-resize.js?v=32';
-import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=32';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=32';
-import {createFogTools} from './fog-tools.js?v=32';
-import {normalizeFog} from './fog-state.js?v=32';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=32';
-import {createSessionBundle} from './session-bundle.js?v=32';
-import { startDMShell } from './dm-shell.js?v=32';
-import { openPlayerWindow } from './display-window.js?v=32';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=32';
-import { createEncounterTools } from './encounter-tools.js?v=32';
-import { playerProjection, formation, moveParty } from './encounter-state.js?v=32';
-import { createMapMenu } from './map-menu.js?v=32';
-import { createSaveControls } from './save-controls.js?v=32';
-import { parseSave, restoreSave } from './save-file.js?v=32';
-import { createLighting } from './lighting.js?v=32';
-import { setupFullscreen } from './fullscreen.js?v=32';
-import { startPlayerDisplay } from './player-display.js?v=32';
-import { createDirector } from './director.js?v=32';
-import { normalizeProject } from './presentation-state.js?v=32';
+import {createMapNavigation} from './map-navigation.js?v=33';
+import {chevronIcon} from './control-icons.js?v=33';
+import {createSpellLibrary} from './spell-library.js?v=33';
+import {createReferenceViewers} from './reference-viewers.js?v=33';
+import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=33';
+import {persistAssets} from './local-assets.js?v=33';
+import {createScenery} from './scenery.js?v=33';
+import {consumeMapDismissal} from './map-dismissal.js?v=33';
+import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=33';
+import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=33';
+import {createDiceTools} from './dice.js?v=33';
+import {fetchJSON,loadRaster} from './resource-loading.js?v=33';
+import {storyCatalog,nextStory} from './story-assets.js?v=33';
+import {createItemsUI} from './items-ui.js?v=33';
+import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=33';
+import {createHistory} from './history.js?v=33';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=33';
+import {setupSidebarResize} from './sidebar-resize.js?v=33';
+import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=33';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=33';
+import {createFogTools} from './fog-tools.js?v=33';
+import {normalizeFog} from './fog-state.js?v=33';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=33';
+import {createSessionBundle} from './session-bundle.js?v=33';
+import { startDMShell } from './dm-shell.js?v=33';
+import { openPlayerWindow } from './display-window.js?v=33';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=33';
+import { createEncounterTools } from './encounter-tools.js?v=33';
+import { playerProjection, formation, moveParty } from './encounter-state.js?v=33';
+import { createMapMenu } from './map-menu.js?v=33';
+import { createSaveControls } from './save-controls.js?v=33';
+import { parseSave, restoreSave } from './save-file.js?v=33';
+import { createLighting } from './lighting.js?v=33';
+import { setupFullscreen } from './fullscreen.js?v=33';
+import { startPlayerDisplay } from './player-display.js?v=33';
+import { createDirector } from './director.js?v=33';
+import { normalizeProject } from './presentation-state.js?v=33';
 
 listenForBoardReset();
 const $ = id => document.getElementById(id);
@@ -67,7 +69,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=32')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=33')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -80,7 +82,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=32`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=33`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -236,8 +238,8 @@ async function start() {
   const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,setTool,livePositions});
   if(!player){const overlay=svgNode('svg',{id:'party-overlay',preserveAspectRatio:'xMidYMid meet'});overlay.append($('party-layer'));$('map-stage').append(overlay);}
   fog=createFogTools({map,player,getState:()=>state,preview,finishDrag,pointAt,setTool,sendPreview:strokes=>send({type:'fog-preview',mapId:map.id,revision:state.revision,fog:strokes}),announce});
-  const dice=player?null:createDiceTools();
-  combat=createCombatUI({map,player,getState:()=>state,commit,announce,showStat:m=>references?.showStat(m),showAssigned:id=>references?.showAssigned(id),locate:id=>{references?.close();encounter.locateToken(id);},getPresentation:()=>project,advanceStory:()=>setProject({...project,vibe:nextStory(project)})});
+  const dice=player?null:createDiceTools();if(!player)createMapNavigation({map,getCamera:()=>state.camera,viewport:()=>viewportSize(),prepare:()=>setTool(null),setCamera:camera=>{focusedPlace=null;state={...state,camera,revision:state.revision+1};queueCamera();clearTimeout(zoomSave);zoomSave=setTimeout(save,100);}});
+  combat=createCombatUI({map,player,getState:()=>state,commit,announce,showStat:(m,side)=>references?.showStat(m,side),showAssigned:(id,side)=>references?.showAssigned(id,side),locate:id=>{references?.close();encounter.locateToken(id);},getPresentation:()=>project,advanceStory:()=>setProject({...project,vibe:nextStory(project)})});
 
   function remember(view) { history.record(state,view); }
   function save() {
@@ -430,9 +432,9 @@ async function start() {
       title.append(number,document.createTextNode(place.name));
       button.append(title, document.createElement('span')); button.addEventListener('click', () => selectPlace(place.id));
       const row=document.createElement('div');row.className='place-row';row.dataset.placeRow=place.id;row.append(button);placeButtons.set(place.id,button);
-      const expand=document.createElement('button');expand.type='button';expand.className='place-expand';expand.textContent='⌄';expand.setAttribute('aria-label',`Show ${place.name} floors`);expand.setAttribute('aria-expanded','false');const sequence=document.createElement('div');sequence.className='place-inline-sequence';sequence.id=`sequence-${place.id}`;sequence.hidden=true;expand.setAttribute('aria-controls',sequence.id);const steps=[];
-      function collapse(){sequence.hidden=true;expand.textContent='⌄';expand.setAttribute('aria-expanded','false');expand.setAttribute('aria-label',`Show ${place.name} floors`);row.classList.remove('expanded');}
-      expand.addEventListener('click',()=>{const wasOpen=expandedPlace===place.id;for(const p of placeExpansions.values())p.collapse();expandedPlace=wasOpen?null:place.id;if(!wasOpen){sequence.hidden=false;expand.textContent='⌃';expand.setAttribute('aria-expanded','true');expand.setAttribute('aria-label',`Hide ${place.name} floors`);row.classList.add('expanded');}});
+      const expand=document.createElement('button');expand.type='button';expand.className='place-expand';expand.replaceChildren(chevronIcon());expand.setAttribute('aria-label',`Show ${place.name} floors`);expand.setAttribute('aria-expanded','false');const sequence=document.createElement('div');sequence.className='place-inline-sequence';sequence.id=`sequence-${place.id}`;sequence.hidden=true;expand.setAttribute('aria-controls',sequence.id);const steps=[];
+      function collapse(){sequence.hidden=true;expand.replaceChildren(chevronIcon());expand.setAttribute('aria-expanded','false');expand.setAttribute('aria-label',`Show ${place.name} floors`);row.classList.remove('expanded');}
+      expand.addEventListener('click',()=>{const wasOpen=expandedPlace===place.id;for(const p of placeExpansions.values())p.collapse();expandedPlace=wasOpen?null:place.id;if(!wasOpen){sequence.hidden=false;expand.replaceChildren(chevronIcon());expand.setAttribute('aria-expanded','true');expand.setAttribute('aria-label',`Hide ${place.name} floors`);row.classList.add('expanded');}});
       floorList(place).forEach(floor=>{const b=document.createElement('button');b.type='button';b.textContent=floor.label;b.setAttribute('aria-label',`${place.name}: ${floor.label}`);b.addEventListener('click',()=>{selectPlace(place.id);commit(selectFloor(map,state,place.id,floor.id),`${place.name}: ${floor.label}.`);});sequence.append(b);steps.push(b);});expand.hidden=floorList(place).length<2;row.classList.toggle('single-floor',expand.hidden);
       placeExpansions.set(place.id,{row,collapse,steps});row.append(expand,sequence);$('places').append(row);
       const [x, y] = xy(place.point);
@@ -478,7 +480,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'32',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'33',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');

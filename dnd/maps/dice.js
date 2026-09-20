@@ -1,5 +1,6 @@
-import {consumeMapDismissal} from './map-dismissal.js?v=32';
-import {el,button} from './editor-dom.js?v=32';
+import {consumeMapDismissal} from './map-dismissal.js?v=33';
+import {drawDie,facingMesh,percentileFaces} from './dice-geometry.js?v=33';
+import {el,button} from './editor-dom.js?v=33';
 export const DICE=[4,6,8,10,20,100];
 export function dieValue(sides,random=()=>crypto.getRandomValues(new Uint32Array(1))[0]){
   if(!DICE.includes(sides))throw new Error('Unsupported die.');
@@ -9,11 +10,22 @@ export function rollDice(counts,random){return DICE.flatMap(sides=>Array.from({l
 export function createDiceTools(){
   const stage=document.getElementById('map-stage'),toggle=button('',()=>panel.hidden?open():close(),'toolbar-icon dice-toggle');toggle.id='open-dice';toggle.title='Dice';toggle.setAttribute('aria-label','Dice');toggle.setAttribute('aria-pressed','false');toggle.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><g fill="currentColor" stroke="none"><circle cx="8" cy="8" r="1.4"/><circle cx="16" cy="8" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="8" cy="16" r="1.4"/><circle cx="16" cy="16" r="1.4"/></g></svg>';document.querySelector('.fog-controls').after(toggle);
   const panel=el('section',null,'dice-panel'),display=el('div',null,'dice-display'),tray=el('div',null,'dice-results'),total=el('output','0','dice-total'),controls=el('div',null,'dice-controls');panel.hidden=true;panel.setAttribute('aria-label','Dice throw');panel.setAttribute('role','dialog');total.setAttribute('aria-label','Dice total');total.setAttribute('aria-live','polite');display.append(tray,total);panel.append(display,controls);stage.append(panel);
-  let counts={},timer=null,rolling=false;const buttons=new Map();
+  let counts={},animation=null,rolling=false;const buttons=new Map();
   function refresh(){for(const [sides,b]of buttons){b.querySelector('output').textContent=counts[sides]||'';b.setAttribute('aria-label',`D${sides}: ${counts[sides]||0} selected`);b.disabled=rolling||(counts[sides]||0)>=20;}throwButton.disabled=rolling||!Object.values(counts).some(Boolean);}
-  function reset(){clearTimeout(timer);rolling=false;counts={};tray.replaceChildren();total.textContent='0';panel.classList.remove('rolling');refresh();}
+  function reset(){cancelAnimationFrame(animation);rolling=false;counts={};tray.replaceChildren();total.textContent='0';panel.classList.remove('rolling');refresh();}
   controls.append(button('Reset',reset));for(const sides of DICE){const b=button('',()=>{counts[sides]=Math.min(20,(counts[sides]||0)+1);refresh();},'die-choice');b.append(el('output',''),el('span',`D${sides}`));controls.append(b);buttons.set(sides,b);}
-  const throwButton=button('Throw',()=>{const result=rollDice(counts);if(!result.length)return;rolling=true;panel.classList.add('rolling');tray.replaceChildren();total.textContent='…';refresh();for(const [index,die]of result.entries()){const face=el('div','',`rolled-die die-${die.sides}`);face.style.setProperty('--i',index%9);face.append(el('small',`D${die.sides}`),el('strong','?'));tray.append(face);}timer=setTimeout(()=>{[...tray.children].forEach((face,i)=>face.querySelector('strong').textContent=result[i].value);total.textContent=String(result.reduce((sum,d)=>sum+d.value,0));rolling=false;panel.classList.remove('rolling');refresh();},matchMedia('(prefers-reduced-motion:reduce)').matches?0:950);},'primary');controls.append(throwButton);refresh();
+  const throwButton=button('Throw',()=>{
+    const result=rollDice(counts);if(!result.length)return;rolling=true;panel.classList.add('rolling');tray.replaceChildren();total.textContent='…';refresh();const rendered=[];
+    for(const [index,die]of result.entries()){
+      const group=el('div',null,`dice-result${die.sides===100?' percentile-pair':''}`);group.setAttribute('role','img');group.dataset.sides=die.sides;group.dataset.value=die.value;group.setAttribute('aria-label',`D${die.sides}: rolling`);
+      const values=die.sides===100?percentileFaces(die.value):[die.value];
+      for(const [part,value]of values.entries()){const canvas=el('canvas',null,'rolled-die');canvas.width=canvas.height=104*Math.min(2,devicePixelRatio||1);canvas.setAttribute('aria-hidden','true');group.append(canvas);rendered.push({canvas,shape:facingMesh(die.sides===100?10:die.sides),value,index:index*2+part,sides:die.sides===100?10:die.sides});}
+      tray.append(group);
+    }
+    const duration=matchMedia('(prefers-reduced-motion:reduce)').matches?0:2100,start=performance.now();
+    function frame(now){const progress=duration?Math.min(1,(now-start)/duration):1,remaining=(1-progress)**3;for(const die of rendered){const axes=[[4,1,0.5],[3,3,1.5],[.7,4,2]][die.index%3],angles=axes.map((turns,i)=>(i===0?(die.sides===10?.1:.3):i===1?(die.sides===10?-.12:-.4):0)+remaining*(turns+(die.index%5)*.17)*Math.PI*2);drawDie(die.canvas,die.shape,die.value,angles,progress===1);}if(progress<1){animation=requestAnimationFrame(frame);return;}[...tray.children].forEach((group,i)=>group.setAttribute('aria-label',`D${result[i].sides}: ${result[i].value}`));total.textContent=String(result.reduce((sum,d)=>sum+d.value,0));rolling=false;panel.classList.remove('rolling');refresh();}
+    animation=requestAnimationFrame(frame);
+  },'primary');controls.append(throwButton);refresh();
   function open(){panel.hidden=false;toggle.setAttribute('aria-pressed','true');}function close(){panel.hidden=true;toggle.setAttribute('aria-pressed','false');}
   document.addEventListener('pointerdown',e=>{if(!panel.hidden&&stage.contains(e.target)&&!panel.contains(e.target)&&!toggle.contains(e.target)){close();consumeMapDismissal(e,stage);}},true);
   document.addEventListener('keydown',e=>{if(!panel.hidden&&e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();}},true);

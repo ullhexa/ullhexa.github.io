@@ -1,8 +1,8 @@
-import {editCustomMap} from './custom-maps.js?v=32';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=32';
-import {assetId} from './combat-state.js?v=32';
-import {assetURL} from './local-assets.js?v=32';
-import {createSceneGroups} from './scene-groups-ui.js?v=32';
+import {editCustomMap} from './custom-maps.js?v=33';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=33';
+import {assetId} from './combat-state.js?v=33';
+import {assetURL} from './local-assets.js?v=33';
+import {createSceneGroups} from './scene-groups-ui.js?v=33';
 const $ = id => document.getElementById(id);
 
 export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment,applyMap,getProject,setProject,deleteMap,editMap}) {
@@ -12,7 +12,7 @@ export function createMapMenu({catalog,activeId,activeMap,loadMap,getEnvironment
   const textNode=(tag,text,className)=>{const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node;};
   const sourceBar=textNode('div','','source-tabs'),factory=textNode('button','Factory'),user=textNode('button','User'),create=textNode('button','Upload map','map-card create-token');
   factory.type=user.type=create.type='button';sourceBar.append(factory,user);dialog.querySelector('.map-menu-heading').after(sourceBar);$('map-grid-menu').append(create);create.addEventListener('click',()=>upload?.());
-  function filter(){factory.setAttribute('aria-pressed',source==='factory');user.setAttribute('aria-pressed',source==='user');create.hidden=source!=='user';for(const [id,button]of buttons)button.hidden=!!catalog.find(e=>e.id===id)?.map?.userMap!==(source==='user');}
+  function filter(){dialog.dataset.source=source;factory.setAttribute('aria-pressed',source==='factory');user.setAttribute('aria-pressed',source==='user');create.hidden=source!=='user';for(const [id,button]of buttons)button.hidden=!!catalog.find(e=>e.id===id)?.map?.userMap!==(source==='user');}
   function changeSource(value){source=value;filter();request++;selected=null;environment=null;$('apply-map').disabled=true;$('map-details').replaceChildren();}
   factory.addEventListener('click',()=>changeSource('factory'));user.addEventListener('click',()=>changeSource('user'));
   const groups=createSceneGroups({kind:'maps',panel:dialog,content:dialog.querySelector('.map-menu-layout'),getProject,setProject,catalog,onChange:()=>updateAdd()});
