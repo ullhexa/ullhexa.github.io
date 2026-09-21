@@ -428,3 +428,8 @@ body:not(.player-mode) .is-measuring #map{cursor:crosshair}
 .item-size-control input::-webkit-inner-spin-button,.item-size-control input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .item-size-control button{display:grid;place-items:center;min-height:0;height:36px;padding:0;border:0;border-left:1px solid var(--line);border-radius:0;font-size:20px;line-height:1}
 @media(max-width:850px){.member-fields.item-edit-layout{grid-template-columns:minmax(0,1fr) 118px}.item-edit-layout .item-comment-field{grid-column:1 / 3;grid-row:2}.item-edit-layout .item-catalog-toolbar{grid-row:3;flex-wrap:wrap}.item-edit-layout .item-comment-field textarea{height:82px}}
+
+/* Native 32 px fog cursors, with white edging for both dark and light art. */
+#map-stage[data-fog-tool=paint]{--fog-cursor:url('./assets/fog-brush-cursor.svg') 4 27,crosshair}
+#map-stage[data-fog-tool=erase]{--fog-cursor:url('./assets/fog-eraser-cursor.svg') 5 23,crosshair}
+#map-stage.is-fogging,#map-stage.is-fogging :is(#map,#map *,#party-overlay,#party-overlay *){cursor:var(--fog-cursor)}
