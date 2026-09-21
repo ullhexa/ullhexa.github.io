@@ -34,7 +34,7 @@ import {createSessionBundle} from './session-bundle.js?v=62';
 import { startDMShell } from './dm-shell.js?v=62';
 import { openPlayerWindow } from './display-window.js?v=62';
 import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=62';
-import { createEncounterTools } from './encounter-tools.js?v=62';
+import { createEncounterTools } from './encounter-tools.js?v=65';
 import { playerProjection, formation, moveParty } from './encounter-state.js?v=62';
 import { createMapMenu } from './map-menu.js?v=62';
 import { createSaveControls } from './save-controls.js?v=62';
@@ -462,7 +462,7 @@ async function start() {
       if(displayConnected()){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'64',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'65',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
