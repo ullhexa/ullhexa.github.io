@@ -1,4 +1,4 @@
-import {numberedFloors} from './floor-controls.js?v=59';
+import {numberedFloors} from './floor-controls.js?v=60';
 
 export const isBuildingGlobal=item=>item?.type==='roof'||item?.variant==='collapsed';
 export function buildingParts(map,place){

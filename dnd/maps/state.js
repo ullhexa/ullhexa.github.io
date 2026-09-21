@@ -1,10 +1,11 @@
-import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=59';
-import {buildingCollapsed} from './building-state.js?v=59';
-import {normalizeFog,normalizeFogSettings,defaultFogSettings} from './fog-state.js?v=59';
-import {assetId} from './combat-state.js?v=59';
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=59';
-import {validGridColor,normalizeGridThickness} from './grid-state.js?v=59';
-export {GRID_COLORS} from './grid-state.js?v=59';
+import {normalizePlaceNames} from './board-state.js?v=60';
+import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=60';
+import {buildingCollapsed} from './building-state.js?v=60';
+import {normalizeFog,normalizeFogSettings,defaultFogSettings} from './fog-state.js?v=60';
+import {assetId} from './combat-state.js?v=60';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=60';
+import {validGridColor,normalizeGridThickness} from './grid-state.js?v=60';
+export {GRID_COLORS} from './grid-state.js?v=60';
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {
   if(!value || !Number.isInteger(value.darkness))return false;
@@ -67,7 +68,7 @@ export function validateMap(map) {
   return map;
 }
 export function validPoint(point){return Array.isArray(point)&&point.length===2&&point.every(n=>Number.isFinite(n)&&n>=0&&n<=1);}
-export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],floors:normalizeFloors(map),itemSchema:2,items:[],party:[...map.partyStart],grid:true,snap:false,fog:[],fogSettings:defaultFogSettings(),monsters:[],turnId:null,initiativeOverlay:{x:.02,y:.08,visible:true},gridColor:'map',gridThickness:1,environment:defaultEnvironment(),tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
+export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],placeNames:{},floors:normalizeFloors(map),itemSchema:2,items:[],party:[...map.partyStart],grid:true,snap:false,fog:[],fogSettings:defaultFogSettings(),monsters:[],turnId:null,initiativeOverlay:{x:.02,y:.08,visible:true},gridColor:'map',gridThickness:1,environment:defaultEnvironment(),tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
 export function sanitizeState(map,input){
   const fresh=initialState(map);
   if(!input||input.format!==1||input.mapId!==map.id||(input.mapVersion!==map.version&&!(map.previousVersions||[]).includes(input.mapVersion)))return fresh;
@@ -76,7 +77,7 @@ export function sanitizeState(map,input){
   fresh.active=Array.isArray(input.active)?[...new Set(input.active.filter(id=>ids.has(id)))]:[];
   if(validPoint(input.party))fresh.party=[...input.party];
   Object.assign(fresh,normalizeEncounter(map,input,fresh.party));
-  fresh.snap=input.snap===true;fresh.fog=normalizeFog(input.fog);fresh.fogSettings=normalizeFogSettings(input.fogSettings);fresh.turnId=typeof input.turnId==='string'?input.turnId:null;
+  fresh.placeNames=normalizePlaceNames(map,input.placeNames);fresh.snap=input.snap===true;fresh.fog=normalizeFog(input.fog);fresh.fogSettings=normalizeFogSettings(input.fogSettings);fresh.turnId=typeof input.turnId==='string'?input.turnId:null;
   if(input.initiativeOverlay&&validPoint([input.initiativeOverlay.x,input.initiativeOverlay.y]))fresh.initiativeOverlay={x:input.initiativeOverlay.x,y:input.initiativeOverlay.y,visible:input.initiativeOverlay.visible!==false};
   fresh.grid=typeof input.grid==='boolean'?input.grid:true;
   fresh.gridColor=validGridColor(input.gridColor)?input.gridColor:'map';

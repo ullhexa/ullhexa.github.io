@@ -1,5 +1,6 @@
-import {itemOnSelectedFloor} from './floors.js?v=59';
-import {normalizeItems, normalizeMembers, normalizeCampaign, syncCampaign, fiveFeet, initiativeOrder} from './combat-state.js?v=59';
+import {normalizeFeatures,featureEnabled} from './board-state.js?v=60';
+import {itemOnSelectedFloor} from './floors.js?v=60';
+import {normalizeItems, normalizeMembers, normalizeCampaign, syncCampaign, fiveFeet, initiativeOrder} from './combat-state.js?v=60';
 export const PORTRAITS = ['Human warrior','Silver-haired elf','Dwarven adventurer','Halfling ranger','Half-orc guardian','Human wizard','Tiefling wanderer','Elven mage','Dragonborn',
   'Copper-haired elf','Human paladin','Dwarven shieldmaiden','Halfling bard','Half-orc veteran','Violet tiefling','Blue dragonborn','Gnome tinkerer',
   'Human cleric','Human monk','Elven scholar','Feline ranger','Lizardfolk druid','Veteran knight','Human rogue','Dwarven cleric','Human druid','Elder sorcerer','Golden dragonborn','Gnome scout','Orc fighter'];
@@ -49,7 +50,7 @@ export function normalizeEncounter(map,input,party) {
   const roster=normalizeMembers(Array.isArray(input.roster)?input.roster:defaultRoster(map,party));
   const shapeIds=new Set();
   const shapes=(Array.isArray(input.shapes)?input.shapes:[]).slice(0,32).filter(s=>s&&typeof s.id==='string'&&/^[-a-zA-Z0-9]+$/.test(s.id)&&!shapeIds.has(s.id)&&shapeIds.add(s.id)&&[...SHAPE_TYPES,'triangle'].includes(s.type)&&boundedPoint(s.center)&&[s.width,s.height,s.rotation].every(Number.isFinite)).map(s=>{const type=s.type==='triangle'?'cone':s.type,size=fiveFeet(s.size??(type==='circle'?Math.max(s.width,s.height)/2:Math.max(s.width,s.height)));return {id:s.id,type,size,width:type==='circle'?size*2:size,height:type==='circle'?size*2:size,center:[...s.center],rotation:((s.rotation%360)+360)%360,color:SHAPE_COLORS.includes(s.color)?s.color:({'#e8ba71':'#eea348','#ec6d62':'#e76660','#70bce8':'#58a9e0','#a98ce5':'#58a9e0','#78cba2':'#6fb980','#ef91be':'#e76660'}[s.color]||SHAPE_COLORS[0]),visible:s.visible!==false};});
-  return {roster,itemSchema:2,items:input.itemSchema===2?normalizeItems(input.items):[],monsters:normalizeMembers(input.monsters,true),...(input.public?{public:true}:{campaign:normalizeCampaign(input.campaign,roster)}),tokenMode:input.tokenMode==='players'?'players':'party',regroupPlayers:typeof input.regroupPlayers==='boolean'?input.regroupPlayers:input.tokenMode!=='players',shapes};
+  return {roster,itemSchema:2,items:input.itemSchema===2?normalizeItems(input.items):[],monsters:normalizeMembers(input.monsters,true),...(input.public?{public:true,features:normalizeFeatures(input.features)}:{campaign:normalizeCampaign(input.campaign,roster)}),tokenMode:input.tokenMode==='players'?'players':'party',regroupPlayers:typeof input.regroupPlayers==='boolean'?input.regroupPlayers:input.tokenMode!=='players',shapes};
 }
 
 export function moveParty(state,position) {
@@ -96,6 +97,6 @@ export function rotateShape(map,shape,point,offset=0) {
 }
 export function playerProjection(state) {
   const {campaign,...rest}=state;
-  const publicMember=m=>{const {hp,maxHp,hpLinked,statCard,statText,spells,...safe}=m;return safe;};
-  return {...rest,public:true,turnId:state.public?state.turnId:initiativeOrder(state).some(m=>m.id===state.turnId)?state.turnId:initiativeOrder(state)[0]?.id||null,roster:state.roster.map(publicMember),items:(state.items||[]).filter(m=>m.visible&&itemOnSelectedFloor(m,state)).map(({comment,templateId,...safe})=>safe),monsters:(state.monsters||[]).filter(m=>m.visible).map(m=>({...publicMember(m),initiative:null})),shapes:state.shapes.filter(s=>s.visible!==false).map(s=>({...s,visible:true}))};
+  const publicMember=m=>{const {hp,maxHp,hpLinked,tempHp,ac,statCard,statText,spells,...safe}=m;return safe;};
+  return {...rest,features:normalizeFeatures(state.public?state.features:campaign?.features),public:true,turnId:state.public?state.turnId:initiativeOrder(state).some(m=>m.id===state.turnId)?state.turnId:initiativeOrder(state)[0]?.id||null,roster:(featureEnabled(state,'party')?state.roster:[]).map(publicMember),items:(featureEnabled(state,'items')?state.items||[]:[]).filter(m=>m.visible&&itemOnSelectedFloor(m,state)).map(({comment,templateId,...safe})=>safe),monsters:(featureEnabled(state,'encounter')?state.monsters||[]:[]).filter(m=>m.visible).map(m=>({...publicMember(m),initiative:null})),shapes:state.shapes.filter(s=>s.visible!==false).map(s=>({...s,visible:true}))};
 }

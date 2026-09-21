@@ -1,12 +1,13 @@
-import {chevronIcon} from './control-icons.js?v=59';
-import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=59';
-import {openDeckPrint} from './spell-print.js?v=59';
-import {el,button,label} from './editor-dom.js?v=59';
-import {showDialog} from './dialogs.js?v=59';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=59';
-import {groupSelection} from './group-selection.js?v=59';
-import {loadSpells} from './spell-catalog.js?v=59';
-import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=59';
+import {featureHeading} from './feature-controls.js?v=60';
+import {chevronIcon} from './control-icons.js?v=60';
+import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=60';
+import {openDeckPrint} from './spell-print.js?v=60';
+import {el,button,label} from './editor-dom.js?v=60';
+import {showDialog} from './dialogs.js?v=60';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=60';
+import {groupSelection} from './group-selection.js?v=60';
+import {loadSpells} from './spell-catalog.js?v=60';
+import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=60';
 export function showSpellPages(spell){
  const dialog=el('dialog',undefined,'spell-page-dialog'),header=el('div',undefined,'reference-heading'),title=el('h2',spell.title),controls=el('div',undefined,'spell-page-controls'),count=el('span'),image=el('img'),body=el('div',undefined,'spell-page-body');let page=0,expanded=false;
  const render=()=>{image.src=spell.cards[page].src;image.alt=`${spell.title}, card ${page+1} of ${spell.cards.length}`;count.textContent=`${page+1} / ${spell.cards.length}`;prev.disabled=next.disabled=spell.cards.length===1;};
@@ -20,7 +21,7 @@ export function createSpellLibrary({getState,commit,announce}){
  const activate=button('Done',()=>{if(selected&&selected!==getState().campaign.activeSpellDeck){const s=getState();commit({...s,campaign:{...s.campaign,activeSpellDeck:selected}},'Spell deck activated.');}closeMenu();},'primary');const print=button('Print deck',()=>openDeckPrint(getState().campaign.spellDecks.find(d=>d.id===selected),catalog),'print-deck');footer.append(remove,print,activate);panel.append(error,layout,footer);document.body.append(panel);
  function edit(fn,redraw=true){const s=getState();commit({...s,campaign:{...s.campaign,spellDecks:s.campaign.spellDecks.map(d=>d.id===selected?fn(d):d)}},'Spell deck updated.');if(redraw)render();}
  function render(){const s=getState(),decks=s.campaign.spellDecks;if(!decks.some(d=>d.id===selected))selected=s.campaign.activeSpellDeck||decks[0]?.id||null;selection.prune(decks.map(d=>d.id),selected);const deck=decks.find(d=>d.id===selected);
-  groups.replaceChildren(el('h3','Spell decks'),button('+ New spell deck',()=>{if(decks.length>=20){announce('Up to 20 spell decks.');return;}selected=crypto.randomUUID();selection.reset(selected);commit({...getState(),campaign:{...getState().campaign,spellDecks:[...getState().campaign.spellDecks,{id:selected,name:'Spell deck',spells:[]}]}},'Spell deck created.');render();}));
+  groups.replaceChildren(featureHeading({kind:'spells',title:'Spell decks',groups,main,footer,getState,commit,render}),button('+ New spell deck',()=>{if(decks.length>=20){announce('Up to 20 spell decks.');return;}selected=crypto.randomUUID();selection.reset(selected);commit({...getState(),campaign:{...getState().campaign,spellDecks:[...getState().campaign.spellDecks,{id:selected,name:'Spell deck',spells:[]}]}},'Spell deck created.');render();}));
   for(const d of decks){const b=button(d.name,e=>{selected=selection.click(d.id,e,decks.map(g=>g.id));render();},'library-group');b.dataset.spellDeck=d.id;b.setAttribute('aria-pressed',selection.has(d.id));b.classList.toggle('editing-group',d.id===selected);b.setAttribute('aria-current',d.id===s.campaign.activeSpellDeck);groups.append(b);}
   print.disabled=!deck?.spells.length;remove.disabled=!selection.ids.length;remove.textContent=selection.ids.length>1?`Delete ${selection.ids.length} spell decks`:'Delete spell deck';activate.textContent=!deck||deck.id===s.campaign.activeSpellDeck?'Done':'Activate deck';main.replaceChildren();
   if(deck){const name=el('input');name.value=deck.name;name.maxLength=48;name.setAttribute('aria-label','Spell deck name');name.addEventListener('input',()=>{edit(d=>({...d,name:name.value.trim()||'Spell deck'}),false);const b=groups.querySelector(`[data-spell-deck="${selected}"]`);b.textContent=name.value.trim()||'Spell deck';});main.append(label('Deck name',name));const applied=el('div',undefined,'applied-spells');applied.setAttribute('aria-label','Spells in this deck');for(const spell of findSpells(catalog,'',deck.spells)){const chip=el('div',undefined,'applied-spell'),view=button(spellLabel(spell),()=>showSpellPages(spell)),del=button('×',()=>edit(d=>({...d,spells:d.spells.filter(id=>id!==spell.id)})));del.setAttribute('aria-label',`Remove ${spell.title} from deck`);chip.append(view,del);applied.append(chip);}main.append(applied);}

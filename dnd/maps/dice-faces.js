@@ -1,11 +1,11 @@
-import {drawDie,landingMesh,DICE_COLORS} from './dice-geometry.js?v=59';
+import {drawDie,landingMesh,DICE_COLORS} from './dice-geometry.js?v=60';
 
 const banks=new Map(),scratch=new Map();
-const numberLift={4:6,6:2,8:2,10:4,20:2,100:0};
+const numberLift={4:6,6:2,8:2,10:4,12:2,20:2,100:0};
 const numberRowCenter=52;
 const canvasAt=ratio=>{const c=document.createElement('canvas');c.width=c.height=104*ratio;return c;};
 
-// Build every numbered landing face of a chosen die type before Throw. Reuse
+// Build every numbered landing face of a chosen die type on its first roll. Reuse
 // these small canvases across rolls; nothing waits for image or font downloads.
 export function diceFaceBank(sides,ratio=Math.min(2,devicePixelRatio||1)){
  ratio=Math.floor(104*ratio)/104;const key=`${sides}:${ratio}`;if(banks.has(key))return banks.get(key);
