@@ -1,8 +1,8 @@
-import {cleanCropEdges} from './item-crop-cleanup.js?v=43';
-import {loadRaster} from './resource-loading.js?v=43';
-import {itemAsset} from './items-catalog.js?v=43';
-import {portraitAsset} from './encounter-state.js?v=43';
-import {assetURL} from './local-assets.js?v=43';
+import {cleanCropEdges} from './item-crop-cleanup.js?v=44';
+import {loadRaster} from './resource-loading.js?v=44';
+import {itemAsset} from './items-catalog.js?v=44';
+import {portraitAsset} from './encounter-state.js?v=44';
+import {assetURL} from './local-assets.js?v=44';
 export const TOKEN_FACE_SIZE=96;
 const sources=new Map(),faces=new Map();
 function load(url){if(!sources.has(url))sources.set(url,loadRaster(url).catch(error=>{sources.delete(url);throw error;}));return sources.get(url);}

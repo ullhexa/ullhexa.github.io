@@ -1,15 +1,15 @@
-import {statIcon,chevronIcon} from './control-icons.js?v=43';
-import {numberStepper} from './number-stepper.js?v=43';
-import {tokenGallery} from './token-gallery.js?v=43';
-import {createMemberStrip} from './member-strip.js?v=43';
-import {editStatCard} from './stat-card-editor.js?v=43';
-import {groupSelection} from './group-selection.js?v=43';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=43';
-import {conditionIcon} from './condition-icons.js?v=43';
-import {shortcutAction,isTextEntry} from './keyboard.js?v=43';
-import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=43';
-import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=43';
-import {setFace,portraitStyle} from './token-portraits.js?v=43';
+import {statIcon,chevronIcon} from './control-icons.js?v=44';
+import {numberStepper} from './number-stepper.js?v=44';
+import {tokenGallery} from './token-gallery.js?v=44';
+import {createMemberStrip} from './member-strip.js?v=44';
+import {editStatCard} from './stat-card-editor.js?v=44';
+import {groupSelection} from './group-selection.js?v=44';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=44';
+import {conditionIcon} from './condition-icons.js?v=44';
+import {shortcutAction,isTextEntry} from './keyboard.js?v=44';
+import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=44';
+import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=44';
+import {setFace,portraitStyle} from './token-portraits.js?v=44';
 const $=id=>document.getElementById(id);
 export function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 export function button(text,fn,cls){const b=el('button',text,cls);b.type='button';if(fn)b.addEventListener('click',fn);return b;}

@@ -1,4 +1,4 @@
-import { openPlayerWindow } from './display-window.js?v=43';
+import { openPlayerWindow } from './display-window.js?v=44';
 
 // This outer document never navigates when a prepared map changes. Menus live
 // inside its child document, so they do not replace the native fullscreen layer.

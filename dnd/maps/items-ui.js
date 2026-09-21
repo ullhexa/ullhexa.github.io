@@ -1,20 +1,21 @@
-import {chevronIcon} from './control-icons.js?v=43';
-import {numberStepper} from './number-stepper.js?v=43';
-import {itemFloorAt} from './floors.js?v=43';
-import {tokenGallery} from './token-gallery.js?v=43';
-import {createMemberStrip} from './member-strip.js?v=43';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=43';
-import {el,button} from './combat-ui.js?v=43';
-import {ITEMS,searchItems} from './items-catalog.js?v=43';
-import {setFace} from './token-portraits.js?v=43';
-import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=43';
-import {groupSelection} from './group-selection.js?v=43';
+import {chevronIcon,icon} from './control-icons.js?v=44';
+import {numberStepper} from './number-stepper.js?v=44';
+import {itemFloorAt} from './floors.js?v=44';
+import {tokenGallery} from './token-gallery.js?v=44';
+import {createMemberStrip} from './member-strip.js?v=44';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=44';
+import {el,button} from './combat-ui.js?v=44';
+import {ITEMS,searchItems} from './items-catalog.js?v=44';
+import {setFace} from './token-portraits.js?v=44';
+import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=44';
+import {groupSelection} from './group-selection.js?v=44';
 const $=id=>document.getElementById(id);
 function face(item){const img=el('img');img.alt='';img.width=img.height=40;img.draggable=false;setFace(img,item);return img;}
 function field(label,value,change,type='text'){const wrap=el('label',label,'field-label'),input=el('input');input.type=type;input.value=value;input.setAttribute('aria-label',label);input.addEventListener('input',()=>change(input.value));wrap.append(input);return {wrap,input};}
-export function createItemsUI({map,getState,commit,announce,pointAt,setTool,selectItem,showNotes,locate}){
+export function createItemsUI({map,getState,commit,announce,pointAt,setTool,selectItem,editItem,showNotes}){
   let selected=null,itemId=null,signature='',traySignature='',query='',expanded=false,drag=null,librarySource='factory',selectedUser=null;const selection=groupSelection();
   const sidebar=el('section',undefined,'items-roster');sidebar.id='items-roster';$('combat-roster').after(sidebar);
+  const rows=new Map(),sidebarGrid=el('div',undefined,'item-roster-grid');sidebarGrid.setAttribute('aria-label','Placed items');sidebar.append(el('h3','Items'),sidebarGrid);
   const tray=el('section',undefined,'item-tray');tray.id='item-tray';tray.setAttribute('aria-label','Reusable item tray');const traySurface=el('div',undefined,'item-tray-surface'),trayGrid=el('div',undefined,'item-tray-grid'),expand=button('⌃',()=>{expanded=!expanded;layoutTray();},'item-tray-expand');expand.setAttribute('aria-label','Expand item tray');traySurface.append(trayGrid,expand);tray.append(traySurface);
   const footer=document.querySelector('.map-footer');footer.before(tray);footer.classList.add('status-only');$('live-message').setAttribute('role','status');
   function layoutTray(){const overflow=trayGrid.scrollHeight>60;expand.hidden=!overflow&&!expanded;tray.classList.toggle('expanded',expanded);expand.textContent=expanded?'⌄':'⌃';expand.setAttribute('aria-expanded',expanded);expand.setAttribute('aria-label',expanded?'Collapse item tray':'Expand item tray');tray.style.setProperty('--tray-max-height',`${Math.max(64,Math.min(360,$('map-stage').clientHeight*.7))}px`);}
@@ -57,7 +58,19 @@ export function createItemsUI({map,getState,commit,announce,pointAt,setTool,sele
   function finish(e,cancel=false){if(!drag||drag.pointer!==e.pointerId)return;const d=drag;drag=null;d.ghost.remove();if(d.source.hasPointerCapture(e.pointerId))d.source.releasePointerCapture(e.pointerId);if(cancel||Math.hypot(e.clientX-d.x,e.clientY-d.y)<3)return;const stage=$('map-stage'),r=stage.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)return;let position=pointAt(e);if(!position||position.some(n=>n<0||n>1))return;if(getState().snap)position=snapPoint(map,position,d.item.size);const id=crypto.randomUUID(),next=placeItem(getState(),d.item,id,position,itemFloorAt(map,getState(),position));if(next===getState()){announce('Up to 500 placed items per map.');return;}commit(next,'Item placed.');selectItem(id);expanded=false;layoutTray();}
   tray.addEventListener('pointermove',moveDrag);tray.addEventListener('pointerup',e=>finish(e));tray.addEventListener('pointercancel',e=>finish(e,true));
   function render(){const s=getState(),g=s.campaign.itemLists.find(g=>g.id===s.campaign.activeItems),traySig=JSON.stringify(g?.members||[]);if(traySig!==traySignature){traySignature=traySig;trayGrid.replaceChildren();for(const item of g?.members||[]){const b=button('',()=>{},'tray-item');b.title=item.name;b.setAttribute('aria-label',`Drag ${item.name} onto map`);b.append(face(item));b.addEventListener('pointerdown',e=>beginDrag(e,item));trayGrid.append(b);}if(!g?.members.length){const b=button('Items',()=>openMenu('items'),'tray-empty');trayGrid.append(b);}requestAnimationFrame(layoutTray);}
-    const sig=JSON.stringify((s.items||[]).map(({position,stack,...m})=>m));if(sig===signature)return;signature=sig;sidebar.replaceChildren(el('h3','Items'));const grid=el('div',undefined,'item-roster-grid');grid.setAttribute('aria-label','Placed items');for(const m of s.items||[]){const row=el('div',undefined,'item-roster-row'),b=button('',()=>showNotes(m.id),'roster-portrait');b.setAttribute('aria-label',`Open ${m.name} notes`);b.dataset.itemNotes=m.id;b.append(face(m));const name=button(m.name,()=>selectItem(m.id),'roster-name');name.addEventListener('dblclick',()=>locate(m.id));const visible=el('input');visible.type='checkbox';visible.checked=m.visible;visible.title='Visible to players';visible.setAttribute('aria-label',`Show item ${m.name} to players`);visible.addEventListener('change',()=>commit(patchToken(getState(),m.id,{visible:visible.checked}),'Item visibility updated.'));row.append(b,name,visible);grid.append(row);}sidebar.append(grid);
+    const items=s.items||[],sig=JSON.stringify(items.map(({position,stack,...m})=>m));if(sig===signature)return;signature=sig;
+    for(const[id,row]of rows)if(!items.some(m=>m.id===id)){row.remove();rows.delete(id);}
+    for(const [index,m]of items.entries()){
+      let row=rows.get(m.id);
+      if(!row){
+        row=el('div',undefined,'item-roster-row');row.dataset.placedItem=m.id;
+        const b=button('',()=>{selectItem(null);const item=getState().items.find(item=>item.id===m.id);if(item)commit(patchToken(getState(),m.id,{visible:!item.visible}),'Item visibility updated.');},'roster-portrait item-visibility');
+        const hidden=el('span',undefined,'item-hidden-overlay');hidden.setAttribute('aria-hidden','true');hidden.append(icon([{d:'M3 9q9 10 18 0M5 12l-2 3m7-1-1 4m5-4 1 4m4-6 2 3',fill:'none',stroke:'currentColor','stroke-width':2,'stroke-linecap':'round','stroke-linejoin':'round'}]));b.append(face(m),hidden);
+        const name=button(m.name,()=>editItem(m.id),'roster-name');name.dataset.itemEdit=m.id;name.addEventListener('dblclick',()=>showNotes(m.id));row.append(b,name);rows.set(m.id,row);
+      }
+      const [b,name]=row.children;row.classList.toggle('is-hidden',!m.visible);b.setAttribute('aria-pressed',m.visible);b.setAttribute('aria-label',`${m.visible?'Hide':'Show'} ${m.name} ${m.visible?'from':'to'} players`);b.title=m.visible?'Hide from players':'Show to players';b.lastElementChild.hidden=m.visible;setFace(b.firstElementChild,m);name.textContent=m.name;
+      if(sidebarGrid.children[index]!==row)sidebarGrid.insertBefore(row,sidebarGrid.children[index]||null);
+    }
   }
   registerMenu('items',panel,{onShow:fresh=>{error.textContent='';if(fresh){librarySource='factory';selectedUser=null;selected=getState().campaign.activeItems;selection.reset(selected);}renderMenu();}});
   render();return {render};

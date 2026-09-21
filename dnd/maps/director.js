@@ -1,11 +1,11 @@
-import {chevronIcon} from './control-icons.js?v=43';
-import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=43';
-import {editTokenImage} from './token-image-editor.js?v=43';
-import {createSceneGroups} from './scene-groups-ui.js?v=43';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=43';
-import {storyCatalog} from './story-assets.js?v=43';
-import {createStoryPlayer} from './story-player.js?v=43';
-import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=43';
+import {chevronIcon} from './control-icons.js?v=44';
+import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=44';
+import {editTokenImage} from './token-image-editor.js?v=44';
+import {createSceneGroups} from './scene-groups-ui.js?v=44';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=44';
+import {storyCatalog} from './story-assets.js?v=44';
+import {createStoryPlayer} from './story-player.js?v=44';
+import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=44';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 
