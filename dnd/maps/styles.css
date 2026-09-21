@@ -679,3 +679,4 @@ body.map-expanded .workspace{grid-template-columns:minmax(0,1fr)}body.map-expand
 .toolbar-extra-inner .quick-selections #quick-maps,.toolbar-extra-inner .quick-selections #quick-stories{width:100px;min-width:100px;max-width:100px}
 .toolbar-extra-inner .lighting-control{gap:5px}.toolbar-extra-inner .lighting-control input{width:50px}
 @media(min-width:1001px) and (max-width:1250px){.header-libraries{gap:2px}.header-libraries .map-picker{width:66px;font-size:.625rem;padding:5px 4px;gap:2px}.header-libraries .map-picker svg{width:10px;height:10px}}
+@container(max-width:1100px){body:not(.player-mode) .map-controls.drawer-open{grid-template-columns:minmax(0,1fr) 18px}.drawer-open .toolbar-extra-inner{min-width:0}.drawer-open .crucial-controls{grid-column:1/-1;margin-top:8px;padding-left:0}}

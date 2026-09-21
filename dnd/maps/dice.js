@@ -1,9 +1,9 @@
-import {consumeMapDismissal} from './map-dismissal.js?v=61';
-import {diceFaceBank,faceReveal,blendDieFace} from './dice-faces.js?v=61';
-import {drawDie,landingMesh,percentileFaces,rollDuration} from './dice-geometry.js?v=61';
-import {boardIcon} from './control-icons.js?v=61';
-import {el,button} from './editor-dom.js?v=61';
-import {isTextEntry} from './keyboard.js?v=61';
+import {consumeMapDismissal} from './map-dismissal.js?v=62';
+import {diceFaceBank,faceReveal,blendDieFace} from './dice-faces.js?v=62';
+import {drawDie,landingMesh,percentileFaces,rollDuration} from './dice-geometry.js?v=62';
+import {boardIcon} from './control-icons.js?v=62';
+import {el,button} from './editor-dom.js?v=62';
+import {isTextEntry} from './keyboard.js?v=62';
 export const DICE=[4,6,8,10,12,20,100];
 export function dieValue(sides,random=()=>crypto.getRandomValues(new Uint32Array(1))[0]){
   if(!DICE.includes(sides))throw new Error('Unsupported die.');

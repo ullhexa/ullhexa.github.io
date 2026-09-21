@@ -1,5 +1,5 @@
-import {boardIcon} from './control-icons.js?v=61';
-import {button,el} from './editor-dom.js?v=61';
+import {boardIcon} from './control-icons.js?v=62';
+import {button,el} from './editor-dom.js?v=62';
 export function createBoardLayout(){
   const toolbar=document.querySelector('.map-controls'),extra=el('div',undefined,'toolbar-extra'),inside=el('div',undefined,'toolbar-extra-inner'),core=el('div',undefined,'crucial-controls');extra.id='extra-map-controls';extra.append(inside);
   for(const selector of ['.zoom-controls','.grid-control','.lighting-control','.quick-selections','#map-joystick']){const node=toolbar.querySelector(selector);if(node)inside.append(node);}
