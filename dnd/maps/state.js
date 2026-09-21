@@ -1,7 +1,7 @@
-import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=39';
-import {normalizeFog} from './fog-state.js?v=39';
-import {assetId} from './combat-state.js?v=39';
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=39';
+import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=40';
+import {normalizeFog} from './fog-state.js?v=40';
+import {assetId} from './combat-state.js?v=40';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=40';
 export const GRID_COLORS = ['map','black','white'];
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {

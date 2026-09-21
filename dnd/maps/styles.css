@@ -413,3 +413,18 @@ body:not(.player-mode) .is-measuring #map{cursor:crosshair}
 /* A selected member keeps its gold treatment while the pointer remains over it. */
 .library-member-strip .library-member[aria-pressed=true]{border-color:var(--gold);background:#3b3c2b}
 .source-tabs .item-search{width:240px;min-width:120px;height:38px;flex:0 1 240px;margin:0 0 0 auto}
+
+/* Item fields share two compact rows, with a three-line comment at the right. */
+.member-fields.item-edit-layout{display:grid;grid-template-columns:minmax(180px,1.25fr) 118px minmax(190px,1fr);gap:10px;margin:0 0 14px;align-items:start}
+.item-edit-layout .item-comment-field{grid-column:3;grid-row:1 / 3;align-self:stretch;min-height:0}
+.item-edit-layout .item-comment-field textarea{flex:1;min-height:82px;height:100%;width:100%;margin:0;padding:8px;line-height:22px;resize:vertical}
+.item-edit-layout .item-name-field input{height:38px}
+.item-edit-layout .item-catalog-toolbar{grid-column:1 / 3;grid-row:2;align-self:end;display:flex;flex-wrap:nowrap;gap:7px;margin:0;min-width:0}
+.item-edit-layout .item-catalog-toolbar>button{flex:none;white-space:nowrap}
+.item-edit-layout .source-tabs .item-search{flex:1 1 160px;width:160px;min-width:90px;margin:0 0 0 auto}
+.item-size-control{display:grid;grid-template-columns:minmax(0,1fr) 28px 28px;height:38px;min-width:0;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#101a15}
+.item-size-control:focus-within{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.item-size-control input{appearance:textfield;-moz-appearance:textfield;border:0;border-radius:0;padding:5px;min-width:0;height:36px;text-align:center;outline:none}
+.item-size-control input::-webkit-inner-spin-button,.item-size-control input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.item-size-control button{display:grid;place-items:center;min-height:0;height:36px;padding:0;border:0;border-left:1px solid var(--line);border-radius:0;font-size:20px;line-height:1}
+@media(max-width:850px){.member-fields.item-edit-layout{grid-template-columns:minmax(0,1fr) 118px}.item-edit-layout .item-comment-field{grid-column:1 / 3;grid-row:2}.item-edit-layout .item-catalog-toolbar{grid-row:3;flex-wrap:wrap}.item-edit-layout .item-comment-field textarea{height:82px}}

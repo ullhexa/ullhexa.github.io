@@ -1,11 +1,11 @@
-import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=39';
-import {openDeckPrint} from './spell-print.js?v=39';
-import {el,button,label} from './editor-dom.js?v=39';
-import {showDialog} from './dialogs.js?v=39';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=39';
-import {groupSelection} from './group-selection.js?v=39';
-import {loadSpells} from './spell-catalog.js?v=39';
-import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=39';
+import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=40';
+import {openDeckPrint} from './spell-print.js?v=40';
+import {el,button,label} from './editor-dom.js?v=40';
+import {showDialog} from './dialogs.js?v=40';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=40';
+import {groupSelection} from './group-selection.js?v=40';
+import {loadSpells} from './spell-catalog.js?v=40';
+import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=40';
 export function showSpellPages(spell){
  const dialog=el('dialog',undefined,'spell-page-dialog'),header=el('div',undefined,'reference-heading'),title=el('h2',spell.title),controls=el('div',undefined,'spell-page-controls'),count=el('span'),image=el('img'),body=el('div',undefined,'spell-page-body');let page=0,expanded=false;
  const render=()=>{image.src=spell.cards[page].src;image.alt=`${spell.title}, card ${page+1} of ${spell.cards.length}`;count.textContent=`${page+1} / ${spell.cards.length}`;prev.disabled=next.disabled=spell.cards.length===1;};
