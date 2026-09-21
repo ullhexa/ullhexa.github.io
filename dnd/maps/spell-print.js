@@ -1,6 +1,6 @@
-import {el,button} from './editor-dom.js?v=44';
-import {showDialog} from './dialogs.js?v=44';
-import {findSpells} from './spell-state.js?v=44';
+import {el,button} from './editor-dom.js?v=45';
+import {showDialog} from './dialogs.js?v=45';
+import {findSpells} from './spell-state.js?v=45';
 export const CARD_MM=[63.5,88.9];
 export function spellSheets(spells){const sheets=[];let sheet=[];for(const spell of spells){if(sheet.length&&sheet.length+spell.cards.length>9){sheets.push(sheet);sheet=[];}for(const [i,card]of spell.cards.entries()){sheet.push({...card,title:spell.title,part:i+1});if(sheet.length===9){sheets.push(sheet);sheet=[];}}}if(sheet.length)sheets.push(sheet);return sheets;}
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
