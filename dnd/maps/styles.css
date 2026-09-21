@@ -449,3 +449,18 @@ body:not(.player-mode) .is-measuring #map{cursor:crosshair}
 #main-menu .main-menu-tabs button[aria-selected=true]:focus{outline:none;box-shadow:none}
 
 .initialize-dialog .dialog-actions{justify-content:space-between}
+
+/* Placed-item portraits control visibility; names open the on-map editor. */
+.item-roster-row{grid-template-columns:32px minmax(0,1fr)}
+.item-roster-row .item-visibility{position:relative}
+.item-hidden-overlay{position:absolute;inset:0;display:grid;place-items:center;background:#0009;color:#f0f3ed;pointer-events:none}
+.item-hidden-overlay svg{width:22px;height:22px;display:block}
+.item-roster-row.is-hidden .roster-name{color:#96a197}
+.item-comment>input{width:100%;min-width:0;font:inherit}
+.item-comment :is(input,textarea):focus,.story-image-editor :is(input,textarea,canvas,.token-crop-frame):focus,.grid-editor-dialog :is(input:not([type=checkbox]),canvas):focus{outline:none;box-shadow:none}
+.story-image-editor .token-crop-frame{border:0;outline:none}
+.story-image-editor .zoom-fit{align-self:flex-start;min-height:0;padding:0;border:0;background:none;color:var(--muted);font:inherit;line-height:inherit}
+.story-image-editor .zoom-fit:hover{background:none;color:var(--gold)}
+
+.grid-editor-controls{grid-template-columns:90px 90px minmax(120px,1fr) minmax(150px,1fr) 110px;gap:16px}
+@media(max-width:700px){.grid-editor-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-editor-controls>:last-child{grid-column:1/-1;max-width:110px}}

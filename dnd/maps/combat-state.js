@@ -1,6 +1,6 @@
-import {normalizeSpells,normalizeSpellLibrary} from './spell-state.js?v=43';
-import {normalizeUserTokens} from './library-assets.js?v=43';
-import {elevation} from './token-options.js?v=43';
+import {normalizeSpells,normalizeSpellLibrary} from './spell-state.js?v=44';
+import {normalizeUserTokens} from './library-assets.js?v=44';
+import {elevation} from './token-options.js?v=44';
 // Small, explicit session model. Roster and monsters are the active map instances.
 export const CONDITIONS=[['blinded','◉̸','Blinded'],['charmed','♡','Charmed'],['deafened','♬̸','Deafened'],['exhaustion','⌛','Exhaustion'],['frightened','!','Frightened'],['grappled','⚓','Grappled'],['incapacitated','×','Incapacitated'],['invisible','◌','Invisible'],['paralyzed','Ⅱ','Paralyzed'],['petrified','◆','Petrified'],['poisoned','☠','Poisoned'],['prone','↘','Prone'],['restrained','⊠','Restrained'],['stunned','✧','Stunned'],['unconscious','☾','Unconscious']];
 export const MONSTERS=['Goblin','Kobold','Orc','Bugbear','Bandit','Cultist','Skeleton','Zombie','Ghoul','Mummy','Vampire','Ghost','Wolf','Bear','Giant spider','Owlbear','Troll','Ogre','Cyclops','Minotaur','Red dragon','Green dragon','Gargoyle','Imp','Fire elemental','Water elemental','Earth elemental','Air elemental','Mimic','Gelatinous cube',"Hobgoblin", "Gnoll", "Giant rat", "Giant bat", "Boar", "Dire wolf", "Giant snake", "Giant scorpion", "Wight", "Wraith", "Lich", "Death knight", "Werewolf", "Harpy", "Griffon", "Basilisk", "Hydra", "Stone golem", "Treant", "Myconid"];
@@ -49,5 +49,5 @@ export function bringTokenToFront(state,id){const tokens=mapTokens(state);return
 export function applyItemList(state,id){const current=syncCampaign(state),g=current.campaign.itemLists.find(g=>g.id===id);return g?{...current,campaign:{...current.campaign,activeItems:id}}:state;}
 export function deleteGroup(state,kind,id){const config={party:['parties','activeParty','roster'],encounter:['encounters','activeEncounter','monsters'],items:['itemLists','activeItems','items']}[kind];if(!config)return state;const [key,active,field]=config,s=syncCampaign(state);if(!s.campaign[key].some(g=>g.id===id))return state;const wasActive=s.campaign[active]===id,campaign={...s.campaign,[key]:s.campaign[key].filter(g=>g.id!==id),...(wasActive?{[active]:null}:{})};return {...s,campaign,...(wasActive&&kind!=='items'?{[field]:[],turnId:null}:{})};}
 
-export function placeItem(state,template,id,position,floor=null){if(!safeId(id)||mapTokens(state).some(m=>m.id===id)||!point(position)||(state.items||[]).length>=500)return state;return {...state,itemSchema:2,items:[...(state.items||[]),normalizeItem({...template,id,templateId:template.id,position,floor,visible:false,stack:Math.max(0,...mapTokens(state).map(m=>m.stack||0))+1})]};}
+export function placeItem(state,template,id,position,floor=null){if(!safeId(id)||mapTokens(state).some(m=>m.id===id)||!point(position)||(state.items||[]).length>=500)return state;return {...state,itemSchema:2,items:[...(state.items||[]),normalizeItem({...template,id,templateId:template.id,position,floor,visible:true,stack:Math.max(0,...mapTokens(state).map(m=>m.stack||0))+1})]};}
 export function removeItem(state,id){return {...state,items:(state.items||[]).filter(m=>m.id!==id)};}
