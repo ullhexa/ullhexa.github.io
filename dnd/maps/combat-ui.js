@@ -1,15 +1,15 @@
-import {statIcon,chevronIcon} from './control-icons.js?v=44';
-import {numberStepper} from './number-stepper.js?v=44';
-import {tokenGallery} from './token-gallery.js?v=44';
-import {createMemberStrip} from './member-strip.js?v=44';
-import {editStatCard} from './stat-card-editor.js?v=44';
-import {groupSelection} from './group-selection.js?v=44';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=44';
-import {conditionIcon} from './condition-icons.js?v=44';
-import {shortcutAction,isTextEntry} from './keyboard.js?v=44';
-import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=44';
-import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=44';
-import {setFace,portraitStyle} from './token-portraits.js?v=44';
+import {statIcon,chevronIcon} from './control-icons.js?v=45';
+import {numberStepper} from './number-stepper.js?v=45';
+import {tokenGallery} from './token-gallery.js?v=45';
+import {createMemberStrip} from './member-strip.js?v=45';
+import {editStatCard} from './stat-card-editor.js?v=45';
+import {groupSelection} from './group-selection.js?v=45';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=45';
+import {conditionIcon} from './condition-icons.js?v=45';
+import {shortcutAction,isTextEntry} from './keyboard.js?v=45';
+import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=45';
+import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=45';
+import {setFace,portraitStyle} from './token-portraits.js?v=45';
 const $=id=>document.getElementById(id);
 export function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 export function button(text,fn,cls){const b=el('button',text,cls);b.type='button';if(fn)b.addEventListener('click',fn);return b;}
@@ -22,9 +22,9 @@ export function createCombatUI({map,player,getState,commit,announce,getPresentat
   const rows=new Map();let panel,list,left,signature='',overlayDrag=null,lastActive=null,lastOrder='';
   if(!player){
     left=el('section',undefined,'combat-roster');left.id='combat-roster';document.querySelector('.encounter-heading').after(left);
-    panel=el('aside',undefined,'initiative-panel');panel.id='initiative-panel';panel.tabIndex=0;panel.setAttribute('aria-label','Initiative turn order');const heading=el('div',undefined,'initiative-heading');heading.append(el('h2','Initiative'),button('↑',()=>advance(-1)),button('↓',()=>advance(1)));heading.children[1].setAttribute('aria-label','Previous turn');heading.children[2].setAttribute('aria-label','Next turn');list=el('div');list.id='initiative-list';
-    const visibility=el('label',undefined,'check-label');const check=input('', 'Show player order',()=>{const s=getState();commit({...s,initiativeOverlay:{...s.initiativeOverlay,visible:check.checked}},'Player order visibility updated.');},'checkbox');check.id='initiative-visible';visibility.append(check,document.createTextNode('Player order'));panel.append(heading,visibility,list);document.querySelector('.workspace').append(panel);
-    document.addEventListener('keydown',e=>{if(e.defaultPrevented||e.target.closest('.reference-suite'))return;const field=isTextEntry(e.target)?e.target:null,hp=field?.hasAttribute('data-hp-input');const action=shortcutAction({key:e.key,typing:!!field,hp,story:getPresentation?.().mode==='story',conditions:!!document.querySelector('.token-status-editor'),modal:!!document.querySelector('dialog[open],.dice-panel:not([hidden])'),meta:e.metaKey,ctrl:e.ctrlKey,alt:e.altKey,shift:e.shiftKey,composing:e.isComposing});if(!action)return;if(action==='next-story'){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)advanceStory?.();}else if(['next-turn','previous-turn'].includes(action)){if(!initiativeOrder(getState()).length)return;e.preventDefault();e.stopImmediatePropagation();advance(action==='next-turn'?1:-1);}else if(action==='damage'||action==='heal'){e.preventDefault();e.stopImmediatePropagation();field.closest('.turn-row').querySelector(`[data-hp-action="${action}"]`).click();}else if(action==='undo'||action==='redo'){e.preventDefault();e.stopImmediatePropagation();$(action).click();}},true);
+    panel=el('aside',undefined,'initiative-panel');panel.id='initiative-panel';panel.tabIndex=0;panel.setAttribute('aria-label','Initiative turn order');const heading=el('div',undefined,'initiative-heading'),title=el('h2');heading.append(title,button('↑',()=>advance(-1)),button('↓',()=>advance(1)));heading.children[1].setAttribute('aria-label','Previous turn');heading.children[2].setAttribute('aria-label','Next turn');list=el('div');list.id='initiative-list';
+    const visibility=el('label',undefined,'initiative-visibility');const check=input('', 'Show player order',()=>{const s=getState();commit({...s,initiativeOverlay:{...s.initiativeOverlay,visible:check.checked}},'Player order visibility updated.');},'checkbox');check.id='initiative-visible';visibility.htmlFor=check.id;visibility.append(document.createTextNode('Initiative'),check);title.append(visibility);panel.append(heading,list);document.querySelector('.workspace').append(panel);
+    document.addEventListener('keydown',e=>{if(e.defaultPrevented||e.target.closest('.reference-suite')||(e.target===check&&e.key===' '))return;const field=isTextEntry(e.target)?e.target:null,hp=field?.hasAttribute('data-hp-input');const action=shortcutAction({key:e.key,typing:!!field,hp,story:getPresentation?.().mode==='story',conditions:!!document.querySelector('.token-status-editor'),modal:!!document.querySelector('dialog[open],.dice-panel:not([hidden])'),meta:e.metaKey,ctrl:e.ctrlKey,alt:e.altKey,shift:e.shiftKey,composing:e.isComposing});if(!action)return;if(action==='next-story'){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)advanceStory?.();}else if(['next-turn','previous-turn'].includes(action)){if(!initiativeOrder(getState()).length)return;e.preventDefault();e.stopImmediatePropagation();advance(action==='next-turn'?1:-1);}else if(action==='damage'||action==='heal'){e.preventDefault();e.stopImmediatePropagation();field.closest('.turn-row').querySelector(`[data-hp-action="${action}"]`).click();}else if(action==='undo'||action==='redo'){e.preventDefault();e.stopImmediatePropagation();$(action).click();}},true);
 
     overlay.tabIndex=0;overlay.setAttribute('aria-label','Player initiative position. Drag to place.');
     overlay.addEventListener('pointerdown',e=>{if(e.button!==0)return;e.stopPropagation();e.preventDefault();overlayDrag={id:e.pointerId,x:e.clientX,y:e.clientY,start:{...getState().initiativeOverlay},rect:stage.getBoundingClientRect()};overlay.setPointerCapture(e.pointerId);});
