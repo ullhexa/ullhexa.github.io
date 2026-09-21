@@ -530,3 +530,18 @@ body:not(.player-mode) .map-topline{display:grid;grid-template-columns:minmax(0,
 .manual-topic-number{font-variant-numeric:tabular-nums;text-align:right}
 .main-menu-header>.quiet,.manual-header>.quiet{display:grid;place-items:center;flex:none;width:38px;height:38px;min-height:38px;padding:0;border:0;background:transparent;box-shadow:none;outline:none;font-size:24px;line-height:1}
 .main-menu-header>.quiet:is(:hover,:focus-visible),.manual-header>.quiet:is(:hover,:focus-visible){border:0;background:transparent;box-shadow:none;outline:none;color:var(--gold)}
+
+/* Independent building controls, named map markers and private preparation. */
+.building-global{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.building-action{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:53px;padding:6px 3px;font-size:11px;line-height:1.2;background:#17251e;font-weight:500}
+.building-action svg{width:20px;height:20px;flex:none}.building-action[aria-pressed=true],.building-effect[aria-pressed=true]{border-color:#aa925f;color:#ffe0a5;background:#393b27}
+.building-action[aria-pressed=true]:hover,.building-effect[aria-pressed=true]:hover{border-color:#c8aa69;background:#45442d}
+.building-action.icon-only{width:34px;height:34px;min-height:34px;padding:5px;border-radius:5px}
+.building-effect{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;text-align:left;font-size:12px}
+.effect-levels{display:flex;gap:3px;flex:none}.effect-floor{display:grid;place-items:center;flex:none;width:23px;height:23px;border:1px solid currentColor;border-radius:50%;font-size:11px;font-variant-numeric:tabular-nums}
+.building-popup{position:absolute;top:0;left:0;z-index:1000030;max-width:calc(100% - 16px);background:#111c17f7;border:1px solid #64705b;border-radius:8px;padding:8px;box-shadow:0 5px 20px #0007;overflow:auto;overscroll-behavior:contain}
+.building-popup:focus,.building-popup :focus{outline:none;box-shadow:none}.building-popup[hidden]{display:none}
+.building-quick{padding:5px}.building-editor{width:290px}.building-editor header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:5px}.building-editor header strong{font-size:12px}
+.building-close{width:27px;height:27px;min-height:27px;flex:none;display:grid;place-items:center;padding:0;border:0;background:none;font-size:22px;line-height:1}
+.building-editor section{padding:9px 0 0;margin-top:8px;border-top:1px solid var(--line)}.building-editor h3{font-size:10px;font-weight:600;color:var(--muted);margin:0 0 7px}.building-editor .place-floors{justify-content:space-between}.building-effects{display:flex;flex-direction:column;gap:5px}.building-editor .building-effect{padding:6px 8px}
+.hotspot .place-name-tag text{fill:#fff;stroke:none;font-size:15px;font-weight:600}.hotspot .place-name-tag rect{stroke:none}

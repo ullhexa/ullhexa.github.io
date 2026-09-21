@@ -1,4 +1,5 @@
-import {isVisible} from './state.js?v=45';
+import {isVisible} from './state.js?v=54';
+import {buildingParts,buildingCollapsed} from './building-state.js?v=54';
 
 const NS='http://www.w3.org/2000/svg';
 const node=(tag,attrs={})=>{
@@ -8,6 +9,7 @@ const node=(tag,attrs={})=>{
 };
 
 export function lightIsVisible(map,state,light){
+  if(light.floor){const place=map.places.find(p=>p.id===light.floor.placeId),roof=place&&buildingParts(map,place).roof;if((roof&&!state.active.includes(roof.id))||buildingCollapsed(map,state,light.floor.placeId))return false;}
   return (!light.floor||state.floors?.[light.floor.placeId]===light.floor.floorId) && (light.requires||[]).every(id=>isVisible(map,state,id)) && !(light.excludes||[]).some(id=>isVisible(map,state,id));
 }
 

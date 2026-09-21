@@ -1,41 +1,43 @@
-import {createMapNavigation} from './map-navigation.js?v=45';
-import {createFloorControl} from './floor-controls.js?v=52';
-import {createUserManual} from './user-manual.js?v=53';
-import {createSpellLibrary} from './spell-library.js?v=45';
-import {createReferenceViewers} from './reference-viewers.js?v=45';
-import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=45';
-import {persistAssets} from './local-assets.js?v=45';
-import {createScenery} from './scenery.js?v=53';
-import {consumeMapDismissal} from './map-dismissal.js?v=45';
-import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=45';
-import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=45';
-import {createDiceTools} from './dice.js?v=45';
-import {fetchJSON,loadRaster} from './resource-loading.js?v=45';
-import {storyCatalog,nextStory} from './story-assets.js?v=45';
-import {createItemsUI} from './items-ui.js?v=45';
-import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=45';
-import {createHistory} from './history.js?v=45';
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=45';
-import {setupSidebarResize} from './sidebar-resize.js?v=45';
-import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=45';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=49';
-import {createFogTools} from './fog-tools.js?v=45';
-import {normalizeFog} from './fog-state.js?v=45';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=45';
-import {createSessionBundle} from './session-bundle.js?v=45';
-import { startDMShell } from './dm-shell.js?v=45';
-import { openPlayerWindow } from './display-window.js?v=45';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=45';
-import { createEncounterTools } from './encounter-tools.js?v=45';
-import { playerProjection, formation, moveParty } from './encounter-state.js?v=45';
-import { createMapMenu } from './map-menu.js?v=45';
-import { createSaveControls } from './save-controls.js?v=45';
-import { parseSave, restoreSave } from './save-file.js?v=45';
-import { createLighting } from './lighting.js?v=45';
-import { setupFullscreen } from './fullscreen.js?v=45';
-import { startPlayerDisplay } from './player-display.js?v=45';
-import { createDirector } from './director.js?v=51';
-import { normalizeProject } from './presentation-state.js?v=45';
+import {createBuildingControls} from './building-controls.js?v=54';
+import {buildingCollapsed} from './building-state.js?v=54';
+import {createCameraAnimation} from './camera-animation.js?v=54';
+import {createMapNavigation} from './map-navigation.js?v=54';
+import {createFloorControl} from './floor-controls.js?v=54';
+import {createUserManual} from './user-manual.js?v=54';
+import {createSpellLibrary} from './spell-library.js?v=54';
+import {createReferenceViewers} from './reference-viewers.js?v=54';
+import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=54';
+import {persistAssets} from './local-assets.js?v=54';
+import {createScenery} from './scenery.js?v=54';
+import {consumeMapDismissal} from './map-dismissal.js?v=54';
+import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=54';
+import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=54';
+import {createDiceTools} from './dice.js?v=54';
+import {fetchJSON,loadRaster} from './resource-loading.js?v=54';
+import {storyCatalog,nextStory} from './story-assets.js?v=54';
+import {createItemsUI} from './items-ui.js?v=54';
+import {floorList,selectedFloor,selectFloor,interactionOnFloor} from './floors.js?v=54';
+import {createHistory} from './history.js?v=54';
+import {setupSidebarResize} from './sidebar-resize.js?v=54';
+import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=54';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=54';
+import {createFogTools} from './fog-tools.js?v=54';
+import {normalizeFog} from './fog-state.js?v=54';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=54';
+import {createSessionBundle} from './session-bundle.js?v=54';
+import { startDMShell } from './dm-shell.js?v=54';
+import { openPlayerWindow } from './display-window.js?v=54';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=54';
+import { createEncounterTools } from './encounter-tools.js?v=54';
+import { playerProjection, formation, moveParty } from './encounter-state.js?v=54';
+import { createMapMenu } from './map-menu.js?v=54';
+import { createSaveControls } from './save-controls.js?v=54';
+import { parseSave, restoreSave } from './save-file.js?v=54';
+import { createLighting } from './lighting.js?v=54';
+import { setupFullscreen } from './fullscreen.js?v=54';
+import { startPlayerDisplay } from './player-display.js?v=54';
+import { createDirector } from './director.js?v=54';
+import { normalizeProject } from './presentation-state.js?v=54';
 
 listenForBoardReset();
 const $ = id => document.getElementById(id);
@@ -149,8 +151,9 @@ async function start() {
   let state = readMapState(map);
   if (player) state = playerProjection(state);
   let selected = map.places[0]?.id||null;
-  let focusedPlace = null,selectedOptionsFloor;
-  const history = createHistory();
+  let focusedPlace=null,buildingUI,privatePreview=null,pendingCameraDuration=0;
+  const history=createHistory();
+  const currentHistory=()=>privatePreview?.history||history;
   let lastPeer = 0;
   let ruler = [];
   let measuring = false;
@@ -160,7 +163,7 @@ async function start() {
   let storageWorks = true;
   let channel;
   try { channel = new BroadcastChannel(sessionKey); } catch { /* Storage events also synchronize windows. */ }
-  const send = value => { if(channel)channel.postMessage(value);else writeStored(`${sessionKey}:signal`, { ...value, nonce: crypto.randomUUID() }); };
+  const send = (value,publicSnapshot=false) => { if(!publicSnapshot&&privatePreview&&['camera','positions','fog-preview','ruler'].includes(value.type))return;if(channel)channel.postMessage(value);else writeStored(`${sessionKey}:signal`, { ...value, nonce: crypto.randomUUID() }); };
   const announce = text => { $('live-message').textContent = text; };
   const xy = point => [point[0] * map.width, point[1] * map.height];
   const polygon = points => points.map(point => xy(point).join(',')).join(' ');
@@ -169,9 +172,7 @@ async function start() {
   const layerNodes = new Map();
   const coverNodes = new Map();
   const placeButtons = new Map(),floorControls=new Map();
-  const actionButtons = new Map();
   const hotspots = new Map();
-  const stepButtons=new Map();
   $('map-grid').setAttribute('x',map.grid.offset?.[0]||0);
   $('map-grid').setAttribute('y',map.grid.offset?.[1]||0);
   $('map-grid').setAttribute('width', map.grid.size);
@@ -229,7 +230,7 @@ async function start() {
   party.append(svgNode('circle', { r: 12, fill: '#84c5d6', opacity: .28 }));
   party.append(svgNode('text', { 'text-anchor': 'middle', y: 5, fill: '#fff9dc', 'font-size': 14, 'font-weight': 700 }, 'P'));
   $('party-layer').append(party);
-  function finishDrag(before,message){history.record(before);state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
+  function finishDrag(before,message){currentHistory().record(before);state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
   function preview(next,mode=false){state=next;if(mode==='fog')fog?.render();else if(mode)encounter.renderCharacterPositions(typeof mode==='string'?mode:null);else render();}
   let positionSequence=0,lastPositionSequence=-1;
   function livePositions(id){const members=mapTokens(state).filter(m=>(!id||m.id===id)&&(!(m.monster||m.item)||m.visible&&(!m.item||!m.floor||state.floors?.[m.floor.placeId]===m.floor.floorId)));send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,...(!id?{party:state.party}:{}),positions:members.map(m=>({id:m.id,position:m.position,stack:m.stack||0}))});}
@@ -238,12 +239,12 @@ async function start() {
   const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,setTool,livePositions});
   if(!player){const overlay=svgNode('svg',{id:'party-overlay',preserveAspectRatio:'xMidYMid meet'});overlay.append($('party-layer'));$('map-stage').append(overlay);}
   fog=createFogTools({map,player,getState:()=>state,preview,finishDrag,pointAt,setTool,sendPreview:strokes=>send({type:'fog-preview',mapId:map.id,revision:state.revision,fog:strokes}),announce});
-  const dice=player?null:createDiceTools();if(!player)createMapNavigation({map,getCamera:()=>state.camera,viewport:()=>viewportSize(),prepare:()=>setTool(null),setCamera:camera=>{focusedPlace=null;state={...state,camera,revision:state.revision+1};queueCamera();clearTimeout(zoomSave);zoomSave=setTimeout(save,100);}});
+  const dice=player?null:createDiceTools();if(!player)createMapNavigation({map,getCamera:()=>state.camera,viewport:()=>viewportSize(),prepare:()=>{cameraAnimation.cancel();setTool(null);},setCamera:camera=>{focusedPlace=null;state={...state,camera,revision:state.revision+1};queueCamera();clearTimeout(zoomSave);zoomSave=setTimeout(save,100);}});
   combat=createCombatUI({map,player,getState:()=>state,commit,announce,showStat:(m,side)=>references?.showStat(m,side),showAssigned:(id,side)=>references?.showAssigned(id,side),locate:id=>{references?.close();encounter.locateToken(id);},getPresentation:()=>project,advanceStory:()=>setProject({...project,vibe:nextStory(project)})});
 
-  function remember(view) { history.record(state,view); }
+  function remember(view) { currentHistory().record(state,view); }
   function save() {
-    if (player||window.ullhexaResetting) return;
+    if (player||privatePreview||window.ullhexaResetting) return;
     state=syncCampaign(state);
     storageWorks = writeStored(key, state);
     if(state.campaign)storageWorks=writeStored(`${sessionKey}:campaign`,state.campaign)&&storageWorks;
@@ -254,10 +255,11 @@ async function start() {
   }
   function publish(){
     if(player||!runtimeReady||window.ullhexaResetting)return;
-    send({type:'state',state:playerProjection(state)});
-    send({type:'ruler',mapId:map.id,points:ruler});
+    const visible=privatePreview?.base||state;
+    send({type:'state',state:playerProjection(visible),...(pendingCameraDuration?{cameraDuration:pendingCameraDuration}:{})});pendingCameraDuration=0;
+    send({type:'ruler',mapId:map.id,points:privatePreview?.ruler||ruler},true);
     const storyAsset=storyCatalog(project).find(s=>s.id===project.vibe);
-    const presentation={...(storyAsset?.asset?{storyAsset}:{}),mode:project.mode,vibe:project.vibe,mapId:map.id,mapContent:mapContentKey(map),sceneRevision:state.revision,revision:++presentationRevision};
+    const presentation={...(storyAsset?.asset?{storyAsset}:{}),mode:project.mode,vibe:project.vibe,mapId:map.id,mapContent:mapContentKey(map),sceneRevision:visible.revision,revision:++presentationRevision};
     writeStored(`${sessionKey}:presentation`,presentation);send({type:'presentation',presentation});
   }
   function reportScene(){if(embedded&&sceneReady)window.parent.postMessage({type:'scene-ready',mapId:map.id,revision:state.revision},location.origin);}
@@ -269,6 +271,7 @@ async function start() {
     if (message) announce(message);
   }
   function restoreEncounter(restored,restoredProject) {
+    cameraAnimation.cancel();
     remember({selectedPlace:selected,ruler,project});
     if(restoredProject){project=normalizeProject(restoredProject,catalog,map.id);director.render();}
     ruler=restored.view.ruler;measuring=false;$('map-stage').classList.remove('is-measuring');
@@ -284,55 +287,38 @@ async function start() {
   }
   function selectPlace(id) {
     if(selected!==id)focusedPlace=null;
-    selected = id;
-    const place = map.places.find(place => place.id === id);
-    if(!place){document.querySelector('.selected-place').hidden=true;return;}
-    document.querySelector('.selected-place').hidden=false;
-    selectedOptionsFloor=selectedFloor(place,state)?.id;
-    $('selected-title').textContent = `${map.places.indexOf(place)+1}. ${place.name}`;
-    $('selected-actions').replaceChildren(); actionButtons.clear();stepButtons.clear();
-    const view=placeView(place,state),sequence=view.sequence||[],managed=new Set(sequence.flatMap(step=>step.active));
-    if(sequence.length){const steps=document.createElement('div');steps.className='place-sequence';steps.setAttribute('role','group');steps.setAttribute('aria-label',`${place.name} states`);sequence.forEach((step,index)=>{const b=document.createElement('button');b.type='button';const number=document.createElement('small');number.textContent=`${index+1}/${sequence.length}`;const label=document.createElement('span');label.textContent=step.label;b.append(number,label);b.setAttribute('aria-label',`${place.name}: ${step.label}`);b.addEventListener('click',()=>commit(setPlaceStep(place,state,index),`${place.name}: ${step.label}.`));steps.append(b);stepButtons.set(index,b);});$('selected-actions').append(steps);}
-    for (const id of view.actions.filter(id=>!managed.has(id))) {
-      const button = document.createElement('button'); button.type = 'button';
-      button.addEventListener('click', () => activate(id));
-      $('selected-actions').append(button); actionButtons.set(id, button);
-    }
-    renderControls();
+    selected=id;buildingUI?.render();renderControls();
   }
   function renderControls(cameraOnly=false) {
-    if (player) return;
-    if(!cameraOnly){for (const place of map.places) {
-      const button = placeButtons.get(place.id);
-      button?.setAttribute('aria-pressed', place.id === selected);
-      const step=placeStep(place,state),sequence=placeView(place,state).sequence||[];
-      floorControls.get(place.id)?.render();
-      const node = hotspots.get(place.id);
-      if(node){node.querySelector('circle').setAttribute('fill',place.id===selected?'#e8ba71':'#172a21');node.querySelector('.event-step').textContent=`${step+1}/${sequence.length||1}`;node.setAttribute('aria-label',`${place.name}: ${sequence[step]?.label||'Ready'}, ${step+1} of ${sequence.length||1}. Click for next state.`);}
-      if(place.id===selected)for(const[index,b]of stepButtons)b.setAttribute('aria-pressed',index===step);
-    }
-    for (const [id, button] of actionButtons) {
-      const item = map.interactions.find(item => item.id === id);
-      const on = state.active.includes(id);
-      button.textContent = `${on?'2/2':'1/2'} · ${on ? item.activeLabel : item.label}`;
-      button.setAttribute('aria-pressed', on);
-      button.disabled = !on && (item.requires || []).some(dep => !isVisible(map, state, dep));
-      button.title = button.disabled ? 'Reveal the surrounding area first.' : '';
-    }
-
+    if(player)return;
+    if(!cameraOnly)for(const place of map.places){
+      placeButtons.get(place.id)?.setAttribute('aria-pressed',String(place.id===selected));floorControls.get(place.id)?.render();
+      const node=hotspots.get(place.id);if(node){node.querySelector('circle').setAttribute('fill',place.id===selected?'#e8ba71':'#172a21');node.setAttribute('aria-label',`${place.name}. Click for quick actions; double-click to prepare building.`);}
     }
     sizeHotspots();
-    if($('undo').disabled!==(!history.canUndo))$('undo').disabled=!history.canUndo;
-    if($('redo').disabled!==(!history.canRedo))$('redo').disabled=!history.canRedo;
+    if($('undo').disabled!==(!currentHistory().canUndo))$('undo').disabled=!currentHistory().canUndo;
+    if($('redo').disabled!==(!currentHistory().canRedo))$('redo').disabled=!currentHistory().canRedo;
     const overview = Math.abs(state.camera.zoom-1)<.001 && Math.abs(state.camera.x-.5)<.001 && Math.abs(state.camera.y-.5)<.001;
     const place=map.places.find(p=>p.id===focusedPlace);
     const focus=place?boundedCamera(map,{x:place.point[0],y:place.point[1],zoom:place.focusZoom},viewportSize()):null;
-    if(!focus||selected!==focusedPlace||Math.abs(state.camera.x-focus.x)>.00001||Math.abs(state.camera.y-focus.y)>.00001||Math.abs(state.camera.zoom-focus.zoom)>.00001)focusedPlace=null;
-    const focusLabel=focusedPlace?'Overview':'Focus';if($('focus-place').textContent!==focusLabel)$('focus-place').textContent=focusLabel;
+    if(!cameraAnimation.active&&(!focus||selected!==focusedPlace||Math.abs(state.camera.x-focus.x)>.00001||Math.abs(state.camera.y-focus.y)>.00001||Math.abs(state.camera.zoom-focus.zoom)>.00001))focusedPlace=null;
+    buildingUI?.render();
     if($('fit-map').disabled!==(overview))$('fit-map').disabled=overview;
   }
   let viewport=[$('map').clientWidth,$('map').clientHeight],viewGeometry;
   const viewportSize=()=>viewport;
+  const cameraAnimation=createCameraAnimation({getCamera:()=>state.camera,update:camera=>{state={...state,camera:boundedCamera(map,camera,viewportSize())};renderCamera();if(!player)send({type:'camera',mapId:map.id,camera:state.camera,revision:state.revision});},complete:()=>{renderControls(true);if(!player)save();}});
+  function focusBuilding(place){
+    const overview=!place||focusedPlace===place.id;focusedPlace=overview?null:place.id;
+    if(privatePreview)privatePreview.focus=true;
+    state={...state,revision:state.revision+1};cameraAnimation.start(boundedCamera(map,overview?{x:.5,y:.5,zoom:1}:{x:place.point[0],y:place.point[1],zoom:Math.min(3,place.focusZoom)},viewportSize()));renderControls(true);
+  }
+  function beginBuildingPreview(){cameraAnimation.cancel();clearTimeout(zoomSave);privatePreview={base:structuredClone(state),ruler:structuredClone(ruler),history:createHistory(),focus:false};renderControls();}
+  function endBuildingPreview(){
+    if(!privatePreview)return;cameraAnimation.finish();const draft=privatePreview;privatePreview=null;
+    if(JSON.stringify({...draft.base,revision:0})!==JSON.stringify({...state,revision:0})){history.record(draft.base);state={...state,revision:Math.max(state.revision,draft.base.revision)+1};if(draft.focus&&JSON.stringify(draft.base.camera)!==JSON.stringify(state.camera))pendingCameraDuration=2000;}
+    render();save();
+  }
   function cameraView(){
     const view=cameraViewBox(map,state.camera,viewportSize()),{zoom}=view.camera;
     if(!player)state={...state,camera:view.camera};
@@ -353,11 +339,10 @@ async function start() {
     for (const item of map.interactions) {
       const visible = isVisible(map, state, item.id);
       if(item.type==='marker'){const available=interactionOnFloor(map,state,item)&&(item.requires||[]).every(dep=>isVisible(map,state,dep));const door=layerNodes.get(item.id);door.style.display=available?'':'none';door.classList.toggle('door-open',visible);if(!player)door.setAttribute('aria-label',`${item.publicLabel}: ${visible?'open':'closed'}`);if(coverNodes.has(item.id))coverNodes.get(item.id).style.opacity=visible?'0':'1';continue;}
-      layerNodes.get(item.id).style.display = (interactionOnFloor(map,state,item)&&(['terrain'].includes(item.type)?visible:!visible)) ? '' : 'none';
+      layerNodes.get(item.id).style.display=(interactionOnFloor(map,state,item)&&(item.type!=='roof'||!buildingCollapsed(map,state,item.placeId))&&(item.type==='terrain'?visible:!visible))?'':'none';
       if(coverNodes.has(item.id))coverNodes.get(item.id).style.display=visible?'none':'';
     }
     for(const [key,node] of floorNodes){const [placeId,floorId]=key.split(':');const p=map.places.find(p=>p.id===placeId);node.style.display=selectedFloor(p,state)?.id===floorId?'':'none';}
-    if(!player&&selectedOptionsFloor!==selectedFloor(map.places.find(p=>p.id===selected)||{},state)?.id){selectPlace(selected);}
     scenery.render(state.environment.darkness,state.floors);
     cameraView();
     $('grid-overlay').style.display = state.grid ? '' : 'none';
@@ -392,7 +377,7 @@ async function start() {
   }
   const inBounds = p => p && p.every(n => n >= 0 && n <= 1);
   function zoomBy(factor, anchor, immediate=false) {
-    focusedPlace=null;
+    cameraAnimation.cancel();focusedPlace=null;
     const before = state.camera;
     const zoom = clamp(before.zoom * factor, 1, 3);
     const ratio = before.zoom / zoom;
@@ -402,13 +387,11 @@ async function start() {
   }
 
   function activateHotspot(node,event={}){
-    if(tool)return;const place=map.places.find(p=>p.id===node.dataset.place);if(!place)return;selectPlace(place.id);
-    if(node.dataset.action)activate(node.dataset.action);
-    else{const next=cyclePlace(place,state,event.shiftKey||event.metaKey?-1:1);commit(next,`${place.name}: ${placeView(place,next).sequence?.[placeStep(place,next)]?.label||'Updated'}.`);}
+    if(tool||event.button===2)return;const place=map.places.find(p=>p.id===node.dataset.place);if(place)buildingUI?.show(place);
   }
   function sizeHotspots(){
     const scale=.8/(viewGeometry?.scale||cameraGeometry(map,state.camera,viewport).scale);
-    for(const node of hotspots.values()){const glyph=node.querySelector('.hotspot-glyph');if(glyph._scale!==scale){glyph._scale=scale;glyph.setAttribute('transform',`translate(${glyph.dataset.x} ${glyph.dataset.y}) scale(${scale})`);}}
+    for(const node of hotspots.values()){const glyph=node.querySelector('.hotspot-glyph');if(glyph._scale!==scale){glyph._scale=scale;glyph.setAttribute('transform',`translate(${glyph.dataset.x} ${glyph.dataset.y}) scale(${scale})`);}const label=glyph.querySelector('.place-name-tag');if(label&&!label._measured){const width=label.querySelector('text').getComputedTextLength()+14;label.querySelector('rect').setAttribute('x',-width/2);label.querySelector('rect').setAttribute('width',width);label._measured=true;}}
   }
   function makeHotspot(place,point,number,area,action){
     const node=svgNode('g',{class:'hotspot',role:'button',tabindex:0,'data-place':place.id,...(action?{'data-action':action}:{})});
@@ -416,14 +399,16 @@ async function start() {
     const[x,y]=xy(point),glyph=svgNode('g',{class:'hotspot-glyph','data-x':x,'data-y':y});
     glyph.append(svgNode('circle',{r:action?17:21,fill:'#172a21',stroke:'#e8ba71','stroke-width':2}));
     glyph.append(svgNode('text',{'text-anchor':'middle',y:6,'font-size':action?13:17,'pointer-events':'none'},number));
-    glyph.append(svgNode('text',{class:'event-step','text-anchor':'middle',y:action?-25:-30,'font-size':14,'pointer-events':'none'},''));node.append(glyph);
+    const label=svgNode('g',{class:'place-name-tag','pointer-events':'none'});label.append(svgNode('rect',{x:-place.name.length*4.2-7,y:29,width:place.name.length*8.4+14,height:23,rx:4,fill:'#080b09'}),svgNode('text',{'text-anchor':'middle',y:45,'font-size':15,fill:'#fff',stroke:'none'},place.name));glyph.append(label);node.append(glyph);
     node.addEventListener('click',event=>{if(!drag)activateHotspot(node,event);});
+    node.addEventListener('dblclick',event=>{if(tool||drag)return;event.preventDefault();event.stopPropagation();buildingUI.show(place,true);});
     node.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();event.stopPropagation();activateHotspot(node,event);}});
     return node;
   }
 
   if (!player) {
-    new ResizeObserver(sizeHotspots).observe($('map-stage'));
+    buildingUI=createBuildingControls({map,getState:()=>state,getSelected:()=>selected,getFocused:()=>focusedPlace,select:selectPlace,focus:focusBuilding,toggle:activate,setFloor:(place,floor,level)=>{selectPlace(place.id);commit(selectFloor(map,state,place.id,floor.id),`${place.name}: floor ${level}.`);},beginPreview:beginBuildingPreview,endPreview:endBuildingPreview,prepare:()=>{references?.close();dice?.close();setTool(null);},getGeometry:()=>viewGeometry});
+    new ResizeObserver(()=>{sizeHotspots();buildingUI.position();}).observe($('map-stage'));
     for (const [index, place] of map.places.entries()) {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'place-button';
       const title = document.createElement('span');
@@ -443,13 +428,13 @@ async function start() {
       $('dm-hotspots').append(node);hotspots.set(place.id,node);
 
     }
+    document.fonts.ready.then(()=>{for(const node of hotspots.values())node.querySelector('.place-name-tag')._measured=false;sizeHotspots();});
     selectPlace(selected);
     if(!map.places.length){$('places').previousElementSibling.hidden=true;$('places').hidden=true;announce('Custom map ready. Paint fog or add tokens and spell areas.');}
     setupSidebarResize();
-    $('focus-place').addEventListener('click', () => { const place=map.places.find(p=>p.id===selected);if(!place)return;if(focusedPlace){focusedPlace=null;$('fit-map').click();return;}focusedPlace=place.id;commit({...state,camera:{x:place.point[0],y:place.point[1],zoom:Math.min(3,place.focusZoom)}},`Focused on ${place.name.toLowerCase()}.`,false); });
     $('zoom-in').addEventListener('click', () => zoomBy(1.25));
     $('zoom-out').addEventListener('click', () => zoomBy(.8));
-    $('fit-map').addEventListener('click', () => commit({ ...state, camera: initialState(map).camera }, 'Showing the whole map.', false));
+    $('fit-map').addEventListener('click',()=>focusBuilding(null));
     $('snap-grid').addEventListener('change',event=>commit({...state,snap:event.target.checked},'Grid snapping updated.'));
     $('show-grid').addEventListener('change', event => commit({ ...state, grid: event.target.checked }, '', false));
     for(const button of gridColorButtons)button.addEventListener('click',()=>commit({...state,gridColor:button.dataset.gridColor},'',false));
@@ -466,7 +451,7 @@ async function start() {
     $('clear-measurement').addEventListener('click', () => { ruler = []; renderRuler(true); });
     document.addEventListener('keydown', event => { if(!event.defaultPrevented&&event.key==='Escape'&&tool){setTool(null);ruler=[];renderRuler(true);} });
     function travelHistory(direction){
-      const entry=history[direction](state,{selectedPlace:selected,ruler,project});if(!entry)return;
+      const entry=currentHistory()[direction](state,{selectedPlace:selected,ruler,project});if(!entry)return;
       if(entry.view){ruler=entry.view.ruler;if(entry.view.project){project=entry.view.project;director.render();}}
       commit(entry.state,direction==='undo'?'Last encounter change undone.':'Last encounter change redone.',false);
       if(entry.view)selectPlace(entry.view.selectedPlace);
@@ -478,12 +463,12 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'53',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'54',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
     });
-    $('map-stage').addEventListener('wheel', event => {if(event.target.closest('.token-status-editor,.shape-palette,.item-comment,.dice-panel,.reference-suite')||encounter.isDragging()||fog.isDrawing())return;event.preventDefault();wheelDelta+=event.deltaY;wheelPoint={clientX:event.clientX,clientY:event.clientY};if(!wheelFrame)wheelFrame=requestAnimationFrame(()=>{wheelFrame=0;const delta=wheelDelta;wheelDelta=0;zoomBy(Math.exp(-delta*.0015),pointAt(wheelPoint),true);});}, { passive: false });
+    $('map-stage').addEventListener('wheel', event => {if(event.target.closest('.token-status-editor,.shape-palette,.item-comment,.dice-panel,.reference-suite,.building-popup')||encounter.isDragging()||fog.isDrawing())return;event.preventDefault();wheelDelta+=event.deltaY;wheelPoint={clientX:event.clientX,clientY:event.clientY};if(!wheelFrame)wheelFrame=requestAnimationFrame(()=>{wheelFrame=0;const delta=wheelDelta;wheelDelta=0;zoomBy(Math.exp(-delta*.0015),pointAt(wheelPoint),true);});}, { passive: false });
     $('map-stage').addEventListener('pointerdown', event => {
       const right=event.button===2;
       if(!$('map').contains(event.target)&&!party.contains(event.target)&&!(right&&event.target.closest('#character-tokens [data-character],#shape-handle-overlay')))return;
@@ -492,7 +477,7 @@ async function start() {
       if(measuring&&!right){if(inBounds(p)){ruler=[p,p];drag={id:event.pointerId,measure:true,start:structuredClone(state),moved:false};$('map').setPointerCapture(event.pointerId);renderRuler(true);}return;}
       const token = !right&&party.contains(event.target);
       if(!token&&!right&&!event.ctrlKey&&!event.metaKey)return;
-      const ctm = $('map').getScreenCTM();
+      cameraAnimation.cancel();renderControls(true);const ctm = $('map').getScreenCTM();
       drag = { id: event.pointerId, x: event.clientX, y: event.clientY, camera: { ...state.camera }, scale: ctm.a, point: p, start: structuredClone(state), token, moved: false, hotspot: !right&&!!event.target.closest('.hotspot,.map-door') };
       $('map-stage').classList.toggle('is-panning',!token);
       event.preventDefault();
@@ -523,7 +508,7 @@ async function start() {
       finished.ending=true;$('map-stage').classList.remove('is-panning');if($('map').hasPointerCapture(event.pointerId))$('map').releasePointerCapture(event.pointerId);
       if(finished.measure){if(!finished.moved)ruler=[];drag=null;renderRuler(true);return;}
       if (finished.moved) {
-        if (finished.token) history.record(finished.start);
+        if (finished.token) currentHistory().record(finished.start);
         state.revision += 1; render(); save();
         if (finished.token) announce('Party moved.');
       }
@@ -555,12 +540,12 @@ async function start() {
       state={...state,roster:state.roster.map(m=>({...m,...(positions.get(m.id)||{})})),items:(state.items||[]).map(m=>({...m,...(positions.get(m.id)||{})})),monsters:state.monsters.map(m=>({...m,...(positions.get(m.id)||{})}))};
       if(inBounds(message.party)){state.party=message.party;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);}encounter.renderCharacterPositions(positions.size===1?[...positions.keys()][0]:null);
     }
-    if(player&&message.type==='camera'&&message.mapId===map.id&&Number.isSafeInteger(message.revision)&&message.revision>=state.revision&&inBounds([message.camera?.x,message.camera?.y])&&Number.isFinite(message.camera?.zoom)&&message.camera.zoom>=1&&message.camera.zoom<=3){state={...state,camera:message.camera,revision:message.revision};queueCamera();return;}
+    if(player&&message.type==='camera'&&message.mapId===map.id&&Number.isSafeInteger(message.revision)&&message.revision>=state.revision&&inBounds([message.camera?.x,message.camera?.y])&&Number.isFinite(message.camera?.zoom)&&message.camera.zoom>=1&&message.camera.zoom<=3){cameraAnimation.cancel();state={...state,camera:message.camera,revision:message.revision};queueCamera();return;}
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='fog-preview'){state={...state,fog:normalizeFog(message.fog)};fog.render();}
     if(player&&message.type==='ruler'&&message.mapId===map.id&&Array.isArray(message.points)&&message.points.length<=2&&message.points.every(inBounds)){ruler=message.points;renderRuler();}
     if (player && message.type === 'state' && message.state?.mapId === map.id && message.state?.mapVersion === map.version) {
       const incoming = playerProjection(sanitizeState(map, message.state));
-      if (incoming.revision >= state.revision) { state = incoming;lastPositionSequence=-1; render(); }
+      if(incoming.revision>=state.revision){const previousCamera=state.camera;cameraAnimation.cancel();state=incoming;lastPositionSequence=-1;if(message.cameraDuration===2000){state={...state,camera:previousCamera};render();cameraAnimation.start(incoming.camera);}else render();}
       lastPeer = Date.now(); updateConnection();
     }
   }
