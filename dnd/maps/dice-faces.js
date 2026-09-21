@@ -1,4 +1,4 @@
-import {drawDie,landingMesh,DICE_COLORS} from './dice-geometry.js?v=57';
+import {drawDie,landingMesh,DICE_COLORS} from './dice-geometry.js?v=58';
 
 const banks=new Map(),scratch=new Map();
 const numberLift={4:6,6:2,8:2,10:4,20:2,100:0};
@@ -20,7 +20,7 @@ export function diceFaceBank(sides,ratio=Math.min(2,devicePixelRatio||1)){
 // Fade while the die is slowing to its landing pose, finishing with the roll.
 // The number expands gently then returns to its exact resting size.
 export function faceReveal(elapsed,duration){
- const progress=duration?Math.max(0,Math.min(1,(elapsed-(duration-320))/320)):1;
+ const progress=duration?Math.max(0,Math.min(1,(elapsed-(duration-256))/256)):1;
  return {alpha:progress*progress*(3-2*progress),scale:1+.09*Math.sin(Math.PI*progress)**2};
 }
 

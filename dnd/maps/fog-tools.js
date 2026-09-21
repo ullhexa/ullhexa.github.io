@@ -1,4 +1,4 @@
-import {FOG_SIZES,FOG_FEATHER} from './fog-state.js?v=57';
+import {FOG_SIZES,FOG_FEATHER} from './fog-state.js?v=58';
 export function createFogTools({map,player,getState,preview,finishDrag,pointAt,setTool,sendPreview,announce}){
   const stage=document.getElementById('map-stage'),svg=document.getElementById('map'),canvas=document.createElement('canvas');canvas.id='painted-fog';stage.append(canvas);
   const ratio=Math.min(1,2048/map.width,2048/map.height);canvas.width=Math.round(map.width*ratio);canvas.height=Math.round(map.height*ratio);

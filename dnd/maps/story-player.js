@@ -1,6 +1,6 @@
-import {createStoryAnimation} from './story-scenes.js?v=57';
-import {assetURL,assetRecord} from './local-assets.js?v=57';
-import {loadRaster} from './resource-loading.js?v=57';
+import {createStoryAnimation} from './story-scenes.js?v=58';
+import {assetURL,assetRecord} from './local-assets.js?v=58';
+import {loadRaster} from './resource-loading.js?v=58';
 
 export const STORY_FADE_MS=3000;
 export const MODE_FADE_MS=3000;

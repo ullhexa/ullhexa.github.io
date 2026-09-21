@@ -1,7 +1,7 @@
-import {showDialog} from './dialogs.js?v=57';
-import {readRaster,rasterRecord,imageTypeNote,TOKEN_SIZE,TOKEN_SOURCE_SIZE} from './image-import.js?v=57';
-import {el,button,label} from './editor-dom.js?v=57';
-import {putAssets,assetRecord} from './local-assets.js?v=57';
+import {showDialog} from './dialogs.js?v=58';
+import {readRaster,rasterRecord,imageTypeNote,TOKEN_SIZE,TOKEN_SOURCE_SIZE} from './image-import.js?v=58';
+import {el,button,label} from './editor-dom.js?v=58';
+import {putAssets,assetRecord} from './local-assets.js?v=58';
 export function cropTransform(width,height,zoom=1,x=0,y=0,size=512){const scale=Math.max(size/width,size/height)*Math.max(1,zoom);return {scale,x:Math.max(-(width*scale-size)/2,Math.min((width*scale-size)/2,x)),y:Math.max(-(height*scale-size)/2,Math.min((height*scale-size)/2,y))};}
 export async function editTokenImage(input,{square=false,story=false,editing=false,title=''}={}){
   const stored=input?.data?input:null,settings=stored?.imageEdit,source=settings?await assetRecord(settings.source):stored;

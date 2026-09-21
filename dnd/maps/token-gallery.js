@@ -1,7 +1,7 @@
-import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=57';
-import {el,button} from './editor-dom.js?v=57';
-import {assetURL,assetRecord} from './local-assets.js?v=57';
-import {editTokenImage} from './token-image-editor.js?v=57';
+import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=58';
+import {el,button} from './editor-dom.js?v=58';
+import {assetURL,assetRecord} from './local-assets.js?v=58';
+import {editTokenImage} from './token-image-editor.js?v=58';
 export function tokenGallery({kind,mode,setMode,selected,setSelected,getState,commit,onApply,onRefresh,factory,error,isIncluded}){
   const root=el('section',undefined,'token-gallery'),bar=el('div',undefined,'avatar-options source-tabs');
   for(const source of ['Factory','User']){const b=button(source,()=>{setMode(source.toLowerCase());onRefresh();});b.setAttribute('aria-pressed',mode===source.toLowerCase());bar.append(b);}
