@@ -1,14 +1,14 @@
-import {statIcon} from './control-icons.js?v=39';
-import {tokenGallery} from './token-gallery.js?v=39';
-import {createMemberStrip} from './member-strip.js?v=39';
-import {editStatCard} from './stat-card-editor.js?v=39';
-import {groupSelection} from './group-selection.js?v=39';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=39';
-import {conditionIcon} from './condition-icons.js?v=39';
-import {shortcutAction,isTextEntry} from './keyboard.js?v=39';
-import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=39';
-import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=39';
-import {setFace,portraitStyle} from './token-portraits.js?v=39';
+import {statIcon} from './control-icons.js?v=40';
+import {tokenGallery} from './token-gallery.js?v=40';
+import {createMemberStrip} from './member-strip.js?v=40';
+import {editStatCard} from './stat-card-editor.js?v=40';
+import {groupSelection} from './group-selection.js?v=40';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=40';
+import {conditionIcon} from './condition-icons.js?v=40';
+import {shortcutAction,isTextEntry} from './keyboard.js?v=40';
+import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,fiveFeet,resetInitiative} from './combat-state.js?v=40';
+import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=40';
+import {setFace,portraitStyle} from './token-portraits.js?v=40';
 const $=id=>document.getElementById(id);
 export function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 export function button(text,fn,cls){const b=el('button',text,cls);b.type='button';if(fn)b.addEventListener('click',fn);return b;}
@@ -85,7 +85,8 @@ export function createLibraries({map,getState,commit,announce}){
         maximum.min=current.min=0;maximum.step=current.step=1;fields.append(labeled('Size · ft',size),labeled('Max HP',maximum),link,labeled('Current HP',current));
       }
       members.append(fields);
-      members.append(tokenGallery({kind:monster?'encounter':'party',mode:librarySource,setMode:value=>librarySource=value,selected:selectedUser||s.campaign.userTokens[monster?'encounter':'party'].find(t=>t.asset===m.avatar)?.id,setSelected:id=>selectedUser=id,getState,commit,onApply:token=>patch({avatar:token.asset}),onRefresh:render,error,factory:()=>{const grid=el('div',undefined,`portrait-options library-portraits${monster?'':' paired-portraits'}`);(monster?MONSTERS.map((name,id)=>({name,id})):PARTY_CHOICES).forEach(({name,id:index})=>{const b=button('',()=>patch({portrait:index,avatar:null,...(monster&&MONSTERS.includes(syncCampaign(getState()).campaign[key].find(g=>g.id===selected).members.find(v=>v.id===memberId).name)?{name}: {})}),'portrait-option');b.setAttribute('aria-label',name);b.title=name;b.setAttribute('aria-pressed',m.portrait===index&&!m.avatar);const face=el('span',undefined,'portrait-thumb');portraitStyle(face,index,monster);b.append(face);grid.append(b);});return grid;}}));
+      const applyAvatar=changes=>{memberStrip.highlight(memberId);patch(changes);};
+      members.append(tokenGallery({kind:monster?'encounter':'party',mode:librarySource,setMode:value=>librarySource=value,selected:selectedUser||s.campaign.userTokens[monster?'encounter':'party'].find(t=>t.asset===m.avatar)?.id,setSelected:id=>selectedUser=id,getState,commit,onApply:token=>applyAvatar({avatar:token.asset}),onRefresh:render,error,factory:()=>{const grid=el('div',undefined,`portrait-options library-portraits${monster?'':' paired-portraits'}`);(monster?MONSTERS.map((name,id)=>({name,id})):PARTY_CHOICES).forEach(({name,id:index})=>{const b=button('',()=>applyAvatar({portrait:index,avatar:null,...(monster&&MONSTERS.includes(syncCampaign(getState()).campaign[key].find(g=>g.id===selected).members.find(v=>v.id===memberId).name)?{name}: {})}),'portrait-option');b.setAttribute('aria-label',name);b.title=name;b.setAttribute('aria-pressed',m.portrait===index&&!m.avatar);const face=el('span',undefined,'portrait-thumb');portraitStyle(face,index,monster);b.append(face);grid.append(b);});return grid;}}));
     }
     registerMenu(kind,dialog,{onShow:fresh=>{error.textContent='';if(fresh){librarySource='factory';selectedUser=null;selected=getState().campaign?.[active];selection.reset(selected);}render();}});
     function show(){openMenu(kind);}
