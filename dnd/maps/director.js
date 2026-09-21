@@ -1,16 +1,17 @@
-import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=41';
-import {editTokenImage} from './token-image-editor.js?v=41';
-import {createSceneGroups} from './scene-groups-ui.js?v=41';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=41';
-import {storyCatalog} from './story-assets.js?v=41';
-import {createStoryPlayer} from './story-player.js?v=41';
-import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=41';
+import {chevronIcon} from './control-icons.js?v=43';
+import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=43';
+import {editTokenImage} from './token-image-editor.js?v=43';
+import {createSceneGroups} from './scene-groups-ui.js?v=43';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=43';
+import {storyCatalog} from './story-assets.js?v=43';
+import {createStoryPlayer} from './story-player.js?v=43';
+import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=43';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 
 export function createDirector({catalog,mapId,getProject,setProject,prepareMap,announce}){
   const menuButton=el('button','Story','map-picker');menuButton.id='open-stories';menuButton.setAttribute('aria-haspopup','dialog');menuButton.setAttribute('aria-controls','story-dialog');
-  menuButton.append(el('span','⌄'));$('open-maps').after(menuButton);
+  menuButton.append(chevronIcon());$('open-maps').after(menuButton);
   const modes=el('div',null,'presentation-modes');modes.id='presentation-modes';modes.setAttribute('role','group');modes.setAttribute('aria-label','Player display mode');
   for(const [id,label] of [['battle','Battle map'],['story','Story']]){
     const button=el('button',label);button.id=`show-${id}`;button.type='button';button.addEventListener('click',()=>{setProject({...getProject(),mode:id});announce(id==='story'?'Story is on the player display. Prepare the next map below.':'Your prepared battle map is on the player display.');});modes.append(button);

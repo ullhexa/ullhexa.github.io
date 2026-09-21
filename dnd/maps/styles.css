@@ -266,7 +266,7 @@ body:not(.player-mode) .workspace{grid-template-columns:var(--sidebar-width,300p
 .item-comment button{min-height:26px;padding:0;font-size:1.1rem}.item-comment textarea{grid-column:1/-1;width:100%;resize:vertical;max-height:180px}
 textarea{font:inherit;color:var(--text);background:#0b130e;border:1px solid var(--line);border-radius:5px;padding:8px;max-width:100%}.field-label textarea{width:100%;margin-top:5px}
 .item-search{display:block;width:100%;margin:10px 0}.item-catalog{grid-template-columns:repeat(10,minmax(0,1fr))}.item-catalog-choice img{object-fit:contain}.catalog-empty{grid-column:1/-1;color:var(--muted);padding:20px;font-size:.8rem}
-.paired-portraits{grid-template-columns:repeat(6,minmax(0,100px))!important;gap:8px!important}.library-group.editing-group{box-shadow:inset 3px 0 var(--gold)}
+.paired-portraits{grid-template-columns:repeat(6,minmax(0,100px))!important;gap:8px!important}.library-group[aria-current=true]{box-shadow:inset 4px 0 var(--gold)}
 .item-token.token-selected .token-ring{filter:drop-shadow(0 0 3px #ffe7aa)}.player-mode .item-tray{display:none}
 @media(max-width:800px){.paired-portraits{grid-template-columns:repeat(4,minmax(0,100px))!important}}
 
@@ -422,10 +422,14 @@ body:not(.player-mode) .is-measuring #map{cursor:crosshair}
 .item-edit-layout .item-catalog-toolbar{grid-column:1 / 3;grid-row:2;align-self:end;display:flex;flex-wrap:nowrap;gap:7px;margin:0;min-width:0}
 .item-edit-layout .item-catalog-toolbar>button{flex:none;white-space:nowrap}
 .item-edit-layout .source-tabs .item-search{flex:1 1 160px;width:160px;min-width:90px;margin:0 0 0 auto}
-.item-size-control{display:grid;grid-template-columns:minmax(0,1fr) 28px 28px;height:38px;min-width:0;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#101a15}
-.item-size-control input{appearance:textfield;-moz-appearance:textfield;border:0;border-radius:0;padding:5px;min-width:0;height:36px;text-align:center;outline:none}
-.item-size-control input::-webkit-inner-spin-button,.item-size-control input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.item-size-control button{display:grid;place-items:center;min-height:0;height:36px;padding:0;border:0;border-left:1px solid var(--line);border-radius:0;font-size:20px;line-height:1}
+.number-stepper{display:grid;grid-template-columns:minmax(0,1fr) 28px 28px;height:38px;min-width:0;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#111c17}
+#main-menu .number-stepper input{appearance:textfield;-moz-appearance:textfield;border:0;border-radius:0;padding:5px;min-width:0;height:36px;text-align:center;outline:none}
+.number-stepper input::-webkit-inner-spin-button,.number-stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.number-stepper button{display:grid;place-items:center;min-height:0;height:36px;padding:0;border:0;border-radius:0;font-size:20px;line-height:1;background:transparent}
+.number-stepper button:is(:hover,:focus-visible):not(:disabled){background:#344338;outline:none;box-shadow:none}
+#encounter-dialog .member-fields{flex-wrap:wrap;align-items:end}
+#encounter-dialog .field-label:has(>.number-stepper){min-width:118px}
+#encounter-dialog .member-fields>.field-label>input{height:38px}
 @media(max-width:850px){.member-fields.item-edit-layout{grid-template-columns:minmax(0,1fr) 118px}.item-edit-layout .item-comment-field{grid-column:1 / 3;grid-row:2}.item-edit-layout .item-catalog-toolbar{grid-row:3;flex-wrap:wrap}.item-edit-layout .item-comment-field textarea{height:82px}}
 
 /* Native 32 px fog cursors, with white edging for both dark and light art. */
@@ -437,3 +441,11 @@ body:not(.player-mode) .is-measuring #map{cursor:crosshair}
 #main-menu :is(input:not([type]),input[type=text],input[type=search],input[type=number],textarea):focus{outline:none;box-shadow:none}
 
 .initiative-panel .turn-conditions:has(.condition-badge){margin-top:9px}
+
+/* Equal library shortcuts and one selection frame for the active menu tab. */
+.site-identity{column-gap:8px}
+.site-identity .map-picker{flex:0 0 94px;width:94px;height:38px;min-height:38px;justify-content:space-between;gap:6px;padding:7px 8px;line-height:1}
+.site-identity .map-picker svg{display:block;flex:none;width:14px;height:14px;color:var(--gold)}
+#main-menu .main-menu-tabs button[aria-selected=true]:focus{outline:none;box-shadow:none}
+
+.initialize-dialog .dialog-actions{justify-content:space-between}
