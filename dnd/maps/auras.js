@@ -1,5 +1,5 @@
-import {mapTokens,patchToken,fiveFeet} from './combat-state.js?v=60';
-import {auraRadius} from './board-state.js?v=60';
+import {mapTokens,patchToken,fiveFeet} from './combat-state.js?v=61';
+import {auraRadius} from './board-state.js?v=61';
 const NS='http://www.w3.org/2000/svg';
 function node(tag,attrs={}){const n=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,v);return n;}
 export function createAuras({map,player,getState,getDraft,getTool,preview,finishDrag,prepare}){

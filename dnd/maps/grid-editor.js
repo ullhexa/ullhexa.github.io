@@ -1,8 +1,8 @@
-import {orientationIcon} from './control-icons.js?v=60';
-import {showDialog} from './dialogs.js?v=60';
-import {imageTypeNote} from './image-import.js?v=60';
-import {identityTransform,transformPoint,composeTransform,imageOperation} from './map-orientation.js?v=60';
-import {el,button,label} from './editor-dom.js?v=60';
+import {orientationIcon} from './control-icons.js?v=61';
+import {showDialog} from './dialogs.js?v=61';
+import {imageTypeNote} from './image-import.js?v=61';
+import {identityTransform,transformPoint,composeTransform,imageOperation} from './map-orientation.js?v=61';
+import {el,button,label} from './editor-dom.js?v=61';
 export const gridOrigin=(value,size)=>((value%size)+size)%size;
 export function zoomAt(view,point,next,frame=[960,540]){
   const zoom=Math.max(1,Math.min(20,next)),factor=view.fit*view.zoom,scale=view.fit*zoom;

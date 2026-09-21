@@ -1,13 +1,13 @@
-import {featureHeading} from './feature-controls.js?v=60';
-import {chevronIcon} from './control-icons.js?v=60';
-import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=60';
-import {openDeckPrint} from './spell-print.js?v=60';
-import {el,button,label} from './editor-dom.js?v=60';
-import {showDialog} from './dialogs.js?v=60';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=60';
-import {groupSelection} from './group-selection.js?v=60';
-import {loadSpells} from './spell-catalog.js?v=60';
-import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=60';
+import {featureHeading} from './feature-controls.js?v=61';
+import {chevronIcon} from './control-icons.js?v=61';
+import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=61';
+import {openDeckPrint} from './spell-print.js?v=61';
+import {el,button,label} from './editor-dom.js?v=61';
+import {showDialog} from './dialogs.js?v=61';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=61';
+import {groupSelection} from './group-selection.js?v=61';
+import {loadSpells} from './spell-catalog.js?v=61';
+import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=61';
 export function showSpellPages(spell){
  const dialog=el('dialog',undefined,'spell-page-dialog'),header=el('div',undefined,'reference-heading'),title=el('h2',spell.title),controls=el('div',undefined,'spell-page-controls'),count=el('span'),image=el('img'),body=el('div',undefined,'spell-page-body');let page=0,expanded=false;
  const render=()=>{image.src=spell.cards[page].src;image.alt=`${spell.title}, card ${page+1} of ${spell.cards.length}`;count.textContent=`${page+1} / ${spell.cards.length}`;prev.disabled=next.disabled=spell.cards.length===1;};

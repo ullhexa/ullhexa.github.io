@@ -1,6 +1,6 @@
-import {el,button} from './editor-dom.js?v=60';
-import {icon} from './control-icons.js?v=60';
-import {showDialog} from './dialogs.js?v=60';
+import {el,button} from './editor-dom.js?v=61';
+import {icon} from './control-icons.js?v=61';
+import {showDialog} from './dialogs.js?v=61';
 export function setExpandButton(control,expanded){control.replaceChildren(icon([{d:expanded?'M3 3l6 6M3 9h6V3M21 21l-6-6m0 6v-6h6M21 3l-6 6m6 0h-6V3M3 21l6-6m-6 0h6v6':'M9 9 3 3m0 6V3h6M15 15l6 6m0-6v6h-6M15 9l6-6m-6 0h6v6M9 15l-6 6m6 0H3v-6',fill:'none',stroke:'currentColor','stroke-width':1.5,'stroke-linecap':'round','stroke-linejoin':'round'}]));control.setAttribute('aria-label',expanded?'Restore card view size':'Double card view size');control.setAttribute('aria-pressed',String(expanded));control.title=expanded?'Restore size':'Double size';}
 export function fullscreenButton(action){const b=button('',action,'card-fullscreen-button');b.setAttribute('aria-label','Full screen card');b.title='Full screen card';b.append(icon([{d:'M9 3H3v6M15 3h6v6M21 15v6h-6M3 15v6h6',fill:'none',stroke:'currentColor','stroke-width':1.7,'stroke-linecap':'round','stroke-linejoin':'round'}]));return b;}
 // Fill the existing DM document; never replace its browser fullscreen element.

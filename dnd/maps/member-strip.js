@@ -1,7 +1,7 @@
-import {el,button} from './editor-dom.js?v=60';
-import {setFace} from './token-portraits.js?v=60';
-import {groupSelection} from './group-selection.js?v=60';
-import {statIcon} from './control-icons.js?v=60';
+import {el,button} from './editor-dom.js?v=61';
+import {setFace} from './token-portraits.js?v=61';
+import {groupSelection} from './group-selection.js?v=61';
+import {statIcon} from './control-icons.js?v=61';
 // Selection is independent of the member whose fields are being edited.
 export function createMemberStrip({items=false,monster=false,onSelect,onRemove,onRemoveMany,onStat}){
  const root=el('div',undefined,`library-member-strip${items?' item-member-strip':''}`),nodes=new Map(),selection=groupSelection();let selected=null,group=null,order=[];

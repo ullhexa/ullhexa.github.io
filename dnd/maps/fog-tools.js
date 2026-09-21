@@ -1,8 +1,8 @@
-import {FOG_FEATHER,FOG_TEXTURES,fogAssetId,paintFogTexture} from './fog-state.js?v=60';
-import {fogIcon} from './control-icons.js?v=60';
-import {createFogOptions} from './fog-options.js?v=60';
-import {assetURL} from './local-assets.js?v=60';
-import {loadRaster} from './resource-loading.js?v=60';
+import {FOG_FEATHER,FOG_TEXTURES,fogAssetId,paintFogTexture} from './fog-state.js?v=61';
+import {fogIcon} from './control-icons.js?v=61';
+import {createFogOptions} from './fog-options.js?v=61';
+import {assetURL} from './local-assets.js?v=61';
+import {loadRaster} from './resource-loading.js?v=61';
 export function createFogTools({map,player,getState,commit,preview,finishDrag,pointAt,setTool,sendPreview,announce}){
   const stage=document.getElementById('map-stage'),svg=document.getElementById('map'),canvas=document.createElement('canvas');canvas.id='painted-fog';stage.append(canvas);
   const ratio=Math.min(1,2048/map.width,2048/map.height);canvas.width=Math.round(map.width*ratio);canvas.height=Math.round(map.height*ratio);
