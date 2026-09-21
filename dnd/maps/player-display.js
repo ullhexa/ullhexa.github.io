@@ -1,10 +1,10 @@
-import {configureSession,readSessionValue} from './session-storage.js?v=54';
-import {customCatalog} from './custom-maps.js?v=54';
-import { setupFullscreen } from './fullscreen.js?v=54';
-import {storyCatalog} from './story-assets.js?v=54';
-import {createStoryPlayer,MODE_FADE_MS} from './story-player.js?v=54';
-import {fetchJSON} from './resource-loading.js?v=54';
-import { validPresentation, sceneCanShow } from './presentation-state.js?v=54';
+import {configureSession,readSessionValue} from './session-storage.js?v=55';
+import {customCatalog} from './custom-maps.js?v=55';
+import { setupFullscreen } from './fullscreen.js?v=55';
+import {storyCatalog} from './story-assets.js?v=55';
+import {createStoryPlayer,MODE_FADE_MS} from './story-player.js?v=55';
+import {fetchJSON} from './resource-loading.js?v=55';
+import { validPresentation, sceneCanShow } from './presentation-state.js?v=55';
 const $=id=>document.getElementById(id);
 const read=readSessionValue;
 
@@ -69,6 +69,7 @@ export async function startPlayerDisplay(){
   }
   function receive(message){
     if(!message||typeof message!=='object')return;
+    if(message.type==='display-probe'&&message.playerId===playerId&&!closing&&typeof message.challenge==='string'){send({type:'display-alive',playerId,challenge:message.challenge});return;}
     if(message.type==='close-player'){void closeDisplay();return;}
     if(message.type==='presentation'){for(const entry of customCatalog(sessionKey)){const i=catalog.findIndex(m=>m.id===entry.id);if(i<0)catalog.push(entry);else catalog[i]=entry;}}
     if(message.type==='presentation'&&validPresentation(message.presentation,catalog)){

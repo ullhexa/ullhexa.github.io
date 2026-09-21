@@ -1,8 +1,8 @@
-import {buildingParts,effectLevels} from './building-state.js?v=54';
-import {createFloorControl} from './floor-controls.js?v=54';
-import {selectedFloor} from './floors.js?v=54';
-import {icon} from './control-icons.js?v=54';
-import {consumeMapDismissal} from './map-dismissal.js?v=54';
+import {buildingParts,effectLevels} from './building-state.js?v=55';
+import {createFloorControl} from './floor-controls.js?v=55';
+import {selectedFloor} from './floors.js?v=55';
+import {icon} from './control-icons.js?v=55';
+import {consumeMapDismissal} from './map-dismissal.js?v=55';
 
 function symbol(kind,on){
  const paths=kind==='focus'?(on?'M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6':'M3 9h6V3m6 0v6h6M9 21v-6H3m12 6v-6h6'):
@@ -43,9 +43,9 @@ export function createBuildingControls({map,getState,getSelected,getFocused,sele
   position();
  }
  function position(){if(!mode||popup.hidden)return;const place=map.places.find(p=>p.id===getSelected()),g=getGeometry();if(!place||!g)return;const width=stage.clientWidth,height=stage.clientHeight;popup.style.maxHeight=`${Math.max(80,height-16)}px`;const x=g.x+place.point[0]*map.width*g.scale,y=g.y+place.point[1]*map.height*g.scale,w=popup.offsetWidth,h=popup.offsetHeight;const left=Math.max(8,Math.min(width-w-8,x-w/2));let top=y-h-27;if(top<8)top=y+49;top=Math.max(8,Math.min(height-h-8,top));popup.style.transform=`translate3d(${left}px,${top}px,0)`;}
- function show(place,editor=false){editor=editor||mode==='editor';prepare();select(place.id);if(editor&&mode!=='editor')beginPreview();mode=editor?'editor':'quick';popup.hidden=false;buildPopup(place);signature='';render();}
+ function show(place,editor=false){if(!editor&&mode==='quick'&&getSelected()===place.id){hide();return;}editor=editor||mode==='editor';prepare();select(place.id);if(editor&&mode!=='editor')beginPreview();mode=editor?'editor':'quick';popup.hidden=false;buildPopup(place);signature='';render();}
  function hide(){if(!mode)return;const preview=mode==='editor';mode=null;popup.hidden=true;popup.replaceChildren();floorControl=null;signature='';if(preview)endPreview();render();}
- document.addEventListener('pointerdown',e=>{if(!mode||popup.contains(e.target)||!stage.contains(e.target))return;if(mode==='quick'&&e.target.closest('.hotspot'))return;hide();consumeMapDismissal(e,stage);},true);
+ document.addEventListener('pointerdown',e=>{if(!mode||popup.contains(e.target))return;if(mode==='quick'){if(e.target.closest('.hotspot'))return;hide();if(stage.contains(e.target))consumeMapDismissal(e,stage);return;}if(stage.contains(e.target)){hide();consumeMapDismissal(e,stage);}},true);
  document.addEventListener('keydown',e=>{if(!mode||e.key!=='Escape'||e.defaultPrevented)return;e.preventDefault();e.stopImmediatePropagation();hide();},true);
  document.addEventListener('library-opening',hide);
  return {render,position,show,hide,get preparing(){return mode==='editor';}};
