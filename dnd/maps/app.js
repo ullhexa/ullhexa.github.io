@@ -480,29 +480,32 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'45',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'48',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
     });
     $('map-stage').addEventListener('wheel', event => {if(event.target.closest('.token-status-editor,.shape-palette,.item-comment,.dice-panel,.reference-suite')||encounter.isDragging()||fog.isDrawing())return;event.preventDefault();wheelDelta+=event.deltaY;wheelPoint={clientX:event.clientX,clientY:event.clientY};if(!wheelFrame)wheelFrame=requestAnimationFrame(()=>{wheelFrame=0;const delta=wheelDelta;wheelDelta=0;zoomBy(Math.exp(-delta*.0015),pointAt(wheelPoint),true);});}, { passive: false });
     $('map-stage').addEventListener('pointerdown', event => {
-      if(!$('map').contains(event.target)&&!party.contains(event.target))return;
-      if(event.button!==0||drag||['paint','erase'].includes(tool))return;
+      const right=event.button===2;
+      if(!$('map').contains(event.target)&&!party.contains(event.target)&&!(right&&event.target.closest('#character-tokens [data-character],#shape-handle-overlay')))return;
+      if((event.button!==0&&!right)||drag||encounter.isDragging()||fog.isDrawing()||(!right&&['paint','erase'].includes(tool)))return;
       const p = pointAt(event);
-      if(measuring){if(inBounds(p)){ruler=[p,p];drag={id:event.pointerId,measure:true,start:structuredClone(state),moved:false};$('map').setPointerCapture(event.pointerId);renderRuler(true);}return;}
-      const token = party.contains(event.target);
-      if(!token&&!event.ctrlKey&&!event.metaKey)return;
+      if(measuring&&!right){if(inBounds(p)){ruler=[p,p];drag={id:event.pointerId,measure:true,start:structuredClone(state),moved:false};$('map').setPointerCapture(event.pointerId);renderRuler(true);}return;}
+      const token = !right&&party.contains(event.target);
+      if(!token&&!right&&!event.ctrlKey&&!event.metaKey)return;
       const ctm = $('map').getScreenCTM();
-      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, camera: { ...state.camera }, scale: ctm.a, point: p, start: structuredClone(state), token, moved: false, hotspot: !!event.target.closest('.hotspot,.map-door') };
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, camera: { ...state.camera }, scale: ctm.a, point: p, start: structuredClone(state), token, moved: false, hotspot: !right&&!!event.target.closest('.hotspot,.map-door') };
+      $('map-stage').classList.toggle('is-panning',!token);
       event.preventDefault();
       $('map').setPointerCapture(event.pointerId);
     });
-    $('map').addEventListener('contextmenu',event=>{if(event.ctrlKey)event.preventDefault();});
+    $('map-stage').addEventListener('contextmenu',event=>{if($('map').contains(event.target)||party.contains(event.target)||event.target.closest('#character-tokens [data-character],#shape-handle-overlay'))event.preventDefault();});
     const panCursor=event=>$('map-stage').classList.toggle('can-pan',event.ctrlKey||event.metaKey);
     document.addEventListener('keydown',panCursor);document.addEventListener('keyup',panCursor);window.addEventListener('blur',()=>$('map-stage').classList.remove('can-pan'));
     $('map').addEventListener('pointermove', event => {
       if (!drag || drag.id !== event.pointerId) return;
+      if(!event.buttons){endDrag(event);return;}
       if(drag.measure){const p=pointAt(event);if(p){ruler=[ruler[0],p.map(n=>clamp(n,0,1))];drag.moved=true;renderRuler(true);}return;}
       const dx = event.clientX-drag.x, dy = event.clientY-drag.y;
       if (Math.hypot(dx, dy) < (drag.token ? 3 : 4) && !drag.moved) return;
@@ -519,6 +522,7 @@ async function start() {
     const endDrag = event => {
       if (!drag || drag.id !== event.pointerId) return;
       cancelAnimationFrame(partyFrame);partyFrame=0;cancelAnimationFrame(cameraFrame);cameraFrame=0;const finished = drag;
+      finished.ending=true;$('map-stage').classList.remove('is-panning');if($('map').hasPointerCapture(event.pointerId))$('map').releasePointerCapture(event.pointerId);
       if(finished.measure){if(!finished.moved)ruler=[];drag=null;renderRuler(true);return;}
       if (finished.moved) {
         if (finished.token) history.record(finished.start);
@@ -533,7 +537,8 @@ async function start() {
       setTimeout(() => { if (drag === finished) drag = null; }, 0);
     };
     $('map').addEventListener('pointerup', endDrag);
-    $('map').addEventListener('pointercancel', event => { if (drag?.id === event.pointerId) { cancelAnimationFrame(partyFrame);partyFrame=0;state=drag.start;drag=null;render();livePositions(); } });
+    const cancelDrag=event=>{if(!drag||drag.ending||(event.pointerId!==undefined&&drag.id!==event.pointerId))return;const id=drag.id;cancelAnimationFrame(partyFrame);partyFrame=0;cancelAnimationFrame(cameraFrame);cameraFrame=0;state=drag.start;drag=null;$('map-stage').classList.remove('is-panning');if($('map').hasPointerCapture(id))$('map').releasePointerCapture(id);render();livePositions();send({type:'camera',mapId:map.id,camera:state.camera,revision:state.revision});};
+    $('map').addEventListener('pointercancel',cancelDrag);$('map').addEventListener('lostpointercapture',cancelDrag);window.addEventListener('blur',cancelDrag);document.addEventListener('visibilitychange',event=>{if(document.hidden)cancelDrag(event);});
 
   }
 
