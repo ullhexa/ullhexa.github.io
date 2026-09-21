@@ -552,7 +552,8 @@ body:not(.player-mode) .map-topline{display:grid;grid-template-columns:minmax(0,
 
 /* Map objects use one click for quick actions and two for their full controls. */
 .hotspot,.hotspot *{-webkit-user-select:none;user-select:none}
-.hotspot .place-name-tag text{fill:var(--gold);stroke:#080b09;stroke-width:1.75;paint-order:stroke;stroke-linejoin:round}
+.hotspot .place-name-tag text{fill:#101710;stroke:none}
+.hotspot .place-name-tag rect{fill:#fff;stroke:none}
 .token-visibility{display:flex;align-items:center;justify-content:center;gap:6px;min-height:30px;padding:5px 6px;font-size:11px;line-height:1.2}
 .token-visibility svg{width:18px;height:18px;flex:none}
 .token-visibility[aria-pressed=true]{color:var(--gold);border-color:#8c7957;background:#343729}
@@ -577,3 +578,31 @@ body:not(.player-mode) .map-topline{padding-block:0;min-height:0;margin-bottom:8
 
 #party-dialog .library-portraits .portrait-thumb,#encounter-dialog .library-portraits .portrait-thumb{border:0;box-shadow:none}
 .status-left>.token-visibility{white-space:nowrap}
+
+/* Compact grid options and spell-area controls. */
+.map-controls .grid-control{gap:7px;padding:3px}
+.map-controls .grid-control>button:not(.grid-color){height:32px;min-height:32px;padding:0 8px;border:1px solid transparent;border-radius:4px;background:transparent;line-height:1}
+.map-controls .grid-control>button[aria-pressed=true]{background:#ddc28c;color:#1b281f;border-color:#e8ce98}
+.map-controls .grid-control>button:not(.grid-color):hover:not([aria-pressed=true]){background:#3b4b3a}
+.map-controls #grid-options-toggle{width:22px;height:22px;min-height:22px;border:1px solid #89937d;background:var(--grid-color);outline:none}
+.map-controls #grid-options-toggle[aria-expanded=true]{border-color:var(--gold);outline:1px solid var(--gold);outline-offset:2px}
+.grid-options{position:fixed;z-index:100;padding:12px;border:1px solid #9b9271;border-radius:8px;background:#14221a;box-shadow:0 4px 14px #0006}
+.grid-options-colors{display:grid;grid-template-columns:repeat(3,28px);gap:9px}
+.grid-options .color-swatch{width:28px;height:28px;border:1px solid #ffffff55;border-radius:3px}
+.grid-thickness{display:flex;align-items:center;justify-content:space-between;margin-top:12px;border-top:1px solid #465a49;padding-top:7px}
+.grid-thickness button{display:grid;place-items:center;width:30px;height:30px;min-height:30px;padding:0;border:0;background:transparent;font-size:19px}
+.grid-thickness output{min-width:28px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}
+.shape-choice[aria-pressed=true]{background:transparent}
+.shape-choice.shape-selected,.shape-choice.shape-selected:hover:not(:disabled){background:#ffffff12}
+.shape-hidden-overlay{display:none;position:absolute;inset:2px;border-radius:5px;place-items:center;background:#0009;color:#f0f3ed;pointer-events:none}
+.shape-choice.is-hidden .shape-hidden-overlay{display:grid}
+.shape-choice .shape-hidden-overlay svg{display:block;width:22px;height:22px}
+.shape-palette{display:flex;align-items:center;gap:0;padding:5px 6px;border:0;background:transparent;box-shadow:none}
+.shape-palette-colors{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,28px);gap:9px;padding:12px;border:1px solid #9b9271;border-radius:8px;background:#14221af5}
+.shape-palette-action{display:grid;place-items:center;flex:none;width:30px;height:30px;min-height:30px;padding:0;border:1px solid #9b9271;border-radius:4px;background:#14221a;color:#e8e8d9;transform:rotate(45deg)}
+.shape-palette-action>*{transform:rotate(-45deg)}
+.shape-palette-action svg{width:19px;height:19px}
+.shape-palette-action span{font-size:24px;line-height:1}
+.shape-palette-action.shape-visibility{margin-right:-4px}
+.shape-palette-action.shape-remove{margin-left:-4px}
+.shape-palette-action[aria-pressed=true]{background:#ddc28c;color:#1b281f}

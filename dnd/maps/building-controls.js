@@ -1,8 +1,8 @@
-import {buildingParts,effectLevels} from './building-state.js?v=57';
-import {createFloorControl} from './floor-controls.js?v=57';
-import {selectedFloor} from './floors.js?v=57';
-import {icon} from './control-icons.js?v=57';
-import {consumeMapDismissal} from './map-dismissal.js?v=57';
+import {buildingParts,effectLevels} from './building-state.js?v=58';
+import {createFloorControl} from './floor-controls.js?v=58';
+import {selectedFloor} from './floors.js?v=58';
+import {icon} from './control-icons.js?v=58';
+import {consumeMapDismissal} from './map-dismissal.js?v=58';
 
 function symbol(kind,on){
  const paths=kind==='focus'?(on?'M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6':'M3 9h6V3m6 0v6h6M9 21v-6H3m12 6v-6h6'):

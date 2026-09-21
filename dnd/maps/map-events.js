@@ -1,4 +1,4 @@
-import {placeView} from './floors.js?v=57';
+import {placeView} from './floors.js?v=58';
 // A place's prepared visual states form an explicit, repeatable loop.
 export function placeStep(place,state){
   const sequence=placeView(place,state).sequence||[];

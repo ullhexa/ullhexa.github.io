@@ -1,4 +1,4 @@
-import {showDialog} from './dialogs.js?v=57';
+import {showDialog} from './dialogs.js?v=58';
 
 // Keep this guide aligned with the shipped controls, not tabletop rules.
 export const MANUAL_SECTIONS=[
@@ -36,7 +36,7 @@ export const MANUAL_SECTIONS=[
     'Right-click and drag to pan the DM map. Ctrl/Cmd plus left-drag works too. Ordinary left-drag moves tokens or selected tools instead of panning. The browser’s right-click menu is suppressed only on the playable map. Camera movement stops at the map edges.',
     'Scroll over the map or use − and + to zoom, up to 300%. Overview fits the complete map. Hold and tilt the joystick beside Dice to pan continuously; farther from its center moves faster. Release to stop.',
     'Ctrl/Cmd plus an arrow key moves the camera by one grid cell. The first press aligns an off-grid camera to the nearest grid position; subsequent presses step through cells, with a final partial step allowed to reach the map edge.',
-    'Grid toggles the overlay. The three squares select the map’s grid color, black or white. Snap locks dragged tokens to the grid; without it they move freely. Light–Dark changes the scene lighting; prepared light sources reveal more nearby without calculating character vision.',
+    'Grid toggles the overlay. The color square opens grid colors and line thickness; use − and + for 1–8 pixels. Grid and Lock highlight yellow when enabled. Lock snaps dragged tokens to the grid; without it they move freely. Light–Dark changes the scene lighting; prepared light sources reveal more nearby without calculating character vision.',
     'Measure is the crosshair button. Select it, then drag between two map points to see distance in feet. Use its small × to clear the ruler; Escape while Measure is active clears it and leaves the tool. Measurement is straight-line geometry, not terrain-aware pathfinding or an automatic D&D diagonal rule. Focus under a selected Place eases to that place over two seconds, starting and ending slowly, with the building occupying about 60% of the frame where zoom limits permit; the same button then reads Overview. Manual camera movement returns it to Focus.'
   ]},
   {id:'places',title:'Buildings, floors & map events',text:[
@@ -82,10 +82,10 @@ export const MANUAL_SECTIONS=[
     'Delete or Backspace removes a selected map item; Escape also removes it when its comment editor is closed. While the comment editor is open, Escape returns to its quick actions instead. Use Undo if you remove a copy accidentally. Items placed inside multi-floor buildings are shown to players only on the floor they belong to.'
   ]},
   {id:'areas',title:'Spell areas',text:[
-    'Spell areas at the bottom of the left panel adds a circle, square or cone. Adding an area exits Measure and fog tools and returns to normal map controls. All areas are immediately visible to players.',
+    'Spell areas at the bottom of the left panel adds a circle, square or cone. Adding an area exits Measure and fog tools and returns to normal map controls. New areas are immediately visible to players; you can hide them independently.',
     'Drag the area to move it and use its handles to resize or rotate it. Circles use a radius, squares an equal side length and cones a tip-to-arc length with a 60-degree spread. Sizes change in five-foot increments; the nearby label shows the measured size. Circles have no rotation handle.',
-    'Small colored previews in the left list represent areas already on the map. Click a preview or the area itself to select it. Delete or Backspace removes the selected area.',
-    'Double-click an area or its preview to open its color palette over the map. Clicking a color applies it and closes the palette. Clicking outside closes it without a color change. Delete, Backspace or Escape while the palette is open closes the palette first, without deleting the area.'
+    'Small colored previews in the left list represent areas already on the map. Click a preview to select it and toggle player visibility. Hidden previews are dimmed with a closed eye; areas remain editable on the DM map. Click an area on the map to select without changing visibility. Delete or Backspace removes the selected area.',
+    'Double-click an area or its preview to open its color palette over the map. The left eye button toggles player visibility; the right × removes the area. Clicking a color applies it and closes the palette. Clicking outside closes it without a color change. Delete, Backspace or Escape while the palette is open closes the palette first, without deleting the area.'
   ]},
   {id:'fog',title:'Fog & lighting',text:[
     'Brush paints fog; Eraser removes it. Choose a 5, 15 or 30 ft brush and drag on the map. Each has a distinct pointer icon. Select the active tool again to return to ordinary controls. Right-drag can still pan while a fog tool is selected without painting.',
