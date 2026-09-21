@@ -545,3 +545,7 @@ body:not(.player-mode) .map-topline{display:grid;grid-template-columns:minmax(0,
 .building-close{width:27px;height:27px;min-height:27px;flex:none;display:grid;place-items:center;padding:0;border:0;background:none;font-size:22px;line-height:1}
 .building-editor section{padding:9px 0 0;margin-top:8px;border-top:1px solid var(--line)}.building-editor h3{font-size:10px;font-weight:600;color:var(--muted);margin:0 0 7px}.building-editor .place-floors{justify-content:space-between}.building-effects{display:flex;flex-direction:column;gap:5px}.building-editor .building-effect{padding:6px 8px}
 .hotspot .place-name-tag text{fill:#fff;stroke:none;font-size:15px;font-weight:600}.hotspot .place-name-tag rect{stroke:none}
+
+/* Compact paired effects share the sidebar and preparation layout. */
+#selected-actions,.building-effects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.building-effect{padding:7px 8px;gap:5px;overflow-wrap:anywhere}.building-effect .effect-levels{flex:none}

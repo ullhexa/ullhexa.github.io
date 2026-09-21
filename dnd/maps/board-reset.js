@@ -1,7 +1,7 @@
-import {clearSessionMemory} from './session-storage.js?v=54';
-import {clearAssets} from './local-assets.js?v=54';
-import {showDialog} from './dialogs.js?v=54';
-import {el,button} from './editor-dom.js?v=54';
+import {clearSessionMemory} from './session-storage.js?v=55';
+import {clearAssets} from './local-assets.js?v=55';
+import {showDialog} from './dialogs.js?v=55';
+import {el,button} from './editor-dom.js?v=55';
 export const isBoardStorageKey=key=>key.startsWith('lanternford:')||['ullhexa:initiative-width','ullhexa:dm-sidebar-width'].includes(key);
 const channelName='ullhexa-control-board-reset',signalKey='lanternford:reset-signal';
 let channel;
