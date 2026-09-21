@@ -1,12 +1,12 @@
-import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=38';
-import {el,button} from './editor-dom.js?v=38';
-import {assetURL,assetRecord} from './local-assets.js?v=38';
-import {editTokenImage} from './token-image-editor.js?v=38';
+import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=39';
+import {el,button} from './editor-dom.js?v=39';
+import {assetURL,assetRecord} from './local-assets.js?v=39';
+import {editTokenImage} from './token-image-editor.js?v=39';
 export function tokenGallery({kind,mode,setMode,selected,setSelected,getState,commit,onApply,onRefresh,factory,error,isIncluded}){
   const root=el('section',undefined,'token-gallery'),bar=el('div',undefined,'avatar-options source-tabs');
   for(const source of ['Factory','User']){const b=button(source,()=>{setMode(source.toLowerCase());onRefresh();});b.setAttribute('aria-pressed',mode===source.toLowerCase());bar.append(b);}
   root.append(bar);const entries=getState().campaign.userTokens[kind];
-  if(mode==='factory'){root.append(factory());return root;}
+  if(mode==='factory'){root.append(factory(bar));return root;}
   const remove=button('Delete token',()=>{const s=getState();commit({...s,campaign:{...s.campaign,userTokens:{...s.campaign.userTokens,[kind]:entries.filter(t=>t.id!==selected)}}},'User token deleted.');setSelected(null);onRefresh();},'delete-token');remove.disabled=!entries.some(t=>t.id===selected);bar.append(remove);
   const edit=button('Edit',async()=>{const token=getState().campaign.userTokens[kind].find(t=>t.id===selected);if(!token)return;edit.disabled=true;error.textContent='';try{const original=await assetRecord(token.asset);if(!original)throw new Error('The uploaded image is missing.');const image=await editTokenImage(original,{square:kind==='items',editing:true});if(!image)return;
     const s=getState(),replace=m=>m.avatar===token.asset?{...m,avatar:image.id}:m,campaign={...s.campaign};for(const key of ['parties','encounters','itemLists'])campaign[key]=campaign[key].map(g=>({...g,members:g.members.map(replace)}));campaign.userTokens={...campaign.userTokens,[kind]:campaign.userTokens[kind].map(t=>t.id===token.id?{...t,asset:image.id}:t)};
