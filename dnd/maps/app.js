@@ -1,5 +1,6 @@
 import {createMapNavigation} from './map-navigation.js?v=45';
-import {chevronIcon} from './control-icons.js?v=45';
+import {createFloorControl} from './floor-controls.js?v=51';
+import {createUserManual} from './user-manual.js?v=51';
 import {createSpellLibrary} from './spell-library.js?v=45';
 import {createReferenceViewers} from './reference-viewers.js?v=45';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=45';
@@ -33,7 +34,7 @@ import { parseSave, restoreSave } from './save-file.js?v=45';
 import { createLighting } from './lighting.js?v=45';
 import { setupFullscreen } from './fullscreen.js?v=45';
 import { startPlayerDisplay } from './player-display.js?v=45';
-import { createDirector } from './director.js?v=45';
+import { createDirector } from './director.js?v=51';
 import { normalizeProject } from './presentation-state.js?v=45';
 
 listenForBoardReset();
@@ -126,7 +127,7 @@ async function start() {
   }
   if(dmFrame)document.querySelector('.brand').href='./?dm-frame=1';
   document.title = player ? `${map.title} — Player display` : 'Ull Hexa D&D';
-  document.querySelector('.map-name').textContent = `${map.title} · ${entry.subtitle}`;
+  document.querySelector('.map-name').textContent = map.title;
   $('map').setAttribute('aria-label', `${player ? 'Player' : 'Interactive'} map of ${map.title}`);
   $('map').querySelector('title').textContent = `${map.title} encounter map`;
   if(!player) {
@@ -167,7 +168,7 @@ async function start() {
   const dimensions = { width: map.width, height: map.height };
   const layerNodes = new Map();
   const coverNodes = new Map();
-  const placeButtons = new Map(),placeExpansions=new Map();let expandedPlace=null;
+  const placeButtons = new Map(),floorControls=new Map();
   const actionButtons = new Map();
   const hotspots = new Map();
   const stepButtons=new Map();
@@ -304,9 +305,8 @@ async function start() {
     if(!cameraOnly){for (const place of map.places) {
       const button = placeButtons.get(place.id);
       button?.setAttribute('aria-pressed', place.id === selected);
-      const step=placeStep(place,state),sequence=placeView(place,state).sequence||[],floors=floorList(place),floor=selectedFloor(place,state);
-      for(const[index,b]of (placeExpansions.get(place.id)?.steps||[]).entries())b.setAttribute('aria-pressed',floors[index]?.id===floor?.id);
-      if(button)button.lastElementChild.textContent=floors.length>1?floor.label:'';
+      const step=placeStep(place,state),sequence=placeView(place,state).sequence||[];
+      floorControls.get(place.id)?.render();
       const node = hotspots.get(place.id);
       if(node){node.querySelector('circle').setAttribute('fill',place.id===selected?'#e8ba71':'#172a21');node.querySelector('.event-step').textContent=`${step+1}/${sequence.length||1}`;node.setAttribute('aria-label',`${place.name}: ${sequence[step]?.label||'Ready'}, ${step+1} of ${sequence.length||1}. Click for next state.`);}
       if(place.id===selected)for(const[index,b]of stepButtons)b.setAttribute('aria-pressed',index===step);
@@ -346,7 +346,7 @@ async function start() {
   function queueCamera(){if(!cameraFrame)cameraFrame=requestAnimationFrame(()=>{renderCamera();if(!player)send({type:'camera',mapId:map.id,camera:state.camera,revision:state.revision});});}
   function render() {
     renderLighting(state);
-    document.querySelector('.map-name').textContent=`${map.title} · ${entry.subtitle}`;
+    document.querySelector('.map-name').textContent=map.title;
     $('light-level').value=state.environment.darkness;
     $('light-level').setAttribute('aria-valuetext',`${state.environment.darkness}% darkness`);
     $('light-level-value').value=`${state.environment.darkness}%`;
@@ -429,13 +429,13 @@ async function start() {
       const title = document.createElement('span');
       const number = document.createElement('b'); number.className='place-number';number.textContent=`${index+1}. `;
       title.append(number,document.createTextNode(place.name));
-      button.append(title, document.createElement('span')); button.addEventListener('click', () => selectPlace(place.id));
+      button.append(title); button.addEventListener('click', () => selectPlace(place.id));
       const row=document.createElement('div');row.className='place-row';row.dataset.placeRow=place.id;row.append(button);placeButtons.set(place.id,button);
-      const expand=document.createElement('button');expand.type='button';expand.className='place-expand';expand.replaceChildren(chevronIcon());expand.setAttribute('aria-label',`Show ${place.name} floors`);expand.setAttribute('aria-expanded','false');const sequence=document.createElement('div');sequence.className='place-inline-sequence';sequence.id=`sequence-${place.id}`;sequence.hidden=true;expand.setAttribute('aria-controls',sequence.id);const steps=[];
-      function collapse(){sequence.hidden=true;expand.replaceChildren(chevronIcon());expand.setAttribute('aria-expanded','false');expand.setAttribute('aria-label',`Show ${place.name} floors`);row.classList.remove('expanded');}
-      expand.addEventListener('click',()=>{const wasOpen=expandedPlace===place.id;for(const p of placeExpansions.values())p.collapse();expandedPlace=wasOpen?null:place.id;if(!wasOpen){sequence.hidden=false;expand.replaceChildren(chevronIcon());expand.setAttribute('aria-expanded','true');expand.setAttribute('aria-label',`Hide ${place.name} floors`);row.classList.add('expanded');}});
-      floorList(place).forEach(floor=>{const b=document.createElement('button');b.type='button';b.textContent=floor.label;b.setAttribute('aria-label',`${place.name}: ${floor.label}`);b.addEventListener('click',()=>{selectPlace(place.id);commit(selectFloor(map,state,place.id,floor.id),`${place.name}: ${floor.label}.`);});sequence.append(b);steps.push(b);});expand.hidden=floorList(place).length<2;row.classList.toggle('single-floor',expand.hidden);
-      placeExpansions.set(place.id,{row,collapse,steps});row.append(expand,sequence);$('places').append(row);
+      if(floorList(place).length>1){
+        const control=createFloorControl(place,{getFloor:()=>selectedFloor(place,state),onSelect:(floor,level)=>{selectPlace(place.id);commit(selectFloor(map,state,place.id,floor.id),`${place.name}: floor ${level}.`);}});
+        floorControls.set(place.id,control);row.append(control.root);
+      }else row.classList.add('single-floor');
+      $('places').append(row);
       const [x, y] = xy(place.point);
       const roof = map.interactions.find(item => item.type === 'roof' && item.placeId === place.id);
       const terrain=map.interactions.find(item=>item.type==='terrain'&&item.placeId===place.id&&!item.variant);
@@ -443,7 +443,6 @@ async function start() {
       $('dm-hotspots').append(node);hotspots.set(place.id,node);
 
     }
-    document.addEventListener('pointerdown',e=>{if(expandedPlace&&!placeExpansions.get(expandedPlace)?.row.contains(e.target)){placeExpansions.get(expandedPlace)?.collapse();expandedPlace=null;consumeMapDismissal(e,$('map-stage'));}},true);
     selectPlace(selected);
     if(!map.places.length){$('places').previousElementSibling.hidden=true;$('places').hidden=true;announce('Custom map ready. Paint fog or add tokens and spell areas.');}
     setupSidebarResize();
@@ -479,7 +478,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'49',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'51',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
@@ -573,12 +572,12 @@ async function start() {
   function updateConnection() {
     for(const [id,seen] of peers)if(Date.now()-seen>7000)peers.delete(id);
     const connected=player?Date.now()-lastPeer<15000:!!((playerWindow&&!playerWindow.closed)||peers.size);
-    $('connection-status').textContent=player?(connected?'Following the DM':'DM disconnected · last view kept'):(connected?'Player display connected':'Player display not open');
-    if(!player){$('open-player').replaceChildren(document.createTextNode(connected?'Close player display ':'Open player display '));const arrow=document.createElement('span');arrow.setAttribute('aria-hidden','true');arrow.textContent=connected?'↙':'↗';$('open-player').append(arrow);}
+    if(player)$('connection-status').textContent=connected?'Following the DM':'DM disconnected · last view kept';
+    if(!player){$('open-player').setAttribute('aria-pressed',String(connected));$('open-player').setAttribute('aria-label',connected?'Close player display':'Open player display');$('open-player').title=connected?'Close player display':'Open player display';$('open-player').replaceChildren(document.createTextNode('Player Display '));const arrow=document.createElement('span');arrow.setAttribute('aria-hidden','true');arrow.textContent=connected?'↙':'↗';$('open-player').append(arrow);}
   }
   if(!embedded)setInterval(updateConnection,1000);
   window.addEventListener('pagehide',()=>{if(!player&&runtimeReady)save();});
-  if(!player){director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});createLibraries({map,getState:()=>state,commit,announce});itemsUI=createItemsUI({map,getState:()=>state,commit,announce,pointAt,setTool,selectItem:id=>encounter.selectItem(id),editItem:id=>{references?.close();encounter.editItem(id);},showNotes:id=>{references?.close();encounter.showItemNotes(id);}});createSpellLibrary({getState:()=>state,commit,announce});references=createReferenceViewers({getState:()=>state,commit,announce,prepare:()=>{dice?.close();setTool(null);}});mapMenu.setUpload(createMapUpload({sessionKey,catalog,onAdded:entry=>{mapMenu.addEntry(entry);mapMenu.showEntry(entry);},announce}));}
+  if(!player){createUserManual();director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});createLibraries({map,getState:()=>state,commit,announce});itemsUI=createItemsUI({map,getState:()=>state,commit,announce,pointAt,setTool,selectItem:id=>encounter.selectItem(id),editItem:id=>{references?.close();encounter.editItem(id);},showNotes:id=>{references?.close();encounter.showItemNotes(id);}});createSpellLibrary({getState:()=>state,commit,announce});references=createReferenceViewers({getState:()=>state,commit,announce,prepare:()=>{dice?.close();setTool(null);}});mapMenu.setUpload(createMapUpload({sessionKey,catalog,onAdded:entry=>{mapMenu.addEntry(entry);mapMenu.showEntry(entry);},announce}));}
   if(embedded){
     let lastActivity=0;
     const activity=()=>{if(performance.now()-lastActivity>100){lastActivity=performance.now();window.parent.postMessage({type:'player-activity'},location.origin);}};
