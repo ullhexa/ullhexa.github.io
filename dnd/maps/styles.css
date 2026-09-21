@@ -475,5 +475,5 @@ body:not(.player-mode) #map-stage.is-panning,body:not(.player-mode) #map-stage.i
 .site-identity .brand{flex-wrap:nowrap;gap:12px}
 .brand-logo{display:block;width:72px;height:auto;flex:none}
 .brand-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
-.brand-copy .edition{display:block;border:0;padding:0;line-height:1.2}
+.brand-copy .edition{border:0;padding:0;line-height:1.2}
 .dm-panel .combat-roster{margin-top:0}
