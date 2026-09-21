@@ -17,7 +17,7 @@ import {createHistory} from './history.js?v=45';
 import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=45';
 import {setupSidebarResize} from './sidebar-resize.js?v=45';
 import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=45';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=45';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=49';
 import {createFogTools} from './fog-tools.js?v=45';
 import {normalizeFog} from './fog-state.js?v=45';
 import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=45';
@@ -120,17 +120,16 @@ async function start() {
     if(environment)writeStored(`lanternford:${target.id}:${target.version}:${session}`,{...next,environment,revision:next.revision+1});
     const url=new URL(location.href);url.searchParams.set('map',id);location.assign(url);
   }
-  $('map-identity').textContent = entry.identity || map.title;
-  document.querySelector('.edition').textContent = entry.edition || 'FIELD TEST';
-  document.querySelector('.brand').setAttribute('aria-label', `${entry.identity || map.title} home`);
+  if(player){
+    $('map-identity').textContent = entry.identity || map.title;
+    document.querySelector('.edition').textContent = entry.edition || 'FIELD TEST';
+  }
   if(dmFrame)document.querySelector('.brand').href='./?dm-frame=1';
-  document.title = `${map.title} — ${player ? 'Player display' : 'Interactive map playtest'}`;
+  document.title = player ? `${map.title} — Player display` : 'Ull Hexa D&D';
   document.querySelector('.map-name').textContent = `${map.title} · ${entry.subtitle}`;
   $('map').setAttribute('aria-label', `${player ? 'Player' : 'Interactive'} map of ${map.title}`);
   $('map').querySelector('title').textContent = `${map.title} encounter map`;
   if(!player) {
-    document.querySelector('.encounter-heading h1').textContent=map.title;
-    document.querySelector('.encounter-heading .eyebrow').textContent=entry.category.toUpperCase();
     mapMenu=createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,getEnvironment:target=>target.id===map.id?state.environment:readMapState(target).environment,getProject:()=>project,setProject,deleteMap:removeCustomMap,editMap:applyMapEdit,applyMap:(target,environment)=>prepareMap(target.id,environment).catch(error=>announce(error.message))});
   }
   const key = `lanternford:${map.id}:${map.version}:${session}`;
@@ -480,7 +479,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'48',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'49',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
