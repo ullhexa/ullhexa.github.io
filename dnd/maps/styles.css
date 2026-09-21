@@ -468,3 +468,5 @@ body:not(.player-mode) .is-measuring #map{cursor:crosshair}
 .initiative-visibility{display:inline-flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap}
 .initiative-visibility input{width:15px;height:15px;margin:0;flex:none;accent-color:var(--gold)}
 .initiative-heading button{flex:0 1 32px;min-width:24px}
+
+body:not(.player-mode) #map-stage.is-panning,body:not(.player-mode) #map-stage.is-panning *{cursor:grabbing!important}
