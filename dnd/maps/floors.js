@@ -1,4 +1,4 @@
-import {isBuildingGlobal} from './building-state.js?v=56';
+import {isBuildingGlobal} from './building-state.js?v=57';
 // Floor artwork shares world coordinates; only placed items are scoped to floors.
 export function floorList(place){return place.floors||[];}
 export function selectedFloor(place,state){const floors=floorList(place);return floors.find(f=>f.id===state.floors?.[place.id])||floors[0]||null;}
