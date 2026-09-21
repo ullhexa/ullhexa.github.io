@@ -1,6 +1,6 @@
 import {createMapNavigation} from './map-navigation.js?v=45';
-import {createFloorControl} from './floor-controls.js?v=51';
-import {createUserManual} from './user-manual.js?v=51';
+import {createFloorControl} from './floor-controls.js?v=52';
+import {createUserManual} from './user-manual.js?v=52';
 import {createSpellLibrary} from './spell-library.js?v=45';
 import {createReferenceViewers} from './reference-viewers.js?v=45';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=45';
@@ -478,7 +478,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'51',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'52',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
