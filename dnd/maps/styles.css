@@ -549,3 +549,31 @@ body:not(.player-mode) .map-topline{display:grid;grid-template-columns:minmax(0,
 /* Compact paired effects share the sidebar and preparation layout. */
 #selected-actions,.building-effects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .building-effect{padding:7px 8px;gap:5px;overflow-wrap:anywhere}.building-effect .effect-levels{flex:none}
+
+/* Map objects use one click for quick actions and two for their full controls. */
+.hotspot,.hotspot *{-webkit-user-select:none;user-select:none}
+.hotspot .place-name-tag text{fill:var(--gold);stroke:#080b09;stroke-width:1.75;paint-order:stroke;stroke-linejoin:round}
+.token-visibility{display:flex;align-items:center;justify-content:center;gap:6px;min-height:30px;padding:5px 6px;font-size:11px;line-height:1.2}
+.token-visibility svg{width:18px;height:18px;flex:none}
+.token-visibility[aria-pressed=true]{color:var(--gold);border-color:#8c7957;background:#343729}
+.status-left>.token-visibility{max-width:100%;margin-top:2px}
+.item-comment{display:flex;flex-direction:column;gap:8px}
+.item-editor-actions{display:flex;align-items:center;gap:5px}
+.item-editor-actions .token-visibility{flex:1;min-width:0;font-size:11px;padding:5px}
+.item-editor-actions>.item-editor-delete,.item-editor-actions>.item-editor-close{flex:none;width:28px;height:28px;min-height:28px;padding:2px;display:grid;place-items:center}
+.item-editor-delete{background:#631f22;border-color:#ed8b85;color:white}
+.item-editor-close{border:0;background:transparent}.item-editor-close svg{width:20px;height:20px;transform:rotate(180deg)}
+.item-comment>input,.item-comment>textarea{flex:none}.item-comment>.elevation-control{align-self:flex-start}
+#party-dialog .library-portraits .portrait-option:not(.create-token),#encounter-dialog .library-portraits .portrait-option:not(.create-token){border:1px solid transparent;background:transparent;outline:none;box-shadow:none}
+#party-dialog .library-portraits .portrait-option[aria-pressed=true],#encounter-dialog .library-portraits .portrait-option[aria-pressed=true]{border-color:var(--gold);outline:none;box-shadow:none}
+#party-dialog .library-portraits .portrait-option:focus-visible,#encounter-dialog .library-portraits .portrait-option:focus-visible{border-color:var(--gold)}
+
+/* One joined mode switch, with a shared straight center seam. */
+body:not(.player-mode) .map-topline{padding-block:0;min-height:0;margin-bottom:8px}
+.map-topline>.presentation-modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:234px;padding:0;gap:0;border:1px solid #526049;border-radius:8px;overflow:hidden;background:#000}
+.map-topline .presentation-modes>button{min-width:0;width:100%;height:46px;min-height:46px;padding:10px 16px;border:0;border-radius:0;font-size:.96rem;line-height:1.2;outline:none;box-shadow:none}
+.map-topline .presentation-modes>#show-story{border-left:1px solid #526049}
+.map-topline .presentation-modes>button:focus-visible{text-decoration:underline;text-underline-offset:4px}
+
+#party-dialog .library-portraits .portrait-thumb,#encounter-dialog .library-portraits .portrait-thumb{border:0;box-shadow:none}
+.status-left>.token-visibility{white-space:nowrap}

@@ -1,5 +1,5 @@
-import {isVisible} from './state.js?v=55';
-import {buildingParts,buildingCollapsed} from './building-state.js?v=55';
+import {isVisible} from './state.js?v=56';
+import {buildingParts,buildingCollapsed} from './building-state.js?v=56';
 
 const NS='http://www.w3.org/2000/svg';
 const node=(tag,attrs={})=>{

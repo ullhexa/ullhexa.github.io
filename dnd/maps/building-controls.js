@@ -1,8 +1,8 @@
-import {buildingParts,effectLevels} from './building-state.js?v=55';
-import {createFloorControl} from './floor-controls.js?v=55';
-import {selectedFloor} from './floors.js?v=55';
-import {icon} from './control-icons.js?v=55';
-import {consumeMapDismissal} from './map-dismissal.js?v=55';
+import {buildingParts,effectLevels} from './building-state.js?v=56';
+import {createFloorControl} from './floor-controls.js?v=56';
+import {selectedFloor} from './floors.js?v=56';
+import {icon} from './control-icons.js?v=56';
+import {consumeMapDismissal} from './map-dismissal.js?v=56';
 
 function symbol(kind,on){
  const paths=kind==='focus'?(on?'M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6':'M3 9h6V3m6 0v6h6M9 21v-6H3m12 6v-6h6'):
@@ -34,11 +34,11 @@ export function createBuildingControls({map,getState,getSelected,getFocused,sele
    if(place.floors?.length>1){floorControl=createFloorControl(place,{getFloor:()=>selectedFloor(place,getState()),onSelect:(floor,level)=>setFloor(place,floor,level)});popup.append(group('Floor',floorControl.root));}
   }
   const row=document.createElement('div');row.className='building-global';for(const kind of ['focus','cover','collapse'])row.append(button(kind,place,mode==='quick'));popup.append(mode==='quick'?row:group('Building',row));
-  if(mode==='editor'&&buildingParts(map,place).effects.length){const extra=document.createElement('div');extra.className='building-effects';populateEffects(extra,place);popup.append(group(`Additional options [${extra.childElementCount}]`,extra));}
+  if(mode==='editor'&&buildingParts(map,place).effects.length){const extra=document.createElement('div');extra.className='building-effects';populateEffects(extra,place);popup.append(group('Additional options',extra));}
  }
  function render(){
   const place=map.places.find(p=>p.id===getSelected());if(!place){section.hidden=true;return;}section.hidden=false;
-  if(current!==place.id){current=place.id;globals.replaceChildren();for(const kind of ['focus','cover','collapse']){const b=button(kind,place);if(kind==='focus')b.id='focus-place';globals.append(b);}title.textContent=`${map.places.indexOf(place)+1}. ${place.name} [${buildingParts(map,place).effects.length}]`;populateEffects(effects,place);if(mode)buildPopup(place);signature='';}
+  if(current!==place.id){current=place.id;globals.replaceChildren();for(const kind of ['focus','cover','collapse']){const b=button(kind,place);if(kind==='focus')b.id='focus-place';globals.append(b);}title.textContent=`${map.places.indexOf(place)+1}. ${place.name}`;populateEffects(effects,place);if(mode)buildPopup(place);signature='';}
   const next=JSON.stringify([current,mode,getState().active,getState().floors,getFocused()]);if(next!==signature){signature=next;for(const b of [...globals.querySelectorAll('[data-building-action]'),...popup.querySelectorAll('[data-building-action]')])updateButton(b,place);for(const b of [...effects.querySelectorAll('[data-effect]'),...popup.querySelectorAll('[data-effect]')])b.setAttribute('aria-pressed',String(getState().active.includes(b.dataset.effect)));floorControl?.render();}
   position();
  }

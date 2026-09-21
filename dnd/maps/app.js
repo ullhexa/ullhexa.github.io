@@ -1,45 +1,45 @@
-import {createBuildingControls} from './building-controls.js?v=55';
-import {buildingCollapsed} from './building-state.js?v=55';
-import {createCameraAnimation} from './camera-animation.js?v=55';
-import {createMapNavigation} from './map-navigation.js?v=55';
-import {createFloorControl} from './floor-controls.js?v=55';
-import {createUserManual} from './user-manual.js?v=55';
-import {createSpellLibrary} from './spell-library.js?v=55';
-import {createReferenceViewers} from './reference-viewers.js?v=55';
-import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=55';
-import {persistAssets} from './local-assets.js?v=55';
-import {createScenery} from './scenery.js?v=55';
-import {consumeMapDismissal} from './map-dismissal.js?v=55';
-import {buildingFocusCamera} from './building-focus.js?v=55';
-import {createDisplayPresence} from './display-presence.js?v=55';
-import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=55';
-import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=55';
-import {createDiceTools} from './dice.js?v=55';
-import {fetchJSON,loadRaster} from './resource-loading.js?v=55';
-import {storyCatalog,nextStory} from './story-assets.js?v=55';
-import {createItemsUI} from './items-ui.js?v=55';
-import {floorList,selectedFloor,selectFloor,interactionOnFloor} from './floors.js?v=55';
-import {createHistory} from './history.js?v=55';
-import {setupSidebarResize} from './sidebar-resize.js?v=55';
-import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=55';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=55';
-import {createFogTools} from './fog-tools.js?v=55';
-import {normalizeFog} from './fog-state.js?v=55';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=55';
-import {createSessionBundle} from './session-bundle.js?v=55';
-import { startDMShell } from './dm-shell.js?v=55';
-import { openPlayerWindow } from './display-window.js?v=55';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=55';
-import { createEncounterTools } from './encounter-tools.js?v=55';
-import { playerProjection, formation, moveParty } from './encounter-state.js?v=55';
-import { createMapMenu } from './map-menu.js?v=55';
-import { createSaveControls } from './save-controls.js?v=55';
-import { parseSave, restoreSave } from './save-file.js?v=55';
-import { createLighting } from './lighting.js?v=55';
-import { setupFullscreen } from './fullscreen.js?v=55';
-import { startPlayerDisplay } from './player-display.js?v=55';
-import { createDirector } from './director.js?v=55';
-import { normalizeProject } from './presentation-state.js?v=55';
+import {createBuildingControls} from './building-controls.js?v=56';
+import {buildingCollapsed} from './building-state.js?v=56';
+import {createCameraAnimation} from './camera-animation.js?v=56';
+import {createMapNavigation} from './map-navigation.js?v=56';
+import {createFloorControl} from './floor-controls.js?v=56';
+import {createUserManual} from './user-manual.js?v=56';
+import {createSpellLibrary} from './spell-library.js?v=56';
+import {createReferenceViewers} from './reference-viewers.js?v=56';
+import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=56';
+import {persistAssets} from './local-assets.js?v=56';
+import {createScenery} from './scenery.js?v=56';
+import {consumeMapDismissal} from './map-dismissal.js?v=56';
+import {buildingFocusCamera} from './building-focus.js?v=56';
+import {createDisplayPresence} from './display-presence.js?v=56';
+import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=56';
+import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=56';
+import {createDiceTools} from './dice.js?v=56';
+import {fetchJSON,loadRaster} from './resource-loading.js?v=56';
+import {storyCatalog,nextStory} from './story-assets.js?v=56';
+import {createItemsUI} from './items-ui.js?v=56';
+import {floorList,selectedFloor,selectFloor,interactionOnFloor} from './floors.js?v=56';
+import {createHistory} from './history.js?v=56';
+import {setupSidebarResize} from './sidebar-resize.js?v=56';
+import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=56';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=56';
+import {createFogTools} from './fog-tools.js?v=56';
+import {normalizeFog} from './fog-state.js?v=56';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=56';
+import {createSessionBundle} from './session-bundle.js?v=56';
+import { startDMShell } from './dm-shell.js?v=56';
+import { openPlayerWindow } from './display-window.js?v=56';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=56';
+import { createEncounterTools } from './encounter-tools.js?v=56';
+import { playerProjection, formation, moveParty } from './encounter-state.js?v=56';
+import { createMapMenu } from './map-menu.js?v=56';
+import { createSaveControls } from './save-controls.js?v=56';
+import { parseSave, restoreSave } from './save-file.js?v=56';
+import { createLighting } from './lighting.js?v=56';
+import { setupFullscreen } from './fullscreen.js?v=56';
+import { startPlayerDisplay } from './player-display.js?v=56';
+import { createDirector } from './director.js?v=56';
+import { normalizeProject } from './presentation-state.js?v=56';
 
 listenForBoardReset();
 const $ = id => document.getElementById(id);
@@ -393,14 +393,15 @@ async function start() {
   }
   function sizeHotspots(){
     const scale=.8/(viewGeometry?.scale||cameraGeometry(map,state.camera,viewport).scale);
-    for(const node of hotspots.values()){const glyph=node.querySelector('.hotspot-glyph');if(glyph._scale!==scale){glyph._scale=scale;glyph.setAttribute('transform',`translate(${glyph.dataset.x} ${glyph.dataset.y}) scale(${scale})`);}const label=glyph.querySelector('.place-name-tag');if(label&&!label._measured){const width=label.querySelector('text').getComputedTextLength()+14;label.querySelector('rect').setAttribute('x',-width/2);label.querySelector('rect').setAttribute('width',width);label._measured=true;}}
+    for(const node of hotspots.values()){const glyph=node.querySelector('.hotspot-glyph');if(glyph._scale!==scale){glyph._scale=scale;glyph.setAttribute('transform',`translate(${glyph.dataset.x} ${glyph.dataset.y}) scale(${scale})`);}}
   }
   function makeHotspot(place,point,number){
     const node=svgNode('g',{class:'hotspot',role:'button',tabindex:0,'data-place':place.id});
     const[x,y]=xy(point),glyph=svgNode('g',{class:'hotspot-glyph','data-x':x,'data-y':y});
     glyph.append(svgNode('circle',{r:21,fill:'#172a21',stroke:'#e8ba71','stroke-width':2}));
     glyph.append(svgNode('text',{'text-anchor':'middle',y:6,'font-size':17,'pointer-events':'none'},number));
-    const label=svgNode('g',{class:'place-name-tag','pointer-events':'none'});label.append(svgNode('rect',{x:-place.name.length*4.2-7,y:29,width:place.name.length*8.4+14,height:23,rx:4,fill:'#080b09'}),svgNode('text',{'text-anchor':'middle',y:45,'font-size':15,fill:'#fff',stroke:'none'},place.name));glyph.append(label);node.append(glyph);
+    const label=svgNode('g',{class:'place-name-tag','pointer-events':'none'});label.append(svgNode('text',{'text-anchor':'middle',y:45,'font-size':15,fill:'#e8ba71',stroke:'#080b09','stroke-width':1.75},place.name));glyph.append(label);node.append(glyph);
+    node.addEventListener('mousedown',event=>{if(event.button===0)event.preventDefault();});
     node.addEventListener('click',event=>{if(!drag)activateHotspot(node,event);});
     node.addEventListener('dblclick',event=>{if(tool||drag)return;event.preventDefault();event.stopPropagation();buildingUI.show(place,true);});
     node.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();event.stopPropagation();activateHotspot(node,event);}});
@@ -426,7 +427,7 @@ async function start() {
       $('dm-hotspots').append(node);hotspots.set(place.id,node);
 
     }
-    document.fonts.ready.then(()=>{for(const node of hotspots.values())node.querySelector('.place-name-tag')._measured=false;sizeHotspots();});
+    document.fonts.ready.then(sizeHotspots);
     selectPlace(selected);
     if(!map.places.length){$('places').previousElementSibling.hidden=true;$('places').hidden=true;announce('Custom map ready. Paint fog or add tokens and spell areas.');}
     setupSidebarResize();
@@ -461,7 +462,7 @@ async function start() {
       if(displayConnected()){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'55',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'56',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
