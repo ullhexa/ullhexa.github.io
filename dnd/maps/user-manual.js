@@ -6,7 +6,7 @@ export const MANUAL_SECTIONS=[
     'Ull Hexa D&D is a control board for a DM running an in-person game. Prepare maps, a party, encounters, items and spell decks in the six libraries at the top left. The DM controls the rules, story and movement; the board does not enforce attacks, collisions, line of sight or legal moves.',
     'A typical setup: choose a map in Maps, activate a party and an encounter, then open Player Display. Move that window to the TV or projector. Use an extended desktop so players see their window while you retain the control board on your own screen.',
     'The left panel contains Party and Encounter initiative scores, placed Items, Places, Spell areas and Spell Deck. The right panel contains Initiative. Drag either panel divider to change its width; double-click the divider to reset it. A focused divider also supports minus, plus and Home.',
-    'Use the map header’s Battle map / Story switch to decide what the players see. The map controls immediately below it handle the camera, grid, lighting, prepared scenes, fog and dice. This manual is independent of the libraries. Select a topic on the left; close with ×, Escape or a click outside the window.'
+    'Use the map header’s Battle map / Story switch to decide what the players see. The map controls immediately below it handle the camera, grid, lighting, prepared scenes, fog and dice. This manual is independent of the libraries. Select a numbered topic on the left. Up/Left moves to the previous topic and Down/Right to the next, even after clicking the article. Home/End jumps to the first/last topic. Close with ×, Escape or a click outside the window.'
   ]},
   {id:'display',title:'Player display & fullscreen',text:[
     'Player Display ↗ opens a separate, resizable player window. The button turns yellow and its arrow becomes ↙ while a player display is connected. Press it again to close that display. If the browser blocks the window, allow pop-ups for this site and try again.',
@@ -42,7 +42,7 @@ export const MANUAL_SECTIONS=[
   {id:'places',title:'Buildings, floors & map events',text:[
     'The numbered Places list matches the numbered markers on the DM map. Selecting a place shows Additional options for that place and its selected floor. Clicking a building directly cycles its available states and wraps to the beginning. The small current/total indicator above its map marker shows where you are in the sequence.',
     'A typical building cycles Roof on, Roof off, Trashed and Collapsed. Some buildings or floors have fewer states. Shift-click or Cmd-click cycles backwards. The buttons under Additional options select a state directly. Terrain events, such as a broken bridge, have their own map-specific controls.',
-    'Buildings with multiple floor plans show a range, such as Floors: -1 to 3, followed by the selected floor number and down/up arrows. Ground is 0; upper floors are 1, 2, 3; basements are -1, -2 and so on. Click arrows, type a whole number, or scroll while the value field is focused. Enter applies typed input. Only available floors can be selected.',
+    'Buildings with multiple floor plans show a range, such as Floors: 0 to 4, followed by the selected floor number and down/up arrows. The ground/first floor is 1; upper floors are 2, 3 and so on. The first basement is 0, the second basement is -1, and deeper basements continue -2, -3. Click arrows, type a whole number, or scroll while the value field is focused. Enter applies typed input. Only available floors can be selected.',
     'Changing floors changes artwork and available building options. Players and encounters stay visible and keep their positions. An item placed inside a building belongs to the floor selected when it was placed or moved; players see it only on that floor and only if its visibility is enabled. The DM retains every item.',
     'Represent special doors, clues or one-off events with Items. The board does not automatically stop characters from crossing a broken bridge or a wall; the DM decides what the changed scene means.'
   ]},
@@ -143,7 +143,20 @@ export function createUserManual(){
   const layout=document.createElement('div');layout.className='manual-layout';const nav=document.createElement('nav');nav.className='manual-topics';nav.setAttribute('aria-label','Manual sections');const article=document.createElement('article');article.className='manual-content';article.tabIndex=0;article.setAttribute('aria-labelledby','manual-section-title');layout.append(nav,article);dialog.append(header,layout);document.body.append(dialog);
   let selected=MANUAL_SECTIONS[0].id;
   function select(section){selected=section.id;for(const button of nav.children){if(button.dataset.section===selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');}const h=document.createElement('h2');h.id='manual-section-title';h.textContent=section.title;article.replaceChildren(h);for(const text of section.text){const p=document.createElement('p');p.textContent=text;article.append(p);}article.scrollTop=0;}
-  for(const section of MANUAL_SECTIONS){const button=document.createElement('button');button.type='button';button.dataset.section=section.id;button.textContent=section.title;button.addEventListener('click',()=>select(section));button.addEventListener('keydown',e=>{if(!['ArrowUp','ArrowDown','Home','End'].includes(e.key))return;e.preventDefault();const i=MANUAL_SECTIONS.indexOf(section),n=e.key==='Home'?0:e.key==='End'?MANUAL_SECTIONS.length-1:(i+(e.key==='ArrowDown'?1:-1)+MANUAL_SECTIONS.length)%MANUAL_SECTIONS.length;nav.children[n].click();nav.children[n].focus();});nav.append(button);}
+  for(const [index,section] of MANUAL_SECTIONS.entries()){
+    const button=document.createElement('button');button.type='button';button.dataset.section=section.id;
+    const number=document.createElement('span');number.className='manual-topic-number';number.textContent=`${index+1}.`;
+    const label=document.createElement('span');label.className='manual-topic-label';label.textContent=section.title;
+    button.append(number,document.createTextNode(' '),label);button.addEventListener('click',()=>select(section));nav.append(button);
+  }
+  dialog.addEventListener('keydown',e=>{
+    if(e.isComposing||e.ctrlKey||e.metaKey||e.altKey||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+    e.preventDefault();e.stopPropagation();
+    const focused=e.target.closest('.manual-topics button')?.dataset.section;
+    const i=MANUAL_SECTIONS.findIndex(section=>section.id===(focused||selected)),delta=['ArrowDown','ArrowRight'].includes(e.key)?1:-1;
+    const n=e.key==='Home'?0:e.key==='End'?MANUAL_SECTIONS.length-1:(i+delta+MANUAL_SECTIONS.length)%MANUAL_SECTIONS.length;
+    select(MANUAL_SECTIONS[n]);nav.children[n].focus({preventScroll:true});nav.children[n].scrollIntoView({block:'nearest',inline:'nearest'});
+  });
   select(MANUAL_SECTIONS[0]);
   document.getElementById('open-manual').addEventListener('click',()=>{document.dispatchEvent(new Event('library-opening'));showDialog(dialog,{dismissOnBackdrop:true});nav.querySelector(`[data-section="${selected}"]`).focus({preventScroll:true});});
 }

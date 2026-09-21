@@ -1,6 +1,6 @@
-// UI numbers are independent of saved floor IDs, so existing games keep their floors.
+// Elevator labels are one above the authored ground-relative level. Saved IDs stay unchanged.
 export function numberedFloors(place){
-  return (place.floors||[]).map((floor,index)=>({floor,level:Number.isSafeInteger(floor.level)?floor.level:floor.id==='ground'?0:floor.id==='upper'?1:floor.id==='basement'?-1:index})).sort((a,b)=>a.level-b.level);
+  return (place.floors||[]).map((floor,index)=>({floor,level:1+(Number.isSafeInteger(floor.level)?floor.level:floor.id==='ground'?0:floor.id==='upper'?1:floor.id==='basement'?-1:index)})).sort((a,b)=>a.level-b.level);
 }
 export function createFloorControl(place,{getFloor,onSelect}){
   const entries=numberedFloors(place),root=document.createElement('div');root.className='place-floors';
