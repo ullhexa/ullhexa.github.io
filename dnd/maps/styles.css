@@ -423,7 +423,6 @@ body:not(.player-mode) .is-measuring #map{cursor:crosshair}
 .item-edit-layout .item-catalog-toolbar>button{flex:none;white-space:nowrap}
 .item-edit-layout .source-tabs .item-search{flex:1 1 160px;width:160px;min-width:90px;margin:0 0 0 auto}
 .item-size-control{display:grid;grid-template-columns:minmax(0,1fr) 28px 28px;height:38px;min-width:0;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#101a15}
-.item-size-control:focus-within{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
 .item-size-control input{appearance:textfield;-moz-appearance:textfield;border:0;border-radius:0;padding:5px;min-width:0;height:36px;text-align:center;outline:none}
 .item-size-control input::-webkit-inner-spin-button,.item-size-control input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .item-size-control button{display:grid;place-items:center;min-height:0;height:36px;padding:0;border:0;border-left:1px solid var(--line);border-radius:0;font-size:20px;line-height:1}
@@ -433,3 +432,8 @@ body:not(.player-mode) .is-measuring #map{cursor:crosshair}
 #map-stage[data-fog-tool=paint]{--fog-cursor:url('./assets/fog-brush-cursor.svg') 4 27,crosshair}
 #map-stage[data-fog-tool=erase]{--fog-cursor:url('./assets/fog-eraser-cursor.svg') 5 23,crosshair}
 #map-stage.is-fogging,#map-stage.is-fogging :is(#map,#map *,#party-overlay,#party-overlay *){cursor:var(--fog-cursor)}
+
+/* Library text fields retain their normal border while editing. */
+#main-menu :is(input:not([type]),input[type=text],input[type=search],input[type=number],textarea):focus{outline:none;box-shadow:none}
+
+.initiative-panel .turn-conditions:has(.condition-badge){margin-top:9px}
