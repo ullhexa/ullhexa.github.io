@@ -1,7 +1,7 @@
-import {showDialog} from './dialogs.js?v=58';
-import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=58';
-import {el,button} from './editor-dom.js?v=58';
-import {assetURL,uploadImage,putAssets} from './local-assets.js?v=58';
+import {showDialog} from './dialogs.js?v=59';
+import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=59';
+import {el,button} from './editor-dom.js?v=59';
+import {assetURL,uploadImage,putAssets} from './local-assets.js?v=59';
 export function editStatCard(member){
   const dialog=el('dialog',undefined,'stat-card-editor'),tabs=el('div',undefined,'source-tabs'),content=el('div',undefined,'stat-card-content'),error=el('p','','save-error'),footer=el('div',undefined,'dialog-actions');
   let mode=member.statText?'text':'image',asset=member.statCard||null,text=member.statText||'',result=null,image=null,request=0,zoom=1,offset=[0,0],drag=null,changed=false;

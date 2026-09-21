@@ -1,7 +1,7 @@
-import {button,el} from './combat-ui.js?v=58';
-import {consumeMapDismissal} from './map-dismissal.js?v=58';
+import {button,el} from './combat-ui.js?v=59';
+import {consumeMapDismissal} from './map-dismissal.js?v=59';
 
-import {GRID_COLORS,MAX_GRID_THICKNESS,gridColor} from './grid-state.js?v=58';
+import {GRID_COLORS,MAX_GRID_THICKNESS,gridColor} from './grid-state.js?v=59';
 
 export function createGridControls({map,getState,commit}){
   const grid=document.getElementById('show-grid'),lock=document.getElementById('snap-grid'),swatch=document.getElementById('grid-options-toggle'),stage=document.getElementById('map-stage');

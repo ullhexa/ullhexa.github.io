@@ -1,4 +1,4 @@
-import {showDialog} from './dialogs.js?v=58';
+import {showDialog} from './dialogs.js?v=59';
 
 // Keep this guide aligned with the shipped controls, not tabletop rules.
 export const MANUAL_SECTIONS=[
@@ -36,7 +36,7 @@ export const MANUAL_SECTIONS=[
     'Right-click and drag to pan the DM map. Ctrl/Cmd plus left-drag works too. Ordinary left-drag moves tokens or selected tools instead of panning. The browser’s right-click menu is suppressed only on the playable map. Camera movement stops at the map edges.',
     'Scroll over the map or use − and + to zoom, up to 300%. Overview fits the complete map. Hold and tilt the joystick beside Dice to pan continuously; farther from its center moves faster. Release to stop.',
     'Ctrl/Cmd plus an arrow key moves the camera by one grid cell. The first press aligns an off-grid camera to the nearest grid position; subsequent presses step through cells, with a final partial step allowed to reach the map edge.',
-    'Grid toggles the overlay. The color square opens grid colors and line thickness; use − and + for 1–8 pixels. Grid and Lock highlight yellow when enabled. Lock snaps dragged tokens to the grid; without it they move freely. Light–Dark changes the scene lighting; prepared light sources reveal more nearby without calculating character vision.',
+    'Grid toggles the overlay. The color square opens grid colors and line thickness; use − and + for 1–3 pixels. Grid and Lock highlight yellow when enabled. Lock snaps dragged tokens to the grid; without it they move freely. Light–Dark changes the scene lighting; prepared light sources reveal more nearby without calculating character vision.',
     'Measure is the crosshair button. Select it, then drag between two map points to see distance in feet. Use its small × to clear the ruler; Escape while Measure is active clears it and leaves the tool. Measurement is straight-line geometry, not terrain-aware pathfinding or an automatic D&D diagonal rule. Focus under a selected Place eases to that place over two seconds, starting and ending slowly, with the building occupying about 60% of the frame where zoom limits permit; the same button then reads Overview. Manual camera movement returns it to Focus.'
   ]},
   {id:'places',title:'Buildings, floors & map events',text:[
@@ -88,7 +88,8 @@ export const MANUAL_SECTIONS=[
     'Double-click an area or its preview to open its color palette over the map. The left eye button toggles player visibility; the right × removes the area. Clicking a color applies it and closes the palette. Clicking outside closes it without a color change. Delete, Backspace or Escape while the palette is open closes the palette first, without deleting the area.'
   ]},
   {id:'fog',title:'Fog & lighting',text:[
-    'Brush paints fog; Eraser removes it. Choose a 5, 15 or 30 ft brush and drag on the map. Each has a distinct pointer icon. Select the active tool again to return to ordinary controls. Right-drag can still pan while a fog tool is selected without painting.',
+    'The brush icon paints fog; the eraser icon removes it. Open the cloud icon for textures and the shared brush/eraser size (5–200 ft in 5 ft steps), then drag on the map. Each has a distinct pointer icon. Select the active tool again to return to ordinary controls. Right-drag can still pan while a fog tool is selected without painting.',
+    'Cloud options includes four Factory textures and a User image library. Upload an image to select it; it automatically zooms and crops to cover the whole map without stretching or empty edges. Changing textures preserves your painted fog. User images stay in the browser when Auto save is enabled and are included in downloaded games.',
     'Fog starts clear. It is 80% opaque on the DM map, with all tokens visible above it, and fully opaque on the player map. Public tokens under fog are concealed from players. Fog is a manual reveal tool, not automatic line of sight. Undo reverses a completed stroke.',
     'Light–Dark dims the scene continuously. Prepared fire, candle and window light follows the authored room, floor and building state. Destroyed buildings can lose their interior lights. This is atmospheric map lighting and does not calculate each creature’s vision or movement.',
     'An imported map has no authored local lighting sources. You can still adjust its overall darkness and use fog. Lighting and fog settings are kept separately for each map.'

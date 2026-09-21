@@ -1,6 +1,6 @@
-import {showDialog} from './dialogs.js?v=58';
-import {chooseSaveDestination,writeGameFile} from './file-destination.js?v=58';
-import { MAX_SAVE_BYTES, parseSave, restoreSave, serializeSave, saveFilename } from './save-file.js?v=58';
+import {showDialog} from './dialogs.js?v=59';
+import {chooseSaveDestination,writeGameFile} from './file-destination.js?v=59';
+import { MAX_SAVE_BYTES, parseSave, restoreSave, serializeSave, saveFilename } from './save-file.js?v=59';
 const $=id=>document.getElementById(id);
 
 export function createSaveControls({map,catalog,loadMap,bundle,getState,getView,getProject,applySave,announce}) {
