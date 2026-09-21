@@ -1,40 +1,40 @@
-import {createMapNavigation} from './map-navigation.js?v=40';
-import {chevronIcon} from './control-icons.js?v=40';
-import {createSpellLibrary} from './spell-library.js?v=40';
-import {createReferenceViewers} from './reference-viewers.js?v=40';
-import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=40';
-import {persistAssets} from './local-assets.js?v=40';
-import {createScenery} from './scenery.js?v=40';
-import {consumeMapDismissal} from './map-dismissal.js?v=40';
-import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=40';
-import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=40';
-import {createDiceTools} from './dice.js?v=40';
-import {fetchJSON,loadRaster} from './resource-loading.js?v=40';
-import {storyCatalog,nextStory} from './story-assets.js?v=40';
-import {createItemsUI} from './items-ui.js?v=40';
-import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=40';
-import {createHistory} from './history.js?v=40';
-import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=40';
-import {setupSidebarResize} from './sidebar-resize.js?v=40';
-import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=40';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=40';
-import {createFogTools} from './fog-tools.js?v=40';
-import {normalizeFog} from './fog-state.js?v=40';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=40';
-import {createSessionBundle} from './session-bundle.js?v=40';
-import { startDMShell } from './dm-shell.js?v=40';
-import { openPlayerWindow } from './display-window.js?v=40';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=40';
-import { createEncounterTools } from './encounter-tools.js?v=40';
-import { playerProjection, formation, moveParty } from './encounter-state.js?v=40';
-import { createMapMenu } from './map-menu.js?v=40';
-import { createSaveControls } from './save-controls.js?v=40';
-import { parseSave, restoreSave } from './save-file.js?v=40';
-import { createLighting } from './lighting.js?v=40';
-import { setupFullscreen } from './fullscreen.js?v=40';
-import { startPlayerDisplay } from './player-display.js?v=40';
-import { createDirector } from './director.js?v=40';
-import { normalizeProject } from './presentation-state.js?v=40';
+import {createMapNavigation} from './map-navigation.js?v=41';
+import {chevronIcon} from './control-icons.js?v=41';
+import {createSpellLibrary} from './spell-library.js?v=41';
+import {createReferenceViewers} from './reference-viewers.js?v=41';
+import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=41';
+import {persistAssets} from './local-assets.js?v=41';
+import {createScenery} from './scenery.js?v=41';
+import {consumeMapDismissal} from './map-dismissal.js?v=41';
+import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=41';
+import {listenForBoardReset,initializeControlBoard} from './board-reset.js?v=41';
+import {createDiceTools} from './dice.js?v=41';
+import {fetchJSON,loadRaster} from './resource-loading.js?v=41';
+import {storyCatalog,nextStory} from './story-assets.js?v=41';
+import {createItemsUI} from './items-ui.js?v=41';
+import {floorList,selectedFloor,placeView,selectFloor,interactionOnFloor} from './floors.js?v=41';
+import {createHistory} from './history.js?v=41';
+import {placeStep,setPlaceStep,cyclePlace} from './map-events.js?v=41';
+import {setupSidebarResize} from './sidebar-resize.js?v=41';
+import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=41';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=41';
+import {createFogTools} from './fog-tools.js?v=41';
+import {normalizeFog} from './fog-state.js?v=41';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=41';
+import {createSessionBundle} from './session-bundle.js?v=41';
+import { startDMShell } from './dm-shell.js?v=41';
+import { openPlayerWindow } from './display-window.js?v=41';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=41';
+import { createEncounterTools } from './encounter-tools.js?v=41';
+import { playerProjection, formation, moveParty } from './encounter-state.js?v=41';
+import { createMapMenu } from './map-menu.js?v=41';
+import { createSaveControls } from './save-controls.js?v=41';
+import { parseSave, restoreSave } from './save-file.js?v=41';
+import { createLighting } from './lighting.js?v=41';
+import { setupFullscreen } from './fullscreen.js?v=41';
+import { startPlayerDisplay } from './player-display.js?v=41';
+import { createDirector } from './director.js?v=41';
+import { normalizeProject } from './presentation-state.js?v=41';
 
 listenForBoardReset();
 const $ = id => document.getElementById(id);
@@ -69,7 +69,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=40')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=41')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -82,7 +82,7 @@ async function start() {
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=40`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=41`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -233,7 +233,7 @@ async function start() {
   function preview(next,mode=false){state=next;if(mode==='fog')fog?.render();else if(mode)encounter.renderCharacterPositions(typeof mode==='string'?mode:null);else render();}
   let positionSequence=0,lastPositionSequence=-1;
   function livePositions(id){const members=mapTokens(state).filter(m=>(!id||m.id===id)&&(!(m.monster||m.item)||m.visible&&(!m.item||!m.floor||state.floors?.[m.floor.placeId]===m.floor.floorId)));send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,...(!id?{party:state.party}:{}),positions:members.map(m=>({id:m.id,position:m.position,stack:m.stack||0}))});}
-  function setTool(value){tool=value;measuring=value==='measure';$('map-stage').classList.toggle('is-measuring',measuring);$('measure').setAttribute('aria-pressed',measuring);fog?.setMode(value);$('map').style.cursor=value?'crosshair':'';encounter.clearSelection();}
+  function setTool(value){tool=value;measuring=value==='measure';$('map-stage').classList.toggle('is-measuring',measuring);$('measure').setAttribute('aria-pressed',measuring);fog?.setMode(value);$('map').style.cursor=value==='measure'?'crosshair':'';encounter.clearSelection();}
   let references;
   const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,setTool,livePositions});
   if(!player){const overlay=svgNode('svg',{id:'party-overlay',preserveAspectRatio:'xMidYMid meet'});overlay.append($('party-layer'));$('map-stage').append(overlay);}
@@ -480,7 +480,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'40',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'41',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');

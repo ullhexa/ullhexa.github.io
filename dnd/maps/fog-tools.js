@@ -1,4 +1,4 @@
-import {FOG_SIZES,FOG_FEATHER} from './fog-state.js?v=40';
+import {FOG_SIZES,FOG_FEATHER} from './fog-state.js?v=41';
 export function createFogTools({map,player,getState,preview,finishDrag,pointAt,setTool,sendPreview,announce}){
   const stage=document.getElementById('map-stage'),svg=document.getElementById('map'),canvas=document.createElement('canvas');canvas.id='painted-fog';stage.append(canvas);
   const ratio=Math.min(1,2048/map.width,2048/map.height);canvas.width=Math.round(map.width*ratio);canvas.height=Math.round(map.height*ratio);
@@ -32,6 +32,6 @@ export function createFogTools({map,player,getState,preview,finishDrag,pointAt,s
     stage.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.pointer)return;e.preventDefault();e.stopImmediatePropagation();const p=pointAt(e)?.map(n=>Math.max(0,Math.min(1,n)));if(!p)return;const last=drag.stroke.points.at(-1);if(Math.hypot((p[0]-last[0])*map.width,(p[1]-last[1])*map.height)<map.grid.size*.05)return;if(drag.stroke.points.length<4000)drag.stroke={...drag.stroke,points:[...drag.stroke.points,p]};if(!frame)frame=requestAnimationFrame(flush);},true);
     stage.addEventListener('pointerup',e=>{if(!drag||e.pointerId!==drag.pointer)return;e.stopImmediatePropagation();flush();const before=drag.start;drag=null;finishDrag(before,'Fog updated.');},true);
     stage.addEventListener('pointercancel',e=>{if(!drag||e.pointerId!==drag.pointer)return;e.stopImmediatePropagation();const before=drag.start;drag=null;cancelAnimationFrame(frame);frame=0;preview(before,'fog');sendPreview(before.fog);draw();},true);
-    return {render:draw,position,setMode:value=>{tool=['paint','erase'].includes(value)?value:null;buttons.forEach(([id,b])=>b.setAttribute('aria-pressed',tool===id));stage.classList.toggle('is-fogging',!!tool);},isDrawing:()=>!!drag};
+    return {render:draw,position,setMode:value=>{tool=['paint','erase'].includes(value)?value:null;buttons.forEach(([id,b])=>b.setAttribute('aria-pressed',tool===id));stage.classList.toggle('is-fogging',!!tool);stage.dataset.fogTool=tool||'';},isDrawing:()=>!!drag};
   }return {render:draw,position};
 }
