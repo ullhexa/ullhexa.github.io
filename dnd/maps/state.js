@@ -1,11 +1,11 @@
-import {normalizePlaceNames} from './board-state.js?v=61';
-import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=61';
-import {buildingCollapsed} from './building-state.js?v=61';
-import {normalizeFog,normalizeFogSettings,defaultFogSettings} from './fog-state.js?v=61';
-import {assetId} from './combat-state.js?v=61';
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=61';
-import {validGridColor,normalizeGridThickness} from './grid-state.js?v=61';
-export {GRID_COLORS} from './grid-state.js?v=61';
+import {normalizePlaceNames} from './board-state.js?v=62';
+import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=62';
+import {buildingCollapsed} from './building-state.js?v=62';
+import {normalizeFog,normalizeFogSettings,defaultFogSettings} from './fog-state.js?v=62';
+import {assetId} from './combat-state.js?v=62';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=62';
+import {validGridColor,normalizeGridThickness} from './grid-state.js?v=62';
+export {GRID_COLORS} from './grid-state.js?v=62';
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {
   if(!value || !Number.isInteger(value.darkness))return false;

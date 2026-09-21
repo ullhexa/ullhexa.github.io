@@ -1,9 +1,9 @@
-import {button,el,label} from './editor-dom.js?v=61';
-import {FOG_TEXTURES,fogSize,fogAssetId} from './fog-state.js?v=61';
-import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=61';
-import {assetURL,uploadImage} from './local-assets.js?v=61';
-import {numberStepper} from './number-stepper.js?v=61';
-import {consumeMapDismissal} from './map-dismissal.js?v=61';
+import {button,el,label} from './editor-dom.js?v=62';
+import {FOG_TEXTURES,fogSize,fogAssetId} from './fog-state.js?v=62';
+import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=62';
+import {assetURL,uploadImage} from './local-assets.js?v=62';
+import {numberStepper} from './number-stepper.js?v=62';
+import {consumeMapDismissal} from './map-dismissal.js?v=62';
 
 export function createFogOptions({toggle,stage,getState,commit,announce}){
   let popup=null,grid,tabs=[],sizeInput,status,uploadButton,category='factory',signature='',busy=false;
