@@ -410,8 +410,8 @@ body:not(.player-mode) .is-measuring #map{cursor:crosshair}
 .reference-suite[data-side=right] .encounter-reference-content{flex-direction:row-reverse}
 @media(max-width:620px){.library-member-actions{flex-wrap:wrap}.library-member-actions>.field-label{max-width:none}.member-add-remove>button{font-size:11px}}
 
-/* A selected member keeps its gold treatment while the pointer remains over it. */
-.library-member-strip .library-member[aria-pressed=true]{border-color:var(--gold);background:#3b3c2b}
+/* Selected members and groups keep their gold treatment during hover and press. */
+.library-member-strip .library-member[aria-pressed=true],.library-groups .library-group[aria-pressed=true]{border-color:var(--gold);background:#3b3c2b}
 .source-tabs .item-search{width:240px;min-width:120px;height:38px;flex:0 1 240px;margin:0 0 0 auto}
 
 /* Item fields share two compact rows, with a three-line comment at the right. */
