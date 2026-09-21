@@ -1,11 +1,11 @@
 import {createMapNavigation} from './map-navigation.js?v=45';
 import {createFloorControl} from './floor-controls.js?v=52';
-import {createUserManual} from './user-manual.js?v=52';
+import {createUserManual} from './user-manual.js?v=53';
 import {createSpellLibrary} from './spell-library.js?v=45';
 import {createReferenceViewers} from './reference-viewers.js?v=45';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=45';
 import {persistAssets} from './local-assets.js?v=45';
-import {createScenery} from './scenery.js?v=45';
+import {createScenery} from './scenery.js?v=53';
 import {consumeMapDismissal} from './map-dismissal.js?v=45';
 import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=45';
 import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=45';
@@ -358,7 +358,7 @@ async function start() {
     }
     for(const [key,node] of floorNodes){const [placeId,floorId]=key.split(':');const p=map.places.find(p=>p.id===placeId);node.style.display=selectedFloor(p,state)?.id===floorId?'':'none';}
     if(!player&&selectedOptionsFloor!==selectedFloor(map.places.find(p=>p.id===selected)||{},state)?.id){selectPlace(selected);}
-    scenery.render(state.environment.darkness);
+    scenery.render(state.environment.darkness,state.floors);
     cameraView();
     $('grid-overlay').style.display = state.grid ? '' : 'none';
     $('show-grid').checked = state.grid;
@@ -478,7 +478,7 @@ async function start() {
       if((playerWindow&&!playerWindow.closed)||peers.size){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'52',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'53',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
