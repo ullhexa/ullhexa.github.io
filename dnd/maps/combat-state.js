@@ -1,6 +1,7 @@
-import {normalizeSpells,normalizeSpellLibrary} from './spell-state.js?v=58';
-import {normalizeUserTokens} from './library-assets.js?v=58';
-import {elevation} from './token-options.js?v=58';
+import {normalizeFogImages} from './fog-state.js?v=59';
+import {normalizeSpells,normalizeSpellLibrary} from './spell-state.js?v=59';
+import {normalizeUserTokens} from './library-assets.js?v=59';
+import {elevation} from './token-options.js?v=59';
 // Small, explicit session model. Roster and monsters are the active map instances.
 export const CONDITIONS=[['blinded','◉̸','Blinded'],['charmed','♡','Charmed'],['deafened','♬̸','Deafened'],['exhaustion','⌛','Exhaustion'],['frightened','!','Frightened'],['grappled','⚓','Grappled'],['incapacitated','×','Incapacitated'],['invisible','◌','Invisible'],['paralyzed','Ⅱ','Paralyzed'],['petrified','◆','Petrified'],['poisoned','☠','Poisoned'],['prone','↘','Prone'],['restrained','⊠','Restrained'],['stunned','✧','Stunned'],['unconscious','☾','Unconscious']];
 export const MONSTERS=['Goblin','Kobold','Orc','Bugbear','Bandit','Cultist','Skeleton','Zombie','Ghoul','Mummy','Vampire','Ghost','Wolf','Bear','Giant spider','Owlbear','Troll','Ogre','Cyclops','Minotaur','Red dragon','Green dragon','Gargoyle','Imp','Fire elemental','Water elemental','Earth elemental','Air elemental','Mimic','Gelatinous cube',"Hobgoblin", "Gnoll", "Giant rat", "Giant bat", "Boar", "Dire wolf", "Giant snake", "Giant scorpion", "Wight", "Wraith", "Lich", "Death knight", "Werewolf", "Harpy", "Griffon", "Basilisk", "Hydra", "Stone golem", "Treant", "Myconid"];
@@ -20,7 +21,7 @@ export function normalizeCampaign(value,roster){
   const parties=groups(value?.parties,false),encounters=groups(value?.encounters,true);
   if(!Array.isArray(value?.parties)&&!parties.length)parties.push({id:'party-default',name:'Party',members:normalizeMembers(roster)});
   const itemLists=normalizeItemLists(value?.itemLists);
-  return {...normalizeSpellLibrary(value),parties,encounters,itemLists,userTokens:normalizeUserTokens(value?.userTokens,[parties,encounters,itemLists]),activeItems:itemLists.some(g=>g.id===value?.activeItems)?value.activeItems:null,activeParty:value?.activeParty===null?null:parties.some(p=>p.id===value?.activeParty)?value.activeParty:parties[0]?.id||null,activeEncounter:encounters.some(g=>g.id===value?.activeEncounter)?value.activeEncounter:null};
+  return {...normalizeSpellLibrary(value),fogImages:normalizeFogImages(value?.fogImages),parties,encounters,itemLists,userTokens:normalizeUserTokens(value?.userTokens,[parties,encounters,itemLists]),activeItems:itemLists.some(g=>g.id===value?.activeItems)?value.activeItems:null,activeParty:value?.activeParty===null?null:parties.some(p=>p.id===value?.activeParty)?value.activeParty:parties[0]?.id||null,activeEncounter:encounters.some(g=>g.id===value?.activeEncounter)?value.activeEncounter:null};
 }
 export function syncCampaign(state){if(state.public)return state;const campaign=normalizeCampaign(state.campaign,state.roster);campaign.parties=campaign.parties.map(g=>g.id===campaign.activeParty?{...g,members:state.roster}:g);campaign.encounters=campaign.encounters.map(g=>g.id===campaign.activeEncounter?{...g,members:state.monsters||[]}:g);return {...state,campaign};}
 export function applyGroup(state,kind,id){const current=syncCampaign(state),key=kind==='party'?'parties':'encounters',active=kind==='party'?'activeParty':'activeEncounter',field=kind==='party'?'roster':'monsters';const g=current.campaign[key].find(g=>g.id===id);if(!g)return state;return {...current,[field]:g.members.map(m=>({...m})),campaign:{...current.campaign,[active]:id},turnId:null,...(kind==='party'?{regroupPlayers:false}:{})};}

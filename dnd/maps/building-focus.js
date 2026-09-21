@@ -1,4 +1,4 @@
-import {boundedCamera} from './camera.js?v=58';
+import {boundedCamera} from './camera.js?v=59';
 
 // Fit the complete footprint into 60% of the stage, leaving context around it.
 export function buildingFocusCamera(map,place,viewport){

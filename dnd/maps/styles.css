@@ -606,3 +606,24 @@ body:not(.player-mode) .map-topline{padding-block:0;min-height:0;margin-bottom:8
 .shape-palette-action.shape-visibility{margin-right:-4px}
 .shape-palette-action.shape-remove{margin-left:-4px}
 .shape-palette-action[aria-pressed=true]{background:#ddc28c;color:#1b281f}
+/* Compact fog tools; a separate palette holds textures and the shared brush size. */
+.map-controls .fog-controls button{width:32px;min-width:32px;padding:0;display:grid;place-items:center}
+.map-controls .fog-controls svg{display:block;width:22px;height:22px;pointer-events:none}
+.map-controls .fog-controls button[aria-expanded=true],.map-controls .fog-controls button[aria-expanded=true]:hover:not(:disabled){color:var(--ink);background:var(--gold);border-color:var(--gold)}
+.fog-options{position:fixed;z-index:100;width:340px;max-width:calc(100vw - 8px);max-height:calc(100dvh - 8px);overflow-y:auto;scrollbar-gutter:stable;padding:12px;background:#15221c;border:1px solid #53614e;border-radius:8px;color:var(--text);box-shadow:0 8px 24px #0005}
+.fog-options-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:.85rem}
+.fog-options .fog-options-close{border:0;background:none;padding:0;width:26px;height:26px;min-height:26px;font-size:24px;line-height:1}
+.fog-options-tabs{display:flex;gap:6px;margin-bottom:10px}
+.fog-options-tabs button{min-height:30px;padding:4px 12px;font-size:.75rem}
+.fog-options button[aria-pressed=true],.fog-options button[aria-pressed=true]:hover{border-color:var(--gold);background:#50442d;color:#ffe0ae}
+.fog-texture-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:286px;overflow-y:auto;scrollbar-gutter:stable}
+.fog-options .fog-texture{position:relative;display:flex;flex-direction:column;gap:0;min-width:0;padding:0;overflow:hidden;border:1px solid #435343;border-radius:5px;min-height:82px;background:#101b15}
+.fog-texture img{display:block;width:100%;height:72px;object-fit:cover;background:#38443f;pointer-events:none}
+.fog-texture span{padding:5px 7px;font-size:.7rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;width:100%;text-align:left}
+.fog-options .fog-upload{justify-content:center;align-items:center;font-size:.75rem;padding:8px;color:var(--gold)}
+.fog-options .fog-size{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 0;font-size:.75rem}
+.fog-size .number-stepper{width:122px;flex:none}
+.fog-options .fog-size input{width:54px;text-align:center;outline:none;box-shadow:none}
+.fog-options .image-types{margin:0 0 8px;font-size:.65rem;line-height:1.5}
+.fog-options-status{font-size:.72rem;line-height:1.4;color:var(--gold);margin-top:8px}
+.fog-options-status:empty{display:none}
