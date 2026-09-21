@@ -16,12 +16,11 @@ export function createDirector({catalog,mapId,getProject,setProject,prepareMap,a
   for(const [id,label] of [['battle','Battle map'],['story','Story']]){
     const button=el('button',label);button.id=`show-${id}`;button.type='button';button.addEventListener('click',()=>{setProject({...getProject(),mode:id});announce(id==='story'?'Story is on the player display. Prepare the next map below.':'Your prepared battle map is on the player display.');});modes.append(button);
   }
-  document.querySelector('.site-identity').after(modes);
+  document.querySelector('.map-view-identity').after(modes);
   const quick=el('div',null,'quick-selections');quick.setAttribute('aria-label','Prepared scenes');
   const mapSelect=el('select'),storySelect=el('select');mapSelect.id='quick-maps';storySelect.id='quick-stories';
   mapSelect.setAttribute('aria-label','Prepared maps');storySelect.setAttribute('aria-label','Prepared stories');
   quick.append(mapSelect,storySelect);document.querySelector('.lighting-control').after(quick);
-  const status=el('span',null,'presentation-status');status.id='presentation-status';document.querySelector('.map-topline>div').append(status);
   const dialog=el('section');dialog.id='story-dialog';dialog.setAttribute('aria-labelledby','story-menu-title');
   dialog.innerHTML='<div class="map-menu-heading"><div><p class="eyebrow">STORY LIBRARY</p><h2 id="story-menu-title">Choose a scene</h2></div><button id="close-stories" class="quiet" aria-label="Close story menu">×</button></div><div class="story-menu-layout"><div id="story-grid" class="story-grid" role="group" aria-label="Available story scenes"></div><section class="story-details" aria-label="Selected story scene"><div id="story-preview" class="story-preview" aria-label="Story preview"></div><h3 id="story-title"></h3><p id="story-description"></p><button id="add-story">Add to session</button></section></div><div class="dialog-actions"><button id="apply-story" class="primary">Use scene</button></div>';
   document.body.append(dialog);
@@ -56,7 +55,7 @@ export function createDirector({catalog,mapId,getProject,setProject,prepareMap,a
     if(JSON.stringify(scenes.map(s=>[s.id,s.asset,s.title]))!==JSON.stringify(library.map(s=>[s.id,s.asset,s.title]))){library.splice(0,library.length,...scenes);$('story-grid').replaceChildren(uploadButton);library.forEach(addCard);}
     $('show-battle').setAttribute('aria-pressed',project.mode==='battle');$('show-story').setAttribute('aria-pressed',project.mode==='story');
     options(mapSelect,`Map (${Math.max(0,project.maps.indexOf(mapId)+1)}/${project.maps.length})`,project.maps,catalog);options(storySelect,`Story (${Math.max(0,project.stories.indexOf(project.vibe)+1)}/${project.stories.length})`,project.stories,library);
-    const vibe=library.find(scene=>scene.id===project.vibe)||library[0];status.textContent=project.mode==='story'?`Players: ${vibe.title} · Map is private`:'Players: battle map';status.classList.toggle('is-story',project.mode==='story');
+    const vibe=library.find(scene=>scene.id===project.vibe)||library[0];
     mapSelect.title=`Prepare a map · Current: ${catalog.find(entry=>entry.id===mapId)?.title}`;storySelect.title=`Story: ${vibe.title}`;
     filter();edit.hidden=remove.hidden=!library.find(s=>s.id===selected)?.asset;$('apply-story').disabled=!selected;
     $('add-story').disabled=!selected||!groups.selected()||groups.entries().includes(selected);$('add-story').textContent=groups.entries().includes(selected)?'Added to session':'Add to session';

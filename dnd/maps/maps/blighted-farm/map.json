@@ -121,6 +121,7 @@
       "floors": [
         {
           "id": "ground",
+          "level": 0,
           "label": "Ground floor",
           "polygon": [
             [
@@ -174,6 +175,7 @@
         },
         {
           "id": "upper",
+          "level": 1,
           "label": "Upper floor",
           "asset": "upper",
           "polygon": [
@@ -212,6 +214,7 @@
         },
         {
           "id": "basement",
+          "level": -1,
           "label": "Basement",
           "asset": "basement",
           "polygon": [
