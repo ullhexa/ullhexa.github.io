@@ -1,14 +1,14 @@
-import {visibilityIcon,chevronIcon} from './control-icons.js?v=56';
-import {consumeMapDismissal} from './map-dismissal.js?v=56';
-import {itemFloorAt,itemOnSelectedFloor} from './floors.js?v=56';
-import {elevation,tokenName,statusCursor} from './token-options.js?v=56';
-import {shapeBounds,placeShapeLabel} from './shape-label.js?v=56';
-import {conditionIcon} from './condition-icons.js?v=56';
-import {shortcutAction,isTextEntry} from './keyboard.js?v=56';
-import {setFace} from './token-portraits.js?v=56';
-import {SHAPE_COLORS,clamp,feetToWorld,setTokenMode,newShape,resizeShape,rotateShape} from './encounter-state.js?v=56';
-import {CONDITIONS,mapTokens as combatants,patchToken as patchMember,snapPoint,initiativeOrder,bringTokenToFront as bringToFront} from './combat-state.js?v=56';
-import {el,button,badgeNodes} from './combat-ui.js?v=56';
+import {visibilityIcon,chevronIcon} from './control-icons.js?v=57';
+import {consumeMapDismissal} from './map-dismissal.js?v=57';
+import {itemFloorAt,itemOnSelectedFloor} from './floors.js?v=57';
+import {elevation,tokenName,statusCursor} from './token-options.js?v=57';
+import {shapeBounds,placeShapeLabel} from './shape-label.js?v=57';
+import {conditionIcon} from './condition-icons.js?v=57';
+import {shortcutAction,isTextEntry} from './keyboard.js?v=57';
+import {setFace} from './token-portraits.js?v=57';
+import {SHAPE_COLORS,clamp,feetToWorld,setTokenMode,newShape,resizeShape,rotateShape} from './encounter-state.js?v=57';
+import {CONDITIONS,mapTokens as combatants,patchToken as patchMember,snapPoint,initiativeOrder,bringTokenToFront as bringToFront} from './combat-state.js?v=57';
+import {el,button,badgeNodes} from './combat-ui.js?v=57';
 const NS='http://www.w3.org/2000/svg',$=id=>document.getElementById(id);
 const node=(tag,attrs={},text)=>{const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(text!==undefined)e.textContent=text;return e;};
 const names=['Blue','Brown','Red','Orange','Black','White','Green','Purple'];
@@ -76,7 +76,7 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
     if(itemComment){const root=itemComment.root;root.style.maxWidth=`${Math.max(1,stage.clientWidth-8)}px`;root.style.maxHeight=`${Math.max(1,stage.clientHeight-8)}px`;root.style.left=`${clamp(r.left-s.left+r.width/2-root.offsetWidth/2,4,Math.max(4,stage.clientWidth-root.offsetWidth-4))}px`;root.style.top=`${clamp(r.bottom-s.top+8,4,Math.max(4,stage.clientHeight-root.offsetHeight-4))}px`;}
   }
   function selectItem(id){if(itemEditing!==id)itemEditing=null;closePalette();if(status)closeStatus();if(itemComment?.id!==id)closeItemComment();selected=null;itemSelected=getState().items.some(m=>m.id===id)?id:null;itemEditing=itemSelected;renderShapes();renderCharacters();}
-  function deleteSelectedItem(){if(!itemSelected)return;const id=itemSelected;closeItemComment();itemSelected=null;commit({...getState(),items:getState().items.filter(m=>m.id!==id)},'Item removed.');}
+  function deleteSelectedItem(){if(!itemSelected)return;const id=itemSelected;closeItemComment();itemSelected=null;itemEditing=null;commit({...getState(),items:getState().items.filter(m=>m.id!==id)},'Item removed.');}
   function closeItemComment(){if(!itemComment)return;const {id,root,input,name}=itemComment;itemComment=null;root.remove();const item=getState().items.find(m=>m.id===id),title=name.value.trim().slice(0,32)||'Item',comment=input.value.slice(0,2000);if(item&&(item.comment!==comment||item.name!==title))commit(patchMember(getState(),id,{name:title,comment}),'Item details saved.');positionItemControls();}
   function openItemComment(id){selectItem(id);closeItemComment();const item=getState().items.find(m=>m.id===id);if(!item)return;const root=el('div',undefined,'item-comment'),name=el('input'),input=el('textarea');root.setAttribute('role','dialog');root.setAttribute('aria-label',`${item.name} comment`);name.type='text';name.value=item.name;name.maxLength=32;name.setAttribute('aria-label','Placed item name');input.value=item.comment||'';input.maxLength=2000;input.rows=4;input.setAttribute('aria-label','Item comment');const header=el('header',undefined,'item-editor-actions'),visible=visibilityButton(id),remove=button('×',deleteSelectedItem,'item-editor-delete'),close=button('',()=>{closeItemComment();renderCharacters();},'item-editor-close');remove.setAttribute('aria-label','Delete selected item');close.append(chevronIcon());close.setAttribute('aria-label','Close item comment');header.append(visible,remove,close);root.append(header,name,input,elevationControl(()=>getState().items.find(m=>m.id===id)?.elevation||0,value=>commit(patchMember(getState(),id,{elevation:value}),'Item elevation updated.')));itemEditing=id;itemComment={id,root,input,name,visibility:visible};stage.append(root);positionItemControls();input.focus({preventScroll:true});}
   function editItem(id,notes=false){setTool(null);selectItem(id);itemEditing=itemSelected;renderCharacters();if(notes&&itemSelected)openItemComment(id);}
@@ -98,6 +98,6 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
   }
   function locateToken(id){const m=combatants(getState()).find(m=>m.id===id);if(m?.item)return;located=id;renderCharacters();if(m&&!m.monster&&getState().tokenMode==='party')document.querySelector('#party-layer')?.classList.add('party-located');}
   if(!player)document.addEventListener('pointerdown',event=>{if(!located)return;located=null;for(const t of tokenNodes.values())t.classList.remove('token-located');document.querySelector('#party-layer')?.classList.remove('party-located');consumeMapDismissal(event,stage);},true);
-  function render(){if(itemSelected&&!getState().items.some(m=>m.id===itemSelected)){itemSelected=null;closeItemComment();}renderCharacters();renderShapes();if(!player){$('mode-party').setAttribute('aria-pressed',getState().tokenMode==='party');$('mode-players').setAttribute('aria-pressed',getState().tokenMode==='players');}}
+  function render(){if(itemSelected&&!getState().items.some(m=>m.id===itemSelected)){itemSelected=null;itemEditing=null;closeItemComment();}renderCharacters();renderShapes();if(!player){$('mode-party').setAttribute('aria-pressed',getState().tokenMode==='party');$('mode-players').setAttribute('aria-pressed',getState().tokenMode==='players');}}
   return {render,selectItem,editItem,showItemNotes:id=>editItem(id,true),locateToken,renderCamera:view=>{updateGeometry(view);renderHandles(getState().shapes.find(s=>s.id===selected));},renderCharacterPositions:position,renderPartyPosition:positionParty,isDragging:()=>!!drag,clearSelection:()=>{selected=null;itemSelected=null;itemEditing=null;closeItemComment();closePalette();if(status)closeStatus();renderShapes();renderCharacters();},closeStatus};
 }
