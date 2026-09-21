@@ -1,5 +1,5 @@
-import {storyCatalog,validStoryAsset,validStoryAssets} from './story-assets.js?v=45';
-import { STORY_SCENES } from './story-scenes.js?v=45';
+import {storyCatalog,validStoryAsset,validStoryAssets} from './story-assets.js?v=54';
+import { STORY_SCENES } from './story-scenes.js?v=54';
 const ids=STORY_SCENES.map(scene=>scene.id);
 const validId=value=>typeof value==='string'&&/^[-a-zA-Z0-9]{1,80}$/.test(value);
 const list=value=>Array.isArray(value)&&value.length<=100&&value.every(validId)&&new Set(value).size===value.length;

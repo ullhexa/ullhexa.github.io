@@ -1,7 +1,8 @@
-import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=45';
-import {normalizeFog} from './fog-state.js?v=45';
-import {assetId} from './combat-state.js?v=45';
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=45';
+import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=54';
+import {buildingCollapsed} from './building-state.js?v=54';
+import {normalizeFog} from './fog-state.js?v=54';
+import {assetId} from './combat-state.js?v=54';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=54';
 export const GRID_COLORS = ['map','black','white'];
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {
@@ -87,14 +88,14 @@ export function isVisible(map,state,id){
   const visit=(target,seen)=>{
     if(seen.has(target))return false;
     const item=map.interactions.find(i=>i.id===target);
-    return !!item&&interactionOnFloor(map,state,item)&&state.active.includes(target)&&(item.requires||[]).every(dep=>visit(dep,new Set([...seen,target])));
+    return !!item&&interactionOnFloor(map,state,item)&&state.active.includes(target)&&(item.variant==='collapsed'||(!item.variant||!buildingCollapsed(map,state,item.placeId))&&(item.requires||[]).every(dep=>visit(dep,new Set([...seen,target]))));
   };
   return visit(id,new Set());
 }
 export function toggleInteraction(map,state,id){
   const item=map.interactions.find(i=>i.id===id);
   if(!item)throw new Error('Unknown interaction.');
-  if(!state.active.includes(id)&&(item.requires||[]).some(dep=>!isVisible(map,state,dep)))throw new Error('Reveal the surrounding area first.');
+  if(item.type!=='terrain'&&item.type!=='roof'&&!state.active.includes(id)&&(item.requires||[]).some(dep=>!isVisible(map,state,dep)))throw new Error('Reveal the surrounding area first.');
   return {...state,active:state.active.includes(id)?state.active.filter(value=>value!==id):[...state.active,id],revision:state.revision+1};
 }
 export function distanceBetween(map,a,b){return Math.hypot((b[0]-a[0])*map.width,(b[1]-a[1])*map.height)/map.grid.size*map.grid.distance;}
