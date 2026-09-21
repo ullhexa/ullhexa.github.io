@@ -1,4 +1,4 @@
-import {showDialog} from './dialogs.js?v=60';
+import {showDialog} from './dialogs.js?v=61';
 
 // Keep this guide aligned with the shipped controls, not tabletop rules.
 export const MANUAL_SECTIONS=[

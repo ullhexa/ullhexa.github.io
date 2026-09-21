@@ -1,4 +1,4 @@
-import {el,button} from './editor-dom.js?v=60';
+import {el,button} from './editor-dom.js?v=61';
 
 export function numberStepper(input,{name,normalize}){
   const control=el('div',undefined,'number-stepper');control.append(input);
