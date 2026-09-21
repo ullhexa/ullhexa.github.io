@@ -1,6 +1,6 @@
-import {readRaster,rasterRecord,validImageDimensions} from './image-import.js?v=38';
-import {autoSaveEnabled,memoryAsset,rememberAssets,requestMemoryAsset} from './session-storage.js?v=38';
-import {assetId} from './combat-state.js?v=38';
+import {readRaster,rasterRecord,validImageDimensions} from './image-import.js?v=39';
+import {autoSaveEnabled,memoryAsset,rememberAssets,requestMemoryAsset} from './session-storage.js?v=39';
+import {assetId} from './combat-state.js?v=39';
 let dbPromise;const urls=new Map();
 function database(){return dbPromise??=new Promise((resolve,reject)=>{const request=indexedDB.open('ullhexa-local-assets',1);request.onupgradeneeded=()=>request.result.createObjectStore('assets',{keyPath:'id'});request.onsuccess=()=>{const db=request.result;db.onversionchange=()=>{db.close();dbPromise=null;};db.onclose=()=>{dbPromise=null;};resolve(db);};request.onerror=()=>{dbPromise=null;reject(new Error('Local image storage is unavailable.'));};});}
 async function storedAsset(id){const db=await database();return new Promise((resolve,reject)=>{const r=db.transaction('assets').objectStore('assets').get(id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
