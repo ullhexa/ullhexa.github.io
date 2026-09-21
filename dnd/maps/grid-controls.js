@@ -1,15 +1,17 @@
-import {button,el} from './combat-ui.js?v=59';
-import {consumeMapDismissal} from './map-dismissal.js?v=59';
+import {boardIcon} from './control-icons.js?v=60';
+import {button,el} from './combat-ui.js?v=60';
+import {consumeMapDismissal} from './map-dismissal.js?v=60';
 
-import {GRID_COLORS,MAX_GRID_THICKNESS,gridColor} from './grid-state.js?v=59';
+import {GRID_COLORS,MAX_GRID_THICKNESS,gridColor} from './grid-state.js?v=60';
 
 export function createGridControls({map,getState,commit}){
   const grid=document.getElementById('show-grid'),lock=document.getElementById('snap-grid'),swatch=document.getElementById('grid-options-toggle'),stage=document.getElementById('map-stage');
+  lock.classList.add('board-icon-control');
   let popup=null,colors=[],minus,plus,value;
   const apply=patch=>commit({...getState(),...patch},'',false);
   function close(){popup?.remove();popup=null;colors=[];swatch.setAttribute('aria-expanded','false');}
   function position(){if(!popup)return;const r=swatch.getBoundingClientRect();popup.style.left=`${Math.max(4,Math.min(innerWidth-popup.offsetWidth-4,r.left+r.width/2-popup.offsetWidth/2))}px`;popup.style.top=`${Math.max(4,Math.min(innerHeight-popup.offsetHeight-4,r.bottom+8))}px`;}
-  function render(){const s=getState();grid.setAttribute('aria-pressed',String(s.grid));lock.setAttribute('aria-pressed',String(s.snap));swatch.style.setProperty('--grid-color',gridColor(map,s.gridColor));if(!popup)return;for(const b of colors)b.setAttribute('aria-pressed',String(b.dataset.gridColor===s.gridColor));value.value=s.gridThickness;minus.disabled=s.gridThickness<=1;plus.disabled=s.gridThickness>=MAX_GRID_THICKNESS;}
+  function render(){const s=getState();grid.setAttribute('aria-pressed',String(s.grid));lock.setAttribute('aria-pressed',String(s.snap));if(lock.dataset.icon!==String(s.snap)){lock.dataset.icon=String(s.snap);lock.replaceChildren(boardIcon(s.snap?'locked':'unlocked'));lock.setAttribute('aria-label','Lock');lock.title=s.snap?'Unlock grid':'Lock to grid';}swatch.style.setProperty('--grid-color',gridColor(map,s.gridColor));if(!popup)return;for(const b of colors)b.setAttribute('aria-pressed',String(b.dataset.gridColor===s.gridColor));value.value=s.gridThickness;minus.disabled=s.gridThickness<=1;plus.disabled=s.gridThickness>=MAX_GRID_THICKNESS;}
   function open(){
     popup=el('div',null,'grid-options');popup.id='grid-options';popup.setAttribute('role','dialog');popup.setAttribute('aria-label','Grid options');
     const palette=el('div',null,'grid-options-colors'),names=['Map color','Black','White','Blue','Brown','Red','Orange','Green','Purple'];

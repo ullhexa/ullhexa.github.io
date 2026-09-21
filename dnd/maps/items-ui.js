@@ -1,14 +1,16 @@
-import {chevronIcon,icon} from './control-icons.js?v=59';
-import {numberStepper} from './number-stepper.js?v=59';
-import {itemFloorAt} from './floors.js?v=59';
-import {tokenGallery} from './token-gallery.js?v=59';
-import {createMemberStrip} from './member-strip.js?v=59';
-import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=59';
-import {el,button} from './combat-ui.js?v=59';
-import {ITEMS,searchItems} from './items-catalog.js?v=59';
-import {setFace} from './token-portraits.js?v=59';
-import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=59';
-import {groupSelection} from './group-selection.js?v=59';
+import {featureHeading} from './feature-controls.js?v=60';
+import {featureEnabled} from './board-state.js?v=60';
+import {chevronIcon,icon} from './control-icons.js?v=60';
+import {numberStepper} from './number-stepper.js?v=60';
+import {itemFloorAt} from './floors.js?v=60';
+import {tokenGallery} from './token-gallery.js?v=60';
+import {createMemberStrip} from './member-strip.js?v=60';
+import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=60';
+import {el,button} from './combat-ui.js?v=60';
+import {ITEMS,searchItems} from './items-catalog.js?v=60';
+import {setFace} from './token-portraits.js?v=60';
+import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=60';
+import {groupSelection} from './group-selection.js?v=60';
 const $=id=>document.getElementById(id);
 function face(item){const img=el('img');img.alt='';img.width=img.height=40;img.draggable=false;setFace(img,item);return img;}
 function field(label,value,change,type='text'){const wrap=el('label',label,'field-label'),input=el('input');input.type=type;input.value=value;input.setAttribute('aria-label',label);input.addEventListener('input',()=>change(input.value));wrap.append(input);return {wrap,input};}
@@ -30,7 +32,7 @@ export function createItemsUI({map,getState,commit,announce,pointAt,setTool,sele
   function edit(fn,redraw=true,groupId=selected){const s=syncCampaign(getState()),lists=s.campaign.itemLists.map(g=>g.id===groupId?fn(g):g);commit({...s,campaign:{...s.campaign,itemLists:lists}},'Item list updated.');if(redraw)renderMenu();else refreshLabels();}
   function refreshLabels(){const s=getState();for(const b of groups.querySelectorAll('[data-item-group]')){const g=s.campaign.itemLists.find(g=>g.id===b.dataset.itemGroup);if(g)b.textContent=g.name;}for(const b of main.querySelectorAll('[data-item-id]')){const item=group()?.members.find(m=>m.id===b.dataset.itemId);if(item)b.lastElementChild.textContent=item.name;}}
   function addItem(picture=null,avatar=null,groupId=selected){const g=getState().campaign.itemLists.find(g=>g.id===groupId);if(!g)return;if(picture===null)picture=ITEMS.findIndex((_,portrait)=>!g.members.some(m=>!m.avatar&&m.portrait===portrait));if(picture<0){announce('All factory items are already included.');return;}const existing=g.members.find(m=>avatar?m.avatar===avatar:!m.avatar&&m.portrait===picture);if(existing){memberStrip.select(existing.id);return;}if(g.members.length>=500){announce('Up to 500 items per list.');return;}itemId=crypto.randomUUID();const item=normalizeItem({id:itemId,name:avatar?'Custom item':ITEMS[picture],portrait:picture,avatar,size:5,visible:false});edit(g=>({...g,members:[...g.members,item]}),true,groupId);}
-  function renderMenu(){const s=getState();if(!s.campaign.itemLists.some(g=>g.id===selected))selected=s.campaign.activeItems||s.campaign.itemLists[0]?.id||null;selection.prune(s.campaign.itemLists.map(g=>g.id),selected);const g=group();groups.replaceChildren(el('h3','Item lists'),button('+ New item list',()=>{const s=syncCampaign(getState());if(s.campaign.itemLists.length>=20)return;selected=crypto.randomUUID();selection.reset(selected);itemId=null;commit({...s,campaign:{...s.campaign,itemLists:[...s.campaign.itemLists,{id:selected,name:'Items',members:[]}]}},'Item list created.');renderMenu();}));
+  function renderMenu(){const s=getState();if(!s.campaign.itemLists.some(g=>g.id===selected))selected=s.campaign.activeItems||s.campaign.itemLists[0]?.id||null;selection.prune(s.campaign.itemLists.map(g=>g.id),selected);const g=group();groups.replaceChildren(featureHeading({kind:'items',title:'Item lists',groups,main,footer:actions,getState,commit,render:renderMenu}),button('+ New item list',()=>{const s=syncCampaign(getState());if(s.campaign.itemLists.length>=20)return;selected=crypto.randomUUID();selection.reset(selected);itemId=null;commit({...s,campaign:{...s.campaign,itemLists:[...s.campaign.itemLists,{id:selected,name:'Items',members:[]}]}},'Item list created.');renderMenu();}));
     for(const list of s.campaign.itemLists){const b=button(list.name,e=>{selected=selection.click(list.id,e,s.campaign.itemLists.map(g=>g.id));itemId=null;renderMenu();},'library-group');b.dataset.itemGroup=list.id;b.setAttribute('aria-pressed',selection.has(list.id));b.classList.toggle('editing-group',list.id===selected);b.setAttribute('aria-current',list.id===s.campaign.activeItems);groups.append(b);}
     main.replaceChildren();remove.disabled=!selection.ids.length;remove.textContent=selection.ids.length>1?`Delete ${selection.ids.length} item lists`:'Delete item list';apply.textContent=!g||s.campaign.activeItems===selected?'Done':'Activate item list';hint.textContent='';if(!g){main.append(el('p','Create an item list to choose its items.','tool-hint'));return;}
     const naming=field('Item list name',g.name,value=>edit(g=>({...g,name:value.trim().slice(0,48)||'Items'}),false));naming.input.maxLength=48;const top=el('div',undefined,'library-member-actions');top.append(naming.wrap,button('+ Add item',()=>addItem()));const memberControls=el('div',undefined,'member-add-remove');memberControls.append(top.lastElementChild,memberStrip.removeSelected);top.append(memberControls);main.append(top);
@@ -57,7 +59,7 @@ export function createItemsUI({map,getState,commit,announce,pointAt,setTool,sele
   function moveDrag(e){if(!drag||drag.pointer!==e.pointerId)return;drag.ghost.style.left=`${e.clientX}px`;drag.ghost.style.top=`${e.clientY}px`;}
   function finish(e,cancel=false){if(!drag||drag.pointer!==e.pointerId)return;const d=drag;drag=null;d.ghost.remove();if(d.source.hasPointerCapture(e.pointerId))d.source.releasePointerCapture(e.pointerId);if(cancel||Math.hypot(e.clientX-d.x,e.clientY-d.y)<3)return;const stage=$('map-stage'),r=stage.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)return;let position=pointAt(e);if(!position||position.some(n=>n<0||n>1))return;if(getState().snap)position=snapPoint(map,position,d.item.size);const id=crypto.randomUUID(),next=placeItem(getState(),d.item,id,position,itemFloorAt(map,getState(),position));if(next===getState()){announce('Up to 500 placed items per map.');return;}commit(next,'Item placed.');selectItem(id);expanded=false;layoutTray();}
   tray.addEventListener('pointermove',moveDrag);tray.addEventListener('pointerup',e=>finish(e));tray.addEventListener('pointercancel',e=>finish(e,true));
-  function render(){const s=getState(),g=s.campaign.itemLists.find(g=>g.id===s.campaign.activeItems),traySig=JSON.stringify(g?.members||[]);if(traySig!==traySignature){traySignature=traySig;trayGrid.replaceChildren();for(const item of g?.members||[]){const b=button('',()=>{},'tray-item');b.title=item.name;b.setAttribute('aria-label',`Drag ${item.name} onto map`);b.append(face(item));b.addEventListener('pointerdown',e=>beginDrag(e,item));trayGrid.append(b);}if(!g?.members.length){const b=button('Items',()=>openMenu('items'),'tray-empty');trayGrid.append(b);}requestAnimationFrame(layoutTray);}
+  function render(){const s=getState();sidebar.hidden=tray.hidden=!featureEnabled(s,'items');const g=s.campaign.itemLists.find(g=>g.id===s.campaign.activeItems),traySig=JSON.stringify(g?.members||[]);if(traySig!==traySignature){traySignature=traySig;trayGrid.replaceChildren();for(const item of g?.members||[]){const b=button('',()=>{},'tray-item');b.title=item.name;b.setAttribute('aria-label',`Drag ${item.name} onto map`);b.append(face(item));b.addEventListener('pointerdown',e=>beginDrag(e,item));trayGrid.append(b);}if(!g?.members.length){const b=button('Items',()=>openMenu('items'),'tray-empty');trayGrid.append(b);}requestAnimationFrame(layoutTray);}
     const items=s.items||[],sig=JSON.stringify(items.map(({position,stack,...m})=>m));if(sig===signature)return;signature=sig;
     for(const[id,row]of rows)if(!items.some(m=>m.id===id)){row.remove();rows.delete(id);}
     for(const [index,m]of items.entries()){

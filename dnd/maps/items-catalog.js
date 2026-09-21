@@ -1,4 +1,4 @@
-import {ITEM_CROPS} from './item-crops.js?v=59';
+import {ITEM_CROPS} from './item-crops.js?v=60';
 export const ITEMS=[
 'Longsword','Dagger','Battle axe','Wooden club','Mace','Spear','Bow','Crossbow','Quiver','Round shield',
 'Helmet','Boots','Gloves','Chainmail','Leather armour','Red cloak','Wizard hat','Staff','Spellbook','Wand',

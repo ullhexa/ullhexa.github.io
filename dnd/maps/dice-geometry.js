@@ -14,11 +14,11 @@ function mesh(vertices){const radius=Math.max(...vertices.map(v=>Math.hypot(...v
 const phi=(1+Math.sqrt(5))/2,ico=[];for(const a of [-1,1])for(const b of [-phi,phi])ico.push([0,a,b],[a,b,0],[b,0,a]);
 const anti=Array.from({length:10},(_,i)=>{const theta=i*Math.PI/5;return [Math.cos(theta),Math.sin(theta),i%2?.85:-.85];});
 const ten=convexFaces(anti).map(f=>f.normal.map(n=>n/f.distance));
-export const DICE_MESHES={4:mesh([[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]]),6:mesh([-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z])))),8:mesh([[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]),10:mesh(ten),20:mesh(ico)};
+export const DICE_MESHES={4:mesh([[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]]),6:mesh([-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z])))),8:mesh([[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]),10:mesh(ten),12:mesh(convexFaces(ico).map(f=>f.normal)),20:mesh(ico)};
 export function percentileFaces(value){if(!Number.isInteger(value)||value<1||value>100)throw new Error('Invalid percentile result.');const n=value%100;return [String(Math.floor(n/10)*10).padStart(2,'0'),String(n%10)];}
 export function facingMesh(sides){const source=DICE_MESHES[sides],face=source.faces[0],z=face.normal,y=unit(sub(source.vertices[face.indices[0]],face.center)),x=cross(y,z);return {vertices:source.vertices.map(v=>{const p=[dot(v,x),dot(v,y),dot(v,z)];return sides===6?rotateVertex(p,[0,0,Math.PI/4]):p;}),faces:source.faces.map(f=>f.indices)};}
 export function rotateVertex(v,[rx,ry,rz]){let [x,y,z]=v;[y,z]=[y*Math.cos(rx)-z*Math.sin(rx),y*Math.sin(rx)+z*Math.cos(rx)];[x,z]=[x*Math.cos(ry)+z*Math.sin(ry),-x*Math.sin(ry)+z*Math.cos(ry)];return [x*Math.cos(rz)-y*Math.sin(rz),x*Math.sin(rz)+y*Math.cos(rz),z];}
-export const DICE_COLORS={4:[18,49],6:[235,36],8:[164,35],10:[42,53],20:[344,39],100:[278,31]};
+export const DICE_COLORS={4:[18,49],6:[235,36],8:[164,35],10:[42,53],12:[194,45],20:[344,39],100:[278,31]};
 export function landingMesh(sides){if(sides===8){const m=DICE_MESHES[8];return {vertices:m.vertices.map(v=>rotateVertex(rotateVertex(v,[0,Math.PI/4,0]),[.32,0,0])),faces:m.faces.map(f=>f.indices)};}if(sides===10){const m=DICE_MESHES[10];return {vertices:m.vertices.map(v=>rotateVertex(rotateVertex(v,[0,0,Math.PI/10]),[-Math.PI/2+.36,0,0])),faces:m.faces.map(f=>f.indices)};}return facingMesh(sides);}
 export function rollDuration(random=Math.random){return (2100+(Math.max(0,Math.min(1,random()))*2-1)*1000)*.8;}
 export function drawDie(canvas,shape,value,angles,settled,color=DICE_COLORS[4],numberOnly=false,numberLift=0){
