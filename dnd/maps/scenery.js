@@ -1,5 +1,5 @@
 import {loadRaster} from './resource-loading.js?v=62';
-import {createFloorTransitions} from './floor-transitions.js?v=62';
+import {createFloorTransitions} from './floor-transitions.js?v=81';
 const NS='http://www.w3.org/2000/svg';
 // Cache static art/light masks once per scene change at the source art resolution.
 // Pan/zoom move the cached plane; they never rebuild clips or light masks.

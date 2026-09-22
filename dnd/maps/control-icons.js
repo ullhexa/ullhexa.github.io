@@ -14,6 +14,7 @@ export function boardIcon(kind){
     undo:'M7 7h8a6 6 0 0 1 0 12h-3M7 7l5-5M7 7l5 5',redo:'M17 7H9a6 6 0 0 0 0 12h3M17 7l-5-5M17 7l-5 5',
     grid:'M3 3h18v18H3ZM9 3v18M15 3v18M3 9h18M3 15h18',
     locked:'M6 10h12v11H6ZM8 10V6a4 4 0 0 1 8 0v4M12 14v3',unlocked:'M6 10h12v11H6ZM8 10V6a4 4 0 0 1 8 0M12 14v3',
+    autoMeasure:'M4 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM4 14v6h16m-4-4 4 4-4 4M9 18v2m5-2v2',
     ruler:'m3 16 13-13 5 5L8 21ZM6 13l3 3M9 10l2 2M12 7l3 3M15 4l2 2',
     party:'M17 8a5 5 0 1 1-10 0 5 5 0 0 1 10 0ZM3 22v-3a6 6 0 0 1 6-6h6a6 6 0 0 1 6 6v3',
     players:'M15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM7 5a3 3 0 1 0 0 6M17 5a3 3 0 1 1 0 6M6 22v-5a6 6 0 0 1 12 0v5M3 20H1v-4a5 5 0 0 1 4-5M21 20h2v-4a5 5 0 0 0-4-5',

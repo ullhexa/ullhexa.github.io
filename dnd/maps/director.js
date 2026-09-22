@@ -1,5 +1,5 @@
-import {createScenePicker} from './scene-picker.js?v=76';
-import {chevronIcon} from './control-icons.js?v=62';
+import {createScenePicker} from './scene-picker.js?v=81';
+import {chevronIcon} from './control-icons.js?v=81';
 import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=62';
 import {editTokenImage} from './token-image-editor.js?v=79';
 import {createSceneGroups} from './scene-groups-ui.js?v=79';

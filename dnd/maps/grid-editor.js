@@ -1,4 +1,4 @@
-import {orientationIcon} from './control-icons.js?v=62';
+import {orientationIcon} from './control-icons.js?v=81';
 import {showDialog} from './dialogs.js?v=62';
 import {imageTypeNote} from './image-import.js?v=62';
 import {identityTransform,transformPoint,composeTransform,imageOperation} from './map-orientation.js?v=62';

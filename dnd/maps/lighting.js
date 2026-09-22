@@ -1,4 +1,4 @@
-import {isVisible} from './state.js?v=79';
+import {isVisible} from './state.js?v=81';
 import {buildingParts,buildingCollapsed} from './building-state.js?v=62';
 
 const NS='http://www.w3.org/2000/svg';
@@ -31,6 +31,13 @@ export function createLighting(map,defs,layer){
   const glows=node('g',{id:'night-lights'});
   layer.append(darkness,glows);
   const lights=(map.lighting?.lights||[]).map(light=>{
+    let tint='night-light-warmth';
+    if(light.color){
+      tint=`night-light-color-${light.id}`;
+      const gradient=node('radialGradient',{id:tint});
+      for(const[offset,opacity]of [['0%',.35],['24%',.25],['58%',.12],['100%',0]])gradient.append(node('stop',{offset,'stop-color':light.color,'stop-opacity':opacity}));
+      defs.append(gradient);
+    }
     const attrs=light.clip?{'clip-path':`url(#night-clip-${light.id})`}:{mask:'url(#night-outdoors)'};
     if(light.clip){
       const clip=node('clipPath',{id:`night-clip-${light.id}`,clipPathUnits:'userSpaceOnUse'});
@@ -39,7 +46,7 @@ export function createLighting(map,defs,layer){
     const cutout=node('g',attrs),glow=node('g',{'data-light-id':light.id,...attrs});
     const circle={cx:light.point[0]*map.width,cy:light.point[1]*map.height,r:light.radius*map.grid.size/map.grid.distance};
     cutout.append(node('circle',{...circle,fill:'url(#night-light-falloff)'}));
-    glow.append(node('circle',{...circle,fill:'url(#night-light-warmth)'}));
+    glow.append(node('circle',{...circle,fill:`url(#${tint})`}));
     darknessMask.append(cutout);glows.append(glow);
     return {light,cutout,glow};
   });

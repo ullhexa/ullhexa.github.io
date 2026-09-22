@@ -654,7 +654,7 @@ body.map-expanded .workspace{grid-template-columns:minmax(0,1fr)}body.map-expand
 #encounter-dialog .member-fields{gap:8px;flex-wrap:nowrap}#encounter-dialog .member-fields>.field-label:first-child{flex:1.5}#encounter-dialog .member-fields>.field-label{flex:1;min-width:0}#encounter-dialog .member-fields .number-stepper{width:100%;grid-template-columns:minmax(25px,1fr) 23px 23px}#encounter-dialog .member-fields .field-label{font-size:.7rem}
 .hp-adjust .hp-display{display:flex;align-items:center;gap:7px;flex-wrap:wrap;line-height:1.1}.temp-hp-value{display:inline-flex;align-items:center;gap:2px;font-size:.75rem;color:#d3d8df}.temp-hp-value svg{width:13px;height:15px;flex:none}
 .hp-amount{position:relative}.hp-adjust .temp-hp-apply{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:24px;height:19px;min-height:19px;padding:1px;border:0;background:transparent}.temp-hp-apply svg{width:17px;height:17px}
-.token-label,.map-party-label{font-size:18px}
+.token-label,.map-party-label{font-size:12px}
 .player-initiative,.initiative-preview{width:285px;max-width:37.5%;padding:9px}.public-turn{font-size:18px;gap:9px;padding:7.5px}.public-turn img{width:48px;height:48px}.overlay-kicker{font-size:13.5px}
 #map-stage,#map-stage *{-webkit-user-select:none;user-select:none}#map-stage :is(input,textarea,[contenteditable=true]){-webkit-user-select:text;user-select:text}
 .ruler-label{font-family:'DM Sans',sans-serif;font-weight:700;fill:#fff;stroke:#0b1410;paint-order:stroke;stroke-linejoin:round;pointer-events:none}
@@ -711,3 +711,27 @@ body:not(.player-mode) .map-panel{padding-top:0}
 
 /* User spell imports reuse the established card readers and quiet editor fields. */
 .user-spell-editor{width:min(740px,calc(100vw - 32px));max-width:740px;max-height:calc(100dvh - 32px);overflow:auto;padding:16px}.user-spell-editor>.reference-heading{padding:0 0 12px}.spell-editor-fields{display:grid;grid-template-columns:minmax(0,2fr) minmax(100px,1fr) minmax(130px,1fr);gap:12px;margin:16px 0}.spell-editor-fields :is(input,select){width:100%;min-width:0}.user-spell-editor :is(input,select,textarea):focus{outline:none;box-shadow:none}.user-spell-editor textarea{width:100%;min-height:250px;resize:vertical;padding:12px;background:#101a15;color:var(--text);border:1px solid var(--line);font:14px/1.6 system-ui}.user-spell-editor-body{min-height:180px}.spell-import-preview{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:10px}.spell-import-preview img{max-width:100%;width:auto;max-height:38dvh;object-fit:contain;background:#fffefc}.spell-import-preview .spell-page-controls{font-size:12px}.spell-import-preview button{min-height:30px;padding:4px 10px}.spell-import-status{font-size:12px;color:var(--muted);overflow-wrap:anywhere}.user-spell-editor>.dialog-actions{justify-content:space-between}.spell-catalog>.create-spell{aspect-ratio:5/7;min-height:160px;width:100%;font-size:13px}.spell-catalog-empty{grid-column:1/-1}.spell-library-main .source-tabs button{font-size:12px}.spell-library-main .source-tabs{margin-bottom:0}@media(max-width:600px){.spell-editor-fields{grid-template-columns:1fr 1fr}.spell-editor-fields>.field-label:first-child{grid-column:1/-1}}
+
+/* Session controls, spell-grid preview and shared token/aura stacking. */
+body:not(.player-mode){-webkit-user-select:none;user-select:none;caret-color:transparent}
+body :is(input,textarea,[contenteditable="true"],[contenteditable=""]){-webkit-user-select:text;user-select:text;caret-color:auto}
+.token-status-editor>div.keyboard-active{border-color:#899178;box-shadow:0 6px 24px #0007}
+.token-status-editor :is(.condition-options,.letter-options):focus-within{outline:none}
+.token-status-editor>div:not(.status-spacer):hover{background:#1a2b21f5}
+.shape-palette{padding-bottom:23px}.shape-palette .shape-lock{position:absolute;left:calc(50% - 15px);bottom:0}
+#shape-grid-preview{pointer-events:none}
+.token-aura-plane{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:visible;z-index:-1;pointer-events:none}
+.token-aura-plane .token-aura{pointer-events:none}.player-mode .token-aura-plane .token-aura{pointer-events:none}
+.is-measuring .token-aura-plane .token-aura,.is-fogging .token-aura-plane .token-aura{pointer-events:none}
+.dice-toolbar{display:flex;gap:4px;align-items:center;max-width:100%;flex-wrap:wrap}
+.map-controls .dice-toolbar>.dice-toggle{height:40px;min-height:40px;width:40px;min-width:40px;border:1px solid #465a49;background:#203027;border-radius:6px;padding:0;display:grid;place-items:center}
+.map-controls .dice-toolbar>.dice-toggle[aria-pressed=true],#auto-measure[aria-pressed=true]{color:var(--ink);background:var(--gold);border-color:var(--gold)}
+.quick-dice{display:flex;gap:3px;align-items:center}.quick-dice[hidden]{display:none}
+.map-controls .quick-die{height:32px;min-height:32px;width:29px;min-width:29px;padding:2px;border:0;border-radius:4px;background:#edf0e8;display:grid;place-items:center}
+.quick-die svg{width:25px;height:25px;pointer-events:none}.map-controls .quick-die:hover{background:#fff}
+.dice-summary{align-self:stretch;display:flex;flex-direction:column;justify-content:center;position:relative;min-width:0;padding-bottom:25px}
+.dice-summary .dice-total{display:block}.quick-dice-toggle{position:absolute;right:0;bottom:0;display:flex;align-items:center;gap:4px;font-size:10px;white-space:nowrap;cursor:pointer}
+.quick-dice-toggle input{accent-color:var(--gold);margin:0;width:12px;height:12px}
+.instant-dice .dice-empty-slot{visibility:hidden;pointer-events:none}
+.elevation-control{grid-template-columns:26px 34px minmax(20px,1fr)}
+.elevation-control>span{grid-column:1/3;white-space:nowrap}.elevation-control>output{grid-column:3;text-align:right}

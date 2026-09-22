@@ -2,7 +2,7 @@ import {placeName} from './board-state.js?v=62';
 import {buildingParts,effectLevels} from './building-state.js?v=62';
 import {createFloorControl} from './floor-controls.js?v=62';
 import {selectedFloor} from './floors.js?v=62';
-import {icon} from './control-icons.js?v=62';
+import {icon} from './control-icons.js?v=81';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
 
 function symbol(kind,on){

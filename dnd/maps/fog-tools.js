@@ -1,5 +1,5 @@
 import {FOG_FEATHER,FOG_TEXTURES,fogAssetId,paintFogTexture} from './fog-state.js?v=62';
-import {fogIcon} from './control-icons.js?v=62';
+import {fogIcon} from './control-icons.js?v=81';
 import {createFogOptions} from './fog-options.js?v=79';
 import {assetURL} from './local-assets.js?v=79';
 import {loadRaster} from './resource-loading.js?v=62';
