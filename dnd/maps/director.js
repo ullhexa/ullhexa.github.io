@@ -1,3 +1,4 @@
+import {createScenePicker} from './scene-picker.js?v=67';
 import {chevronIcon} from './control-icons.js?v=62';
 import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=62';
 import {editTokenImage} from './token-image-editor.js?v=62';
@@ -18,9 +19,8 @@ export function createDirector({catalog,mapId,getProject,setProject,prepareMap,a
   }
   document.querySelector('.map-view-identity').after(modes);
   const quick=el('div',null,'quick-selections');quick.setAttribute('aria-label','Prepared scenes');
-  const mapSelect=el('select'),storySelect=el('select');mapSelect.id='quick-maps';storySelect.id='quick-stories';
-  mapSelect.setAttribute('aria-label','Prepared maps');storySelect.setAttribute('aria-label','Prepared stories');
-  quick.append(mapSelect,storySelect);document.querySelector('.lighting-control').after(quick);
+  const mapSelect=createScenePicker({id:'quick-maps',label:'Prepared maps',onSelect:prepareMap,onError:error=>announce(error.message)}),storySelect=createScenePicker({id:'quick-stories',label:'Prepared stories',onSelect:vibe=>{setProject({...getProject(),vibe});announce(getProject().mode==='story'?'Story scene changed.':'Scene ready. Press Story to show it.');}});
+  quick.append(mapSelect.element,storySelect.element);document.querySelector('.lighting-control').after(quick);
   const dialog=el('section');dialog.id='story-dialog';dialog.setAttribute('aria-labelledby','story-menu-title');
   dialog.innerHTML='<div class="map-menu-heading"><div><p class="eyebrow">STORY LIBRARY</p><h2 id="story-menu-title">Choose a scene</h2></div><button id="close-stories" class="quiet" aria-label="Close story menu">×</button></div><div class="story-menu-layout"><div id="story-grid" class="story-grid" role="group" aria-label="Available story scenes"></div><section class="story-details" aria-label="Selected story scene"><div id="story-preview" class="story-preview" aria-label="Story preview"></div><h3 id="story-title"></h3><p id="story-description"></p><button id="add-story">Add to session</button></section></div><div class="dialog-actions"><button id="apply-story" class="primary">Use scene</button></div>';
   document.body.append(dialog);
@@ -47,16 +47,13 @@ export function createDirector({catalog,mapId,getProject,setProject,prepareMap,a
   menuButton.addEventListener('click',()=>openMenu('story'));
   $('add-story').addEventListener('click',()=>{if(!groups.entries().includes(selected))groups.update([...groups.entries(),selected]);render();});
   $('apply-story').addEventListener('click',()=>{if(!groups.entries().includes(selected))groups.update([...groups.entries(),selected]);groups.activate();const project=getProject();setProject({...project,vibe:selected,stories:project.stories.includes(selected)?project.stories:[...project.stories,selected]});close();announce(project.mode==='story'?'Story scene changed.':'Scene ready. Press Story to show it.');});
-  mapSelect.addEventListener('change',async()=>{const id=mapSelect.value;mapSelect.value='';mapSelect.disabled=true;try{await prepareMap(id);}catch(error){announce(error.message);}finally{mapSelect.disabled=false;}});
-  storySelect.addEventListener('change',()=>{const vibe=storySelect.value;storySelect.value='';setProject({...getProject(),vibe});announce(getProject().mode==='story'?'Story scene changed.':'Scene ready. Press Story to show it.');});
-  function options(select,label,ids,library){select.replaceChildren();const placeholder=el('option',label);placeholder.value='';placeholder.disabled=true;placeholder.selected=true;select.append(placeholder);ids.forEach((id,index)=>{const option=el('option',`${index+1}. ${library.find(item=>item.id===id)?.title||id}`);option.value=id;select.append(option);});}
   function render(){
     const project=getProject(),scenes=storyCatalog(project);
     if(JSON.stringify(scenes.map(s=>[s.id,s.asset,s.title]))!==JSON.stringify(library.map(s=>[s.id,s.asset,s.title]))){library.splice(0,library.length,...scenes);$('story-grid').replaceChildren(uploadButton);library.forEach(addCard);}
     $('show-battle').setAttribute('aria-pressed',project.mode==='battle');$('show-story').setAttribute('aria-pressed',project.mode==='story');
-    options(mapSelect,`Map (${Math.max(0,project.maps.indexOf(mapId)+1)}/${project.maps.length})`,project.maps,catalog);options(storySelect,`Story (${Math.max(0,project.stories.indexOf(project.vibe)+1)}/${project.stories.length})`,project.stories,library);
     const vibe=library.find(scene=>scene.id===project.vibe)||library[0];
-    mapSelect.title=`Prepare a map · Current: ${catalog.find(entry=>entry.id===mapId)?.title}`;storySelect.title=`Story: ${vibe.title}`;
+    mapSelect.update({text:`Map (${Math.max(0,project.maps.indexOf(mapId)+1)}/${project.maps.length})`,items:project.maps.map(id=>({id,title:catalog.find(entry=>entry.id===id)?.title||id})),selected:mapId,title:`Prepare a map · Current: ${catalog.find(entry=>entry.id===mapId)?.title}`});
+    storySelect.update({text:`Story (${Math.max(0,project.stories.indexOf(project.vibe)+1)}/${project.stories.length})`,items:project.stories.map(id=>({id,title:library.find(entry=>entry.id===id)?.title||id})),selected:project.vibe,title:`Story: ${vibe.title}`});
     filter();edit.hidden=remove.hidden=!library.find(s=>s.id===selected)?.asset;$('apply-story').disabled=!selected;
     $('add-story').disabled=!selected||!groups.selected()||groups.entries().includes(selected);$('add-story').textContent=groups.entries().includes(selected)?'Added to session':'Add to session';
     groups.renderSequence();
