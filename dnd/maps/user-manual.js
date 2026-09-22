@@ -89,7 +89,7 @@ export const MANUAL_SECTIONS=[
   ]},
   {id:'areas',title:'Spell areas',text:[
     'Spell areas at the bottom of the left panel adds a circle, square or cone. Adding an area exits Measure and fog tools and returns to normal map controls. New areas are immediately visible to players; you can hide them independently.',
-    'Drag the area to move it and use its handles to resize or rotate it. Circles use a radius, squares an equal side length and cones a tip-to-arc length with a 60-degree spread. Sizes change in five-foot increments; the nearby label shows the measured size. Circles have no rotation handle.',
+    'Drag the area to move it and use its handles to resize or rotate it. Circles and squares also have a small round center handle for positioning. Circles use a radius, squares an equal side length and cones a tip-to-arc length with a 60-degree spread. Sizes change in five-foot increments; the nearby label shows the measured size. Circles have no rotation handle.',
     'Small colored previews in the left list represent areas already on the map. Click a preview to select it and toggle player visibility. Hidden previews are dimmed with a closed eye; areas remain editable on the DM map. Click an area on the map to select without changing visibility. Delete or Backspace removes the selected area.',
     'Double-click an area or its preview to open its color palette over the map. The left eye button toggles player visibility; the right × removes the area. Clicking a color applies it and closes the palette. Clicking outside closes it without a color change. Delete, Backspace or Escape while the palette is open closes the palette first, without deleting the area.'
   ]},
