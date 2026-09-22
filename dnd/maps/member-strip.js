@@ -5,7 +5,7 @@ import {statIcon} from './control-icons.js?v=62';
 // Selection is independent of the member whose fields are being edited.
 export function createMemberStrip({items=false,monster=false,onSelect,onRemove,onRemoveMany,onStat}){
  const root=el('div',undefined,`library-member-strip${items?' item-member-strip':''}`),nodes=new Map(),selection=groupSelection();let selected=null,group=null,order=[];
- const removeSelected=button('Remove',()=>remove(selection.ids),'member-remove-selected');removeSelected.setAttribute('aria-label','Remove selected members');removeSelected.title='Remove selected';
+ const removeSelected=button('Remove',()=>remove(selection.ids),'member-remove-selected');removeSelected.setAttribute('aria-label','Remove selected members');
  function remove(ids){if(!ids.length)return;if(onRemoveMany)onRemoveMany(ids);else for(const id of ids)onRemove(id);}
  function update(){removeSelected.disabled=!selection.ids.length;removeSelected.setAttribute('aria-label',`Remove ${selection.ids.length||'selected'} selected ${items?'items':monster?'encounters':'players'}`);for(const [id,wrap]of nodes){wrap.firstElementChild.setAttribute('aria-pressed',selection.has(id));}}
  document.addEventListener('pointerdown',e=>{

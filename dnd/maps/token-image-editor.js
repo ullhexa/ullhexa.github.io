@@ -21,7 +21,7 @@ export async function editTokenImage(input,{square=false,story=false,editing=fal
   canvas.addEventListener('wheel',e=>{e.preventDefault();zoom.value=Math.max(1,Math.min(5,Number(zoom.value)*Math.exp(-e.deltaY*.0015)));queue();},{passive:false});
   const fit=()=>{zoom.value=1;x=y=0;queue();};
   dialog.append(el('h2',story?'Edit story image':editing?'Edit token':'Create token'));if(story)dialog.append(label('Title',name));dialog.append(imageTypeNote(),wrap);
-  if(story){const field=el('div',undefined,'field-label'),reset=button('Zoom',fit,'zoom-fit');reset.title='Fit image';reset.setAttribute('aria-label','Fit story image');field.append(reset,zoom);dialog.append(field);}else dialog.append(label('Zoom',zoom),button('Fit',fit));dialog.append(error);
+  if(story){const field=el('div',undefined,'field-label'),reset=button('Zoom',fit,'zoom-fit');reset.setAttribute('aria-label','Fit story image');field.append(reset,zoom);dialog.append(field);}else dialog.append(label('Zoom',zoom),button('Fit',fit));dialog.append(error);
   const footer=el('div',undefined,'dialog-actions');dialog.append(footer);document.body.append(dialog);
   return new Promise(resolve=>{let result=null;const create=button(editing||story?'Apply changes':'Create',async()=>{create.disabled=true;try{draw();let original=source;
       if(!original)original=rasterRecord(raster,{maxSide:story?Infinity:TOKEN_SOURCE_SIZE});

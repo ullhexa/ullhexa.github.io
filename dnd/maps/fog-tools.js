@@ -1,6 +1,6 @@
 import {FOG_FEATHER,FOG_TEXTURES,fogAssetId,paintFogTexture} from './fog-state.js?v=62';
 import {fogIcon} from './control-icons.js?v=62';
-import {createFogOptions} from './fog-options.js?v=72';
+import {createFogOptions} from './fog-options.js?v=76';
 import {assetURL} from './local-assets.js?v=62';
 import {loadRaster} from './resource-loading.js?v=62';
 export function createFogTools({map,player,getState,commit,preview,finishDrag,pointAt,setTool,sendPreview,announce}){
@@ -47,8 +47,8 @@ export function createFogTools({map,player,getState,commit,preview,finishDrag,po
   function flush(){cancelAnimationFrame(frame);frame=0;if(!drag)return;preview({...getState(),fog:[...drag.start.fog,drag.stroke]},'fog');draw();if(performance.now()-lastSignal>65){lastSignal=performance.now();sendPreview(getState().fog);}}
   if(!player){
     const controls=document.createElement('div');controls.className='fog-controls';controls.setAttribute('aria-label','Fog of war');
-    const cloud=document.createElement('button');cloud.id='open-fog-options';cloud.append(fogIcon());cloud.setAttribute('aria-label','Fog options');cloud.setAttribute('aria-expanded','false');cloud.setAttribute('aria-haspopup','dialog');cloud.title='Fog options';controls.append(cloud);
-    const buttons=[];for(const [id,label]of [['paint','Brush'],['erase','Eraser']]){const b=document.createElement('button');b.append(fogIcon(id));b.setAttribute('aria-label',label);b.title=label;b.setAttribute('aria-pressed','false');b.addEventListener('click',()=>setTool(tool===id?null:id));controls.append(b);buttons.push([id,b]);}
+    const cloud=document.createElement('button');cloud.id='open-fog-options';cloud.append(fogIcon());cloud.setAttribute('aria-label','Fog options');cloud.setAttribute('aria-expanded','false');cloud.setAttribute('aria-haspopup','dialog');controls.append(cloud);
+    const buttons=[];for(const [id,label]of [['paint','Brush'],['erase','Eraser']]){const b=document.createElement('button');b.append(fogIcon(id));b.setAttribute('aria-label',label);b.setAttribute('aria-pressed','false');b.addEventListener('click',()=>setTool(tool===id?null:id));controls.append(b);buttons.push([id,b]);}
     document.querySelector('.map-controls').append(controls);options=createFogOptions({toggle:cloud,stage,getState,commit,announce});
     stage.addEventListener('pointerdown',e=>{if(!tool||e.button!==0||e.target.closest('#initiative-overlay,.dice-panel,.reference-suite'))return;const p=pointAt(e);if(!p||p.some(n=>n<0||n>1))return;e.preventDefault();e.stopImmediatePropagation();if(getState().fog.length>=1500){announce('Fog stroke limit reached. Undo or erase existing strokes before continuing.');return;}drag={pointer:e.pointerId,start:structuredClone(getState()),stroke:{tool,size:getState().fogSettings.size,points:[p]}};stage.setPointerCapture(e.pointerId);flush();},true);
     stage.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.pointer)return;e.preventDefault();e.stopImmediatePropagation();const p=pointAt(e)?.map(n=>Math.max(0,Math.min(1,n)));if(!p)return;const last=drag.stroke.points.at(-1);if(Math.hypot((p[0]-last[0])*map.width,(p[1]-last[1])*map.height)<map.grid.size*.05)return;if(drag.stroke.points.length<4000)drag.stroke={...drag.stroke,points:[...drag.stroke.points,p]};if(!frame)frame=requestAnimationFrame(flush);},true);

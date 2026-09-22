@@ -1,15 +1,15 @@
-import {createBoardLayout} from './board-layout.js?v=64';
+import {createBoardLayout} from './board-layout.js?v=76';
 import {featureEnabled,placeName} from './board-state.js?v=62';
-import {createGridControls} from './grid-controls.js?v=72';
+import {createGridControls} from './grid-controls.js?v=76';
 import {gridColor} from './grid-state.js?v=62';
-import {createBuildingControls} from './building-controls.js?v=62';
+import {createBuildingControls} from './building-controls.js?v=76';
 import {buildingCollapsed} from './building-state.js?v=62';
 import {createCameraAnimation} from './camera-animation.js?v=62';
-import {createMapNavigation} from './map-navigation.js?v=62';
+import {createMapNavigation} from './map-navigation.js?v=76';
 import {createFloorControl} from './floor-controls.js?v=62';
-import {createUserManual} from './user-manual.js?v=75';
-import {createSpellLibrary} from './spell-library.js?v=62';
-import {createReferenceViewers} from './reference-viewers.js?v=72';
+import {createUserManual} from './user-manual.js?v=76';
+import {createSpellLibrary} from './spell-library.js?v=76';
+import {createReferenceViewers} from './reference-viewers.js?v=76';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
 import {persistAssets} from './local-assets.js?v=62';
 import {createScenery} from './scenery.js?v=62';
@@ -18,31 +18,31 @@ import {buildingFocusCamera} from './building-focus.js?v=62';
 import {createDisplayPresence} from './display-presence.js?v=62';
 import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=62';
 import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=62';
-import {createDiceTools} from './dice.js?v=75';
+import {createDiceTools} from './dice.js?v=76';
 import {fetchJSON,loadRaster} from './resource-loading.js?v=62';
 import {storyCatalog,nextStory} from './story-assets.js?v=62';
-import {createItemsUI} from './items-ui.js?v=66';
+import {createItemsUI} from './items-ui.js?v=76';
 import {floorList,selectedFloor,selectFloor,interactionOnFloor} from './floors.js?v=62';
 import {createHistory} from './history.js?v=62';
-import {setupSidebarResize} from './sidebar-resize.js?v=62';
+import {setupSidebarResize} from './sidebar-resize.js?v=76';
 import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=62';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=66';
-import {createFogTools} from './fog-tools.js?v=72';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=76';
+import {createFogTools} from './fog-tools.js?v=76';
 import {normalizeFog} from './fog-state.js?v=62';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=62';
-import {createSessionBundle} from './session-bundle.js?v=62';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=76';
+import {createSessionBundle} from './session-bundle.js?v=76';
 import { startDMShell } from './dm-shell.js?v=62';
 import { openPlayerWindow } from './display-window.js?v=62';
 import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=62';
-import { createEncounterTools } from './encounter-tools.js?v=67';
+import { createEncounterTools } from './encounter-tools.js?v=76';
 import { playerProjection, formation, moveParty } from './encounter-state.js?v=62';
-import { createMapMenu } from './map-menu.js?v=62';
+import { createMapMenu } from './map-menu.js?v=76';
 import { createSaveControls } from './save-controls.js?v=62';
 import { parseSave, restoreSave } from './save-file.js?v=62';
 import { createLighting } from './lighting.js?v=62';
-import { setupFullscreen } from './fullscreen.js?v=62';
-import { startPlayerDisplay } from './player-display.js?v=62';
-import { createDirector } from './director.js?v=72';
+import { setupFullscreen } from './fullscreen.js?v=76';
+import { startPlayerDisplay } from './player-display.js?v=76';
+import { createDirector } from './director.js?v=76';
 import { normalizeProject } from './presentation-state.js?v=62';
 
 listenForBoardReset();
@@ -137,7 +137,6 @@ async function start() {
   document.title = player ? `${map.title} — Player display` : 'Ull Hexa D&D';
   document.querySelector('.map-name').textContent = map.title;
   $('map').setAttribute('aria-label', `${player ? 'Player' : 'Interactive'} map of ${map.title}`);
-  $('map').querySelector('title').textContent = `${map.title} encounter map`;
   if(!player) {
     mapMenu=createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,getEnvironment:target=>target.id===map.id?state.environment:readMapState(target).environment,getProject:()=>project,setProject,deleteMap:removeCustomMap,editMap:applyMapEdit,applyMap:(target,environment)=>prepareMap(target.id,environment).catch(error=>announce(error.message))});
   }
@@ -462,7 +461,7 @@ async function start() {
       if(displayConnected()){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'75',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'76',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
@@ -562,7 +561,7 @@ async function start() {
   function updateConnection() {
     const connected=player?Date.now()-lastPeer<15000:displayConnected();
     if(player)$('connection-status').textContent=connected?'Following the DM':'DM disconnected · last view kept';
-    if(!player&&$('open-player').getAttribute('aria-pressed')!==String(connected)){$('open-player').setAttribute('aria-pressed',String(connected));$('open-player').setAttribute('aria-label',connected?'Close player display':'Open player display');$('open-player').title=connected?'Close player display':'Open player display';$('open-player').replaceChildren(document.createTextNode('Player Display '));const arrow=document.createElement('span');arrow.setAttribute('aria-hidden','true');arrow.textContent=connected?'↙':'↗';$('open-player').append(arrow);}
+    if(!player&&$('open-player').getAttribute('aria-pressed')!==String(connected)){$('open-player').setAttribute('aria-pressed',String(connected));$('open-player').setAttribute('aria-label',connected?'Close player display':'Open player display');$('open-player').replaceChildren(document.createTextNode('Player Display '));const arrow=document.createElement('span');arrow.setAttribute('aria-hidden','true');arrow.textContent=connected?'↙':'↗';$('open-player').append(arrow);}
   }
   if(!embedded)setInterval(updateConnection,500);
   window.addEventListener('pagehide',()=>{if(!player&&runtimeReady)save();});

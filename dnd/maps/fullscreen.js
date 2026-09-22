@@ -24,7 +24,7 @@ export function setupFullscreen({player,announce}) {
     exitFullscreen.className='fullscreen-exit';
     exitFullscreen.type='button';
     exitFullscreen.setAttribute('aria-label','Exit full screen');
-    exitFullscreen.title='Exit full screen';
+
     const icon=svgNode('svg',{viewBox:'0 0 24 24',width:22,height:22,fill:'none',stroke:'currentColor','stroke-width':1.8,'stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':true});
     icon.append(svgNode('path',{d:'M8 3v5H3m18 0h-5V3M3 16h5v5m8 0v-5h5'}));
     exitFullscreen.append(icon);

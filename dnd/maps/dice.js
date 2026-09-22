@@ -19,7 +19,7 @@ function drawChoice(canvas,sides){
   drawDie(source,shape,sides,[0,0,0],true,[0,0]);canvas.getContext('2d').drawImage(source,(canvas.width-left-right-1)/2,(canvas.height-top-bottom-1)/2);
 }
 export function createDiceTools(){
-  const stage=document.getElementById('map-stage'),toggle=button('',()=>panel.hidden?open():close(),'toolbar-icon dice-toggle');toggle.id='open-dice';toggle.title='Dice';toggle.setAttribute('aria-label','Dice');toggle.setAttribute('aria-pressed','false');toggle.append(boardIcon('dice'));document.querySelector('.fog-controls').after(toggle);
+  const stage=document.getElementById('map-stage'),toggle=button('',()=>panel.hidden?open():close(),'toolbar-icon dice-toggle');toggle.id='open-dice';toggle.setAttribute('aria-label','Dice');toggle.setAttribute('aria-pressed','false');toggle.append(boardIcon('dice'));document.querySelector('.fog-controls').after(toggle);
   const panel=el('section',undefined,'dice-panel instant-dice'),controls=el('div',undefined,'dice-controls'),display=el('div',undefined,'dice-display'),tray=el('div',undefined,'dice-results'),total=el('output','0','dice-total');panel.hidden=true;panel.setAttribute('aria-label','Dice throw');panel.setAttribute('role','dialog');total.setAttribute('aria-label','Dice total');total.setAttribute('aria-live','polite');display.append(tray,total);panel.append(controls,display);stage.append(panel);
   const buttons=new Map();let pool=[],animation=0,sequence=0,choice=null,choiceTimer=0;
   function position(){if(panel.hidden)return;const r=toggle.getBoundingClientRect(),s=stage.getBoundingClientRect();panel.style.left=`${Math.max(0,Math.min(stage.clientWidth-panel.offsetWidth,r.left+r.width/2-s.left-panel.offsetWidth/2))}px`;panel.style.top='0px';}

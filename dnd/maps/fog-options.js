@@ -2,7 +2,7 @@ import {button,el,label} from './editor-dom.js?v=62';
 import {FOG_TEXTURES,fogSize,fogAssetId} from './fog-state.js?v=62';
 import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=62';
 import {assetURL,uploadImage} from './local-assets.js?v=62';
-import {numberStepper} from './number-stepper.js?v=62';
+import {numberStepper} from './number-stepper.js?v=76';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
 
 export function createFogOptions({toggle,stage,getState,commit,announce}){
@@ -12,7 +12,7 @@ export function createFogOptions({toggle,stage,getState,commit,announce}){
   function position(){if(!popup)return;const r=toggle.getBoundingClientRect();popup.style.left=`${Math.max(4,Math.min(innerWidth-popup.offsetWidth-4,r.left))}px`;popup.style.top=`${Math.max(4,Math.min(innerHeight-popup.offsetHeight-4,r.bottom+8))}px`;}
   function select(texture){commit({...getState(),fogSettings:{...getState().fogSettings,texture,zoom:1,x:.5,y:.5}},'Fog texture updated.');}
   function tile(entry){
-    const b=button('',()=>select(entry.id),'fog-texture');b.dataset.fogTexture=entry.id;b.title=entry.name;b.setAttribute('aria-label',entry.name);
+    const b=button('',()=>select(entry.id),'fog-texture');b.dataset.fogTexture=entry.id;b.setAttribute('aria-label',entry.name);
     const img=el('img');img.alt='';img.draggable=false;const caption=el('span',entry.name);b.append(img,caption);
     if(entry.url)img.src=entry.url;else assetURL(entry.id).then(url=>{if(b.isConnected)img.src=url;}).catch(()=>{if(b.isConnected)img.alt='Image unavailable';});return b;
   }

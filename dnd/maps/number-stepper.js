@@ -9,7 +9,7 @@ export function numberStepper(input,{name,normalize}){
   }
   for(const [delta,arrow,action]of [[-1,'↓','Decrease'],[1,'↑','Increase']]){
     const b=button(arrow,()=>{step(delta);input.focus({preventScroll:true});});
-    b.setAttribute('aria-label',`${action} ${name}`);b.title=`${action} ${name}`;
+    b.setAttribute('aria-label',`${action} ${name}`);
     b.disabled=input.disabled||input.readOnly;control.append(b);
   }
   input.addEventListener('wheel',e=>{

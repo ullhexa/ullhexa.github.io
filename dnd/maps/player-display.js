@@ -1,6 +1,6 @@
 import {configureSession,readSessionValue} from './session-storage.js?v=62';
-import {customCatalog} from './custom-maps.js?v=62';
-import { setupFullscreen } from './fullscreen.js?v=62';
+import {customCatalog} from './custom-maps.js?v=76';
+import { setupFullscreen } from './fullscreen.js?v=76';
 import {storyCatalog} from './story-assets.js?v=62';
 import {createStoryPlayer,MODE_FADE_MS} from './story-player.js?v=62';
 import {fetchJSON} from './resource-loading.js?v=62';
