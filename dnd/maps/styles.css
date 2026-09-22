@@ -688,7 +688,7 @@ body.map-expanded .workspace{grid-template-columns:minmax(0,1fr)}body.map-expand
 body:not(.player-mode) .map-panel{padding-top:0}
 .hp-adjust button[data-hp-action]{display:flex;align-items:center;justify-content:center;width:var(--hp-action-size,24px);height:var(--hp-action-size,24px);min-height:var(--hp-action-size,24px);padding:0;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text)}
 .hp-adjust button[data-hp-action]>svg{display:block;flex:none;width:18px;height:18px;margin:0}
-.hp-adjust button[data-hp-action]:is(:hover,:focus-visible){background:#344338;border-color:#718168;color:var(--text)}
+.hp-adjust button[data-hp-action]:is(:hover,:focus-visible){background:#344338;border-color:transparent;outline:none;box-shadow:none;color:var(--text)}
 .hp-adjust [data-hp-action=heal]:is(:hover,:focus-visible) .heal-icon path{fill:#d2575e}
 .hp-adjust [data-hp-action=shield]:is(:hover,:focus-visible) svg path{fill:#5792ce}
 .hp-adjust [data-hp-action=damage]:is(:hover,:focus-visible) .sword-blade{fill:#a8b3c0}
