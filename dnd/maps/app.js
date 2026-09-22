@@ -7,7 +7,7 @@ import {buildingCollapsed} from './building-state.js?v=62';
 import {createCameraAnimation} from './camera-animation.js?v=62';
 import {createMapNavigation} from './map-navigation.js?v=62';
 import {createFloorControl} from './floor-controls.js?v=62';
-import {createUserManual} from './user-manual.js?v=66';
+import {createUserManual} from './user-manual.js?v=67';
 import {createSpellLibrary} from './spell-library.js?v=62';
 import {createReferenceViewers} from './reference-viewers.js?v=62';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
@@ -18,7 +18,7 @@ import {buildingFocusCamera} from './building-focus.js?v=62';
 import {createDisplayPresence} from './display-presence.js?v=62';
 import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=62';
 import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=62';
-import {createDiceTools} from './dice.js?v=62';
+import {createDiceTools} from './dice.js?v=67';
 import {fetchJSON,loadRaster} from './resource-loading.js?v=62';
 import {storyCatalog,nextStory} from './story-assets.js?v=62';
 import {createItemsUI} from './items-ui.js?v=66';
@@ -34,7 +34,7 @@ import {createSessionBundle} from './session-bundle.js?v=62';
 import { startDMShell } from './dm-shell.js?v=62';
 import { openPlayerWindow } from './display-window.js?v=62';
 import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=62';
-import { createEncounterTools } from './encounter-tools.js?v=66';
+import { createEncounterTools } from './encounter-tools.js?v=67';
 import { playerProjection, formation, moveParty } from './encounter-state.js?v=62';
 import { createMapMenu } from './map-menu.js?v=62';
 import { createSaveControls } from './save-controls.js?v=62';
@@ -42,7 +42,7 @@ import { parseSave, restoreSave } from './save-file.js?v=62';
 import { createLighting } from './lighting.js?v=62';
 import { setupFullscreen } from './fullscreen.js?v=62';
 import { startPlayerDisplay } from './player-display.js?v=62';
-import { createDirector } from './director.js?v=62';
+import { createDirector } from './director.js?v=67';
 import { normalizeProject } from './presentation-state.js?v=62';
 
 listenForBoardReset();
@@ -462,7 +462,7 @@ async function start() {
       if(displayConnected()){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'66',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'67',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
