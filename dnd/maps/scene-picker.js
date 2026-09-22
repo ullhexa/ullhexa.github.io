@@ -46,5 +46,5 @@ export function createScenePicker({id,label,onSelect,onError}){
   document.addEventListener('pointerdown',e=>{if(popup&&!popup.contains(e.target)&&!toggle.contains(e.target)){close();consumeMapDismissal(e,stage);}},true);
   document.addEventListener('focusin',e=>{if(popup&&!popup.contains(e.target)&&!toggle.contains(e.target))close();});
   document.addEventListener('library-opening',()=>close());document.addEventListener('scroll',position,true);window.addEventListener('resize',position);
-  return {element:toggle,update({text,items,selected,title}){caption.textContent=text;entries=items;current=selected;toggle.title=title;toggle.disabled=busy||!entries.length;if(!entries.length)close();else render();},close};
+  return {element:toggle,update({text,items,selected,title}){caption.textContent=text;entries=items;current=selected;toggle.setAttribute('aria-description',title);toggle.disabled=busy||!entries.length;if(!entries.length)close();else render();},close};
 }

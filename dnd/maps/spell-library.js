@@ -1,6 +1,6 @@
 import {featureHeading} from './feature-controls.js?v=62';
 import {chevronIcon} from './control-icons.js?v=62';
-import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=62';
+import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=76';
 import {openDeckPrint} from './spell-print.js?v=62';
 import {el,button,label} from './editor-dom.js?v=62';
 import {showDialog} from './dialogs.js?v=62';

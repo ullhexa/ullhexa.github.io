@@ -6,7 +6,7 @@ export function setupSidebarResize(){
     const key=right?'ullhexa:initiative-width':'ullhexa:dm-sidebar-width',property=right?'--initiative-width':'--sidebar-width',min=right?205:220;
     const handle=document.createElement('div');handle.id=right?'initiative-resizer':'sidebar-resizer';handle.tabIndex=0;
     handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','vertical');handle.setAttribute('aria-label',right?'Resize initiative panel':'Resize DM sidebar');handle.setAttribute('aria-controls',panel.id);
-    handle.title='Drag to resize · −/+ keys to adjust · Double-click to reset';workspace.append(handle);
+    workspace.append(handle);
     let preferred=null,drag=null;
     try{const stored=Number(localStorage.getItem(key));if(Number.isFinite(stored)&&stored>=min&&stored<=480)preferred=stored;}catch{}
     const defaults=()=>right?(innerWidth<=1150?205:240):(innerWidth<=1150?258:300);

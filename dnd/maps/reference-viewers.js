@@ -1,6 +1,6 @@
 import {featureEnabled} from './board-state.js?v=62';
 import {editStatCard} from './stat-card-editor.js?v=62';
-import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=62';
+import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=76';
 import {statIcon} from './control-icons.js?v=62';
 import {el,button} from './editor-dom.js?v=62';
 import {assetURL} from './local-assets.js?v=62';
