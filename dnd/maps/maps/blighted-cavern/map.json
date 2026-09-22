@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "blighted-cavern",
+  "version": "0.1.0",
+  "title": "The Blighted Cavern",
+  "width": 3840,
+  "height": 2160,
+  "grid": { "size": 80, "distance": 5, "unit": "ft", "color": "#d6cadf" },
+  "art": {
+    "base": "./maps/blighted-cavern/cavern.png",
+    "roofs": "./maps/blighted-cavern/cavern.png",
+    "brokenCrossing": "./maps/blighted-cavern/crossing-broken.png"
+  },
+  "places": [
+    {
+      "id": "plank-crossing",
+      "name": "Plank crossing",
+      "point": [0.531, 0.458],
+      "focusZoom": 2.5,
+      "footprint": [[0.454,0.332],[0.591,0.332],[0.591,0.633],[0.454,0.633]],
+      "actions": ["crossing-broken"],
+      "sequence": [
+        { "label": "Intact", "active": [] },
+        { "label": "Broken", "active": ["crossing-broken"] }
+      ]
+    }
+  ],
+  "interactions": [
+    {
+      "id": "crossing-broken",
+      "type": "terrain",
+      "placeId": "plank-crossing",
+      "label": "Break crossing",
+      "activeLabel": "Restore crossing",
+      "asset": "brokenCrossing",
+      "polygon": [[0.489,0.43],[0.57,0.43],[0.57,0.49],[0.489,0.49]]
+    }
+  ],
+  "partyStart": [0.054, 0.455],
+  "lighting": { "occluders": [], "lights": [] },
+  "decorations": []
+}

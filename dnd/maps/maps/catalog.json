@@ -19,6 +19,16 @@
       "subtitle": "Purple blight",
       "thumbnail": "./maps/blighted-farm/roofs-v29.png",
       "manifest": "./maps/blighted-farm/map.json"
+    },
+    {
+      "id": "blighted-cavern",
+      "title": "The Blighted Cavern",
+      "identity": "BLIGHTED CAVERN",
+      "edition": "FIELD TEST 03",
+      "category": "Fungal cave",
+      "subtitle": "Cavern crossing",
+      "thumbnail": "./maps/blighted-cavern/cavern.png",
+      "manifest": "./maps/blighted-cavern/map.json"
     }
   ]
 }

@@ -41,7 +41,7 @@ import { createSaveControls } from './save-controls.js?v=79';
 import { parseSave, restoreSave } from './save-file.js?v=79';
 import { createLighting } from './lighting.js?v=79';
 import { setupFullscreen } from './fullscreen.js?v=76';
-import { startPlayerDisplay } from './player-display.js?v=79';
+import { startPlayerDisplay } from './player-display.js?v=80';
 import { createDirector } from './director.js?v=79';
 import { normalizeProject } from './presentation-state.js?v=79';
 
@@ -78,7 +78,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=45')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=80')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
