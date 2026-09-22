@@ -36,6 +36,7 @@ export function createReferenceViewers({getState,commit,prepare,announce}){
   search.addEventListener('input',()=>{query=search.value;filter();});filter();
  }
  document.addEventListener('library-opening',close);
+ document.addEventListener('map-menu-opening',close);
  document.addEventListener('pointerdown',e=>{if(root.hidden||root.contains(e.target)||!stage.contains(e.target))return;close();consumeMapDismissal(e,stage);},true);
  root.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();view?closeViewer():close();}else if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)&&!e.target.matches('input,textarea')){e.preventDefault();e.stopPropagation();const list=[...root.querySelectorAll('[data-deck-spell]')],i=list.findIndex(n=>n.dataset.deckSpell===selected);if(list.length&&['ArrowUp','ArrowDown'].includes(e.key))list[(i+(e.key==='ArrowUp'?-1:1)+list.length)%list.length].click();}});
  document.addEventListener('features-changing',close);return{showDeck,showAssigned,showStat,close,renderAvailability(){section.hidden=!featureEnabled(getState(),'spells');}};

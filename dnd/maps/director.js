@@ -1,4 +1,4 @@
-import {createScenePicker} from './scene-picker.js?v=67';
+import {createScenePicker} from './scene-picker.js?v=72';
 import {chevronIcon} from './control-icons.js?v=62';
 import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=62';
 import {editTokenImage} from './token-image-editor.js?v=62';

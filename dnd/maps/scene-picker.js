@@ -24,7 +24,7 @@ export function createScenePicker({id,label,onSelect,onError}){
     });cursor=Math.max(0,Math.min(entries.length-1,cursor));mark();position();
   }
   function open(last=false){
-    if(busy||!entries.length)return;popup=el('div',null,'scene-picker-menu');popup.id=`${id}-menu`;popup.tabIndex=-1;popup.setAttribute('role','listbox');popup.setAttribute('aria-label',label);document.body.append(popup);
+    if(busy||!entries.length)return;document.dispatchEvent(new Event('map-menu-opening'));popup=el('div',null,'scene-picker-menu');popup.id=`${id}-menu`;popup.tabIndex=-1;popup.setAttribute('role','listbox');popup.setAttribute('aria-label',label);document.body.append(popup);
     cursor=Math.max(0,entries.findIndex(e=>e.id===current));if(last)cursor=entries.length-1;toggle.setAttribute('aria-expanded','true');render();popup.focus({preventScroll:true});mark(true);
   }
   // Window capture keeps list navigation ahead of the board's initiative shortcuts.

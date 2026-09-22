@@ -1,6 +1,6 @@
 import {FOG_FEATHER,FOG_TEXTURES,fogAssetId,paintFogTexture} from './fog-state.js?v=62';
 import {fogIcon} from './control-icons.js?v=62';
-import {createFogOptions} from './fog-options.js?v=62';
+import {createFogOptions} from './fog-options.js?v=72';
 import {assetURL} from './local-assets.js?v=62';
 import {loadRaster} from './resource-loading.js?v=62';
 export function createFogTools({map,player,getState,commit,preview,finishDrag,pointAt,setTool,sendPreview,announce}){
