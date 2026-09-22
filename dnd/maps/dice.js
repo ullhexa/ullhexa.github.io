@@ -40,7 +40,7 @@ export function createDiceTools(){
   for(const sides of DICE){const b=button('',()=>{selectChoice(sides,false);add(sides);},'die-choice');b.dataset.die=sides;const canvas=el('canvas',undefined,'die-choice-face');canvas.width=canvas.height=208;canvas.setAttribute('aria-hidden','true');drawChoice(canvas,sides);b.append(el('span','','die-count'),canvas,el('output',''));controls.append(b);buttons.set(sides,b);}
   display.addEventListener('click',e=>{if(!e.target.closest('.dice-result'))reset();});panel.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();reset();});
   function open(){reset();panel.hidden=false;toggle.setAttribute('aria-pressed','true');position();}function close(){reset();panel.hidden=true;toggle.setAttribute('aria-pressed','false');}
-  document.addEventListener('pointerdown',e=>{if(!panel.hidden&&!panel.contains(e.target)&&!toggle.contains(e.target)){close();consumeMapDismissal(e,stage);}},true);
+  document.addEventListener('pointerdown',e=>{if(panel.hidden||panel.contains(e.target)||toggle.contains(e.target)||e.target.closest('#combat-roster .initiative-input,#combat-roster .roster-name'))return;close();consumeMapDismissal(e,stage);},true);
   document.addEventListener('library-opening',close);new ResizeObserver(position).observe(stage);window.addEventListener('resize',position);document.addEventListener('scroll',position,true);
   document.addEventListener('keydown',e=>{
     if(panel.hidden||e.defaultPrevented||e.isComposing||e.metaKey||e.ctrlKey||e.altKey||isTextEntry(e.target)||e.target.closest('select,.reference-suite')||document.querySelector('dialog[open],.token-status-editor,.item-comment'))return;
