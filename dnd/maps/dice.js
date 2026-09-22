@@ -1,6 +1,6 @@
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
-import {diceFaceBank,faceReveal,blendDieFace} from './dice-faces.js?v=74';
-import {drawDie,landingMesh,percentileFaces,rollDuration} from './dice-geometry.js?v=74';
+import {diceFaceBank,faceReveal,blendDieFace} from './dice-faces.js?v=75';
+import {drawDie,landingMesh,percentileFaces,rollDuration,dieContainsPoint} from './dice-geometry.js?v=75';
 import {boardIcon} from './control-icons.js?v=62';
 import {el,button} from './editor-dom.js?v=62';
 import {isTextEntry} from './keyboard.js?v=62';
@@ -30,11 +30,18 @@ export function createDiceTools(){
   }
   function reset(){cancelAnimationFrame(animation);animation=0;pool=[];tray.replaceChildren();selectChoice(null);refresh();}
   function remove(die){pool=pool.filter(d=>d!==die);die.group.remove();refresh();if(!pool.some(d=>d.parts.some(p=>!p.settled))){cancelAnimationFrame(animation);animation=0;}}
-  function frame(now){animation=0;let moving=false,changed=false;for(const die of pool)for(const part of die.parts){if(part.settled)continue;const elapsed=now-part.start,progress=part.duration?Math.min(1,elapsed/part.duration):1,remaining=(1-progress)**3,axes=[[4,1,.5],[3,3,1.5],[.7,4,2]][part.index%3],angles=axes.map(turns=>remaining*(turns+(part.index%5)*.17)*Math.PI*2);drawDie(part.canvas,part.shape,part.value,angles,false,part.color);blendDieFace(part.canvas,part.plate,faceReveal(elapsed,part.duration));if(progress===1){part.settled=true;part.canvas.dataset.settled='true';changed=true;if(die.parts.every(p=>p.settled))die.group.setAttribute('aria-label',`Remove D${die.sides}: ${die.value}`);}else moving=true;}if(changed)refresh();if(moving)animation=requestAnimationFrame(frame);}
+  function hitsDie(die,event){
+    return die.parts.some(part=>{
+      const r=part.canvas.getBoundingClientRect(),point=[(event.clientX-r.left)*104/r.width,(event.clientY-r.top)*104/r.height];
+      if(point.some(n=>n<0||n>104))return false;
+      return (part.reveal<1&&dieContainsPoint(part.shape,part.angles,point))||(part.reveal>0&&dieContainsPoint(part.shape,[0,0,0],point));
+    });
+  }
+  function frame(now){animation=0;let moving=false,changed=false;for(const die of pool)for(const part of die.parts){if(part.settled)continue;const elapsed=now-part.start,progress=part.duration?Math.min(1,elapsed/part.duration):1,remaining=(1-progress)**3,axes=[[4,1,.5],[3,3,1.5],[.7,4,2]][part.index%3],angles=axes.map(turns=>remaining*(turns+(part.index%5)*.17)*Math.PI*2);drawDie(part.canvas,part.shape,part.value,angles,false,part.color);const reveal=faceReveal(elapsed,part.duration);part.angles=angles;part.reveal=reveal.alpha;blendDieFace(part.canvas,part.plate,reveal);if(progress===1){part.settled=true;part.canvas.dataset.settled='true';changed=true;if(die.parts.every(p=>p.settled))die.group.setAttribute('aria-label',`Remove D${die.sides}: ${die.value}`);}else moving=true;}if(changed)refresh();if(moving)animation=requestAnimationFrame(frame);}
   function add(sides){
-    if(pool.filter(d=>d.sides===sides).length>=20)return;const value=dieValue(sides),bank=diceFaceBank(sides),die={sides,value,parts:[]},group=button('',()=>remove(die),`dice-result${sides===100?' percentile-pair':''}`);die.group=group;group.dataset.sides=sides;group.dataset.value=value;group.setAttribute('aria-label',`Remove D${sides}: rolling`);group.title='Remove die';
+    if(pool.filter(d=>d.sides===sides).length>=20)return;const value=dieValue(sides),bank=diceFaceBank(sides),die={sides,value,parts:[]},group=button('',e=>e.detail===0||hitsDie(die,e)?remove(die):reset(),`dice-result${sides===100?' percentile-pair':''}`);die.group=group;group.dataset.sides=sides;group.dataset.value=value;group.setAttribute('aria-label',`Remove D${sides}: rolling`);group.addEventListener('pointermove',e=>group.classList.toggle('die-hovered',hitsDie(die,e)));group.addEventListener('pointerleave',()=>group.classList.remove('die-hovered'));
     const values=sides===100?percentileFaces(value):[value],reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
-    for(const v of values){const canvas=el('canvas',undefined,'rolled-die');canvas.width=canvas.height=104*bank.ratio;canvas.style.marginTop=`${bank.offsetY}px`;canvas.setAttribute('aria-hidden','true');const part={canvas,shape:bank.shape,plate:bank.faces.get(String(v)),value:v,index:sequence++,color:bank.color,duration:reduced?0:rollDuration(),start:performance.now(),settled:false};canvas.dataset.duration=part.duration;die.parts.push(part);group.append(canvas);}
+    for(const v of values){const canvas=el('canvas',undefined,'rolled-die');canvas.width=canvas.height=104*bank.ratio;canvas.style.marginTop=`${bank.offsetY}px`;canvas.setAttribute('aria-hidden','true');const part={canvas,shape:bank.shape,plate:bank.faces.get(String(v)),value:v,index:sequence++,color:bank.color,duration:reduced?0:rollDuration(),start:performance.now(),settled:false,angles:[0,0,0],reveal:0};canvas.dataset.duration=part.duration;die.parts.push(part);group.append(canvas);}
     pool.push(die);pool.sort((a,b)=>DICE.indexOf(a.sides)-DICE.indexOf(b.sides));const next=pool[pool.indexOf(die)+1];tray.insertBefore(group,next?.group||null);refresh();if(!animation)animation=requestAnimationFrame(frame);
   }
   for(const sides of DICE){const b=button('',()=>{selectChoice(sides,false);add(sides);},'die-choice');b.dataset.die=sides;const canvas=el('canvas',undefined,'die-choice-face');canvas.width=canvas.height=208;canvas.setAttribute('aria-hidden','true');drawChoice(canvas,sides);b.append(el('span','','die-count'),canvas,el('output',''));controls.append(b);buttons.set(sides,b);}
