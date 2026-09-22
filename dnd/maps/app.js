@@ -7,7 +7,7 @@ import {buildingCollapsed} from './building-state.js?v=62';
 import {createCameraAnimation} from './camera-animation.js?v=62';
 import {createMapNavigation} from './map-navigation.js?v=62';
 import {createFloorControl} from './floor-controls.js?v=62';
-import {createUserManual} from './user-manual.js?v=70';
+import {createUserManual} from './user-manual.js?v=71';
 import {createSpellLibrary} from './spell-library.js?v=62';
 import {createReferenceViewers} from './reference-viewers.js?v=62';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
@@ -462,7 +462,7 @@ async function start() {
       if(displayConnected()){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'70',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'71',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
