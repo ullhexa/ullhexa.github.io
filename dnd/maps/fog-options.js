@@ -34,6 +34,7 @@ export function createFogOptions({toggle,stage,getState,commit,announce}){
     if(document.activeElement!==sizeInput)sizeInput.value=s.fogSettings.size;
   }
   function open(){
+    document.dispatchEvent(new Event('map-menu-opening'));
     category=fogAssetId(getState().fogSettings.texture)?'user':'factory';popup=el('div',undefined,'fog-options');popup.id='fog-options';popup.setAttribute('role','dialog');popup.setAttribute('aria-label','Fog options');
     const heading=el('div',undefined,'fog-options-heading');heading.append(el('strong','Fog'));const exit=button('×',close,'fog-options-close');exit.setAttribute('aria-label','Close fog options');heading.append(exit);
     const tabRow=el('div',undefined,'fog-options-tabs');tabs=['factory','user'].map(id=>{const b=button(id==='factory'?'Factory':'User',()=>{category=id;render();position();});tabRow.append(b);return[id,b];});
