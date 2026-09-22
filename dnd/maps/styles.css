@@ -23,7 +23,7 @@
 .save-controls{display:flex;align-items:center;gap:6px;white-space:nowrap}.player-mode #save-controls{display:none}.save-name-field{display:flex;align-items:center;gap:10px;margin:8px 0 20px}.save-name-field input{width:100%;min-width:0;padding:10px;border:1px solid var(--line);border-radius:6px;background:#111c17;color:var(--text);font:inherit}.save-name-field span{font-size:.85rem;color:var(--muted)}#save-game-form label{font-size:.85rem}dialog .save-error{font-size:.8rem;color:#efb1a0;margin:0 0 16px}dialog .save-error:empty{display:none}dialog .save-error-note{font-size:.8rem}#save-game-dialog,#save-error-dialog{max-height:calc(100dvh - 28px);overflow:auto}.top-actions{flex-shrink:0}@media(max-width:860px){.topbar{flex-wrap:wrap}.top-actions{flex-wrap:wrap}.site-identity{gap:10px}}
 
 /* Keep DM tools in their own row, outside the playable canvas at every size. */
-.map-controls{position:static;inset:auto;flex:0 0 auto;margin:0 0 10px;pointer-events:auto}
+.map-controls{position:static;inset:auto;flex:0 0 auto;margin:0;pointer-events:auto}
 
 /* Grid color choices share the grid control without toggling visibility. */
 .grid-control{padding:6px 9px;gap:10px}.grid-control>label{display:flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}.grid-colors{display:flex;align-items:center;gap:6px}.map-controls .grid-color{width:24px;height:24px;min-height:24px;padding:0;border:1px solid #788574;border-radius:3px;background:var(--grid-color);box-shadow:inset 0 0 0 1px #0002}.map-controls .grid-color:hover:not(:disabled){background:var(--grid-color);border-color:var(--gold)}.map-controls .grid-color[aria-pressed=true]{background:var(--grid-color);border-color:var(--gold);outline:2px solid var(--gold);outline-offset:2px}.map-controls .grid-color:focus-visible{outline:2px solid #fff;outline-offset:3px}
@@ -570,7 +570,7 @@ body:not(.player-mode) .map-topline{display:grid;grid-template-columns:minmax(0,
 #party-dialog .library-portraits .portrait-option:focus-visible,#encounter-dialog .library-portraits .portrait-option:focus-visible{border-color:var(--gold)}
 
 /* One joined mode switch, with a shared straight center seam. */
-body:not(.player-mode) .map-topline{padding-block:0;min-height:0;margin-bottom:8px}
+body:not(.player-mode) .map-topline{padding-block:0;min-height:0;margin-bottom:0}
 .map-topline>.presentation-modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:234px;padding:0;gap:0;border:1px solid #526049;border-radius:8px;overflow:hidden;background:#000}
 .map-topline .presentation-modes>button{min-width:0;width:100%;height:46px;min-height:46px;padding:10px 16px;border:0;border-radius:0;font-size:.96rem;line-height:1.2;outline:none;box-shadow:none}
 .map-topline .presentation-modes>#show-story{border-left:1px solid #526049}
@@ -682,3 +682,11 @@ body.map-expanded .workspace{grid-template-columns:minmax(0,1fr)}body.map-expand
 @container(max-width:1100px){body:not(.player-mode) .map-controls.drawer-open{grid-template-columns:18px minmax(0,max-content)}.drawer-open .toolbar-extra-inner{min-width:0}.drawer-open .crucial-controls{grid-column:2;margin-top:8px}.drawer-open .crucial-controls::before{left:8px;right:0;top:-4px;bottom:auto;width:auto;height:1px}}
 
 .hp-adjust input[data-hp-input]:focus{outline:none;box-shadow:none}
+
+body:not(.player-mode) .map-panel{padding-top:0}
+.hp-adjust button[data-hp-action]{display:flex;align-items:center;justify-content:center;width:var(--hp-action-size,24px);height:var(--hp-action-size,24px);min-height:var(--hp-action-size,24px);padding:0;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text)}
+.hp-adjust button[data-hp-action]>svg{display:block;flex:none;width:18px;height:18px;margin:0}
+.hp-adjust button[data-hp-action]:hover{background:#344338;border-color:#718168}
+.hp-adjust .temp-hp-apply{bottom:calc(100% + 2px)}
+@container(max-width:210px){.hp-adjust{--hp-action-size:22px}}
+.shape-handle[data-handle=move]{cursor:move}
