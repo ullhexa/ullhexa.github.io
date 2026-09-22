@@ -57,6 +57,7 @@ export function validateMap(map) {
     const lighting=map.lighting,lightIds=new Set();
     if(!lighting||!Array.isArray(lighting.occluders)||!lighting.occluders.every(polygon)||!Array.isArray(lighting.lights)||lighting.lights.length>64)throw new Error('Invalid map lighting.');
     for(const light of lighting.lights){
+      if(light?.color!==undefined&&(typeof light.color!=='string'||!/^#[0-9a-f]{6}$/i.test(light.color)))throw new Error('Invalid light color.');
       if(light.floor!==undefined&&(!light.floor||!map.places.some(p=>p.id===light.floor.placeId&&p.floors?.some(f=>f.id===light.floor.floorId))))throw new Error('Invalid light floor.');
       if(!light||typeof light.id!=='string'||!/^[-a-zA-Z0-9]+$/.test(light.id)||lightIds.has(light.id)||!validPoint(light.point)||!Number.isFinite(light.radius)||light.radius<=0||light.radius>100||(light.clip!==undefined&&!polygon(light.clip))||!Array.isArray(light.requires||[])||(light.requires||[]).some(id=>!ids.has(id)))throw new Error('Invalid map light.');
       lightIds.add(light.id);
@@ -68,7 +69,7 @@ export function validateMap(map) {
   return map;
 }
 export function validPoint(point){return Array.isArray(point)&&point.length===2&&point.every(n=>Number.isFinite(n)&&n>=0&&n<=1);}
-export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],placeNames:{},floors:normalizeFloors(map),itemSchema:2,items:[],party:[...map.partyStart],grid:true,snap:false,fog:[],fogSettings:defaultFogSettings(),monsters:[],turnId:null,initiativeOverlay:{x:.02,y:.08,visible:true},gridColor:'map',gridThickness:1,environment:defaultEnvironment(),tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
+export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],placeNames:{},floors:normalizeFloors(map),itemSchema:2,items:[],party:[...map.partyStart],grid:true,snap:false,shapeSnap:false,fog:[],fogSettings:defaultFogSettings(),monsters:[],turnId:null,initiativeOverlay:{x:.02,y:.08,visible:true},gridColor:'map',gridThickness:1,environment:defaultEnvironment(),tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
 export function sanitizeState(map,input){
   const fresh=initialState(map);
   if(!input||input.format!==1||input.mapId!==map.id||(input.mapVersion!==map.version&&!(map.previousVersions||[]).includes(input.mapVersion)))return fresh;
@@ -77,7 +78,7 @@ export function sanitizeState(map,input){
   fresh.active=Array.isArray(input.active)?[...new Set(input.active.filter(id=>ids.has(id)))]:[];
   if(validPoint(input.party))fresh.party=[...input.party];
   Object.assign(fresh,normalizeEncounter(map,input,fresh.party));
-  fresh.placeNames=normalizePlaceNames(map,input.placeNames);fresh.snap=input.snap===true;fresh.fog=normalizeFog(input.fog);fresh.fogSettings=normalizeFogSettings(input.fogSettings);fresh.turnId=typeof input.turnId==='string'?input.turnId:null;
+  fresh.placeNames=normalizePlaceNames(map,input.placeNames);fresh.snap=input.snap===true;fresh.shapeSnap=input.shapeSnap===true;fresh.fog=normalizeFog(input.fog);fresh.fogSettings=normalizeFogSettings(input.fogSettings);fresh.turnId=typeof input.turnId==='string'?input.turnId:null;
   if(input.initiativeOverlay&&validPoint([input.initiativeOverlay.x,input.initiativeOverlay.y]))fresh.initiativeOverlay={x:input.initiativeOverlay.x,y:input.initiativeOverlay.y,visible:input.initiativeOverlay.visible!==false};
   fresh.grid=typeof input.grid==='boolean'?input.grid:true;
   fresh.gridColor=validGridColor(input.gridColor)?input.gridColor:'map';

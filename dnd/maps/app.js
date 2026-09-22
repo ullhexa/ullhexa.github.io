@@ -1,48 +1,51 @@
-import {createBoardLayout} from './board-layout.js?v=76';
+import {createControlPreferences} from './control-preferences.js?v=81';
+import {boardIcon} from './control-icons.js?v=81';
+import {installBoardGestures} from './board-gestures.js?v=81';
+import {createBoardLayout} from './board-layout.js?v=81';
 import {featureEnabled,placeName} from './board-state.js?v=62';
-import {createGridControls} from './grid-controls.js?v=79';
+import {createGridControls} from './grid-controls.js?v=81';
 import {gridColor} from './grid-state.js?v=62';
-import {createBuildingControls} from './building-controls.js?v=76';
+import {createBuildingControls} from './building-controls.js?v=81';
 import {buildingCollapsed} from './building-state.js?v=62';
 import {createCameraAnimation} from './camera-animation.js?v=62';
-import {createMapNavigation} from './map-navigation.js?v=76';
+import {createMapNavigation} from './map-navigation.js?v=81';
 import {createFloorControl} from './floor-controls.js?v=62';
-import {createUserManual} from './user-manual.js?v=79';
-import {createSpellLibrary} from './spell-library.js?v=79';
-import {createReferenceViewers} from './reference-viewers.js?v=79';
+import {createUserManual} from './user-manual.js?v=81';
+import {createSpellLibrary} from './spell-library.js?v=81';
+import {createReferenceViewers} from './reference-viewers.js?v=81';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
 import {persistAssets} from './local-assets.js?v=79';
-import {createScenery} from './scenery.js?v=62';
+import {createScenery} from './scenery.js?v=81';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
 import {buildingFocusCamera} from './building-focus.js?v=62';
 import {createDisplayPresence} from './display-presence.js?v=62';
 import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=62';
 import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=79';
-import {createDiceTools} from './dice.js?v=76';
+import {createDiceTools} from './dice.js?v=81';
 import {fetchJSON,loadRaster} from './resource-loading.js?v=62';
 import {storyCatalog,nextStory} from './story-assets.js?v=79';
-import {createItemsUI} from './items-ui.js?v=79';
+import {createItemsUI} from './items-ui.js?v=81';
 import {floorList,selectedFloor,selectFloor,interactionOnFloor} from './floors.js?v=62';
 import {createHistory} from './history.js?v=62';
 import {setupSidebarResize} from './sidebar-resize.js?v=76';
 import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=79';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=79';
-import {createFogTools} from './fog-tools.js?v=79';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=81';
+import {createFogTools} from './fog-tools.js?v=81';
 import {normalizeFog} from './fog-state.js?v=62';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=79';
-import {createSessionBundle} from './session-bundle.js?v=79';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=81';
+import {createSessionBundle} from './session-bundle.js?v=81';
 import { startDMShell } from './dm-shell.js?v=62';
 import { openPlayerWindow } from './display-window.js?v=62';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=79';
-import { createEncounterTools } from './encounter-tools.js?v=79';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=81';
+import { createEncounterTools } from './encounter-tools.js?v=81';
 import { playerProjection, formation, moveParty } from './encounter-state.js?v=79';
-import { createMapMenu } from './map-menu.js?v=79';
-import { createSaveControls } from './save-controls.js?v=79';
-import { parseSave, restoreSave } from './save-file.js?v=79';
-import { createLighting } from './lighting.js?v=79';
+import { createMapMenu } from './map-menu.js?v=81';
+import { createSaveControls } from './save-controls.js?v=81';
+import { parseSave, restoreSave } from './save-file.js?v=81';
+import { createLighting } from './lighting.js?v=81';
 import { setupFullscreen } from './fullscreen.js?v=76';
-import { startPlayerDisplay } from './player-display.js?v=80';
-import { createDirector } from './director.js?v=79';
+import { startPlayerDisplay } from './player-display.js?v=81';
+import { createDirector } from './director.js?v=81';
 import { normalizeProject } from './presentation-state.js?v=79';
 
 listenForBoardReset();
@@ -78,7 +81,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=80')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=81')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -86,12 +89,14 @@ async function start() {
   if(!player)$('auto-save').checked=autoSaveEnabled();
   if (!player && !query.has('session')) writeStored('lanternford:last-session', session);
   const sessionKey = `lanternford:session:${session}`;
+  const controls=createControlPreferences(sessionKey);
+  if(!player)installBoardGestures();
   catalog.push(...customCatalog(sessionKey));
   const pendingLoadKey = `${sessionKey}:pending-load`;
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
   const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
   const loadMap = async item => {
-    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=45`));
+    const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=81`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
     return content;
   };
@@ -234,16 +239,17 @@ async function start() {
   party.append(svgNode('text', { 'text-anchor': 'middle', y: 5, fill: '#fff9dc', 'font-size': 14, 'font-weight': 700 }, 'P'));
   $('party-layer').append(party);
   function finishDrag(before,message){currentHistory().record(before);state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
-  function preview(next,mode=false){state=next;if(mode==='fog')fog?.render();else if(mode==='aura')encounter.renderAuras();else if(mode)encounter.renderCharacterPositions(typeof mode==='string'?mode:null);else render();}
+  function preview(next,mode=false){state=next;if(mode==='fog')fog?.render();else if(mode==='shape')encounter.renderShapes();else if(mode==='aura')encounter.renderAuras();else if(mode)encounter.renderCharacterPositions(typeof mode==='string'?mode:null);else render();}
   let positionSequence=0,lastPositionSequence=-1;
   function livePositions(id){const members=mapTokens(state).filter(m=>(!id||m.id===id)&&(!(m.monster||m.item)||m.visible&&(!m.item||!m.floor||state.floors?.[m.floor.placeId]===m.floor.floorId)));send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,...(!id?{party:state.party}:{}),positions:members.map(m=>({id:m.id,position:m.position,stack:m.stack||0}))});}
-  function setTool(value){if(drag?.measure){const id=drag.id;drag=null;ruler=[];if($('map').hasPointerCapture(id))$('map').releasePointerCapture(id);renderRuler(true);}tool=value;measuring=value==='measure';$('map-stage').classList.toggle('is-measuring',measuring);$('measure').setAttribute('aria-pressed',measuring);fog?.setMode(value);$('map').style.cursor=value==='measure'?'crosshair':'';encounter.clearSelection();}
+  function setTool(value){if(value!=='measure'&&ruler.length){ruler=[];renderRuler(true);}if(drag?.measure){const id=drag.id;drag=null;ruler=[];if($('map').hasPointerCapture(id))$('map').releasePointerCapture(id);renderRuler(true);}tool=value;measuring=value==='measure';$('map-stage').classList.toggle('is-measuring',measuring);$('measure').setAttribute('aria-pressed',measuring);fog?.setMode(value);$('map').style.cursor=value==='measure'?'crosshair':'';encounter.clearSelection();}
   if(!player){$('map-stage').addEventListener('pointerdown',event=>{if(event.button!==2||!['measure','paint','erase'].includes(tool)||event.target.closest('.reference-suite,.dice-panel,.token-status-editor,.item-comment,.building-popup'))return;fog?.cancel();setTool(null);ruler=[];renderRuler(true);consumeMapDismissal(event,$('map-stage'));},true);}
   let references;
-  const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,setTool,livePositions});
+  const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,setTool,livePositions,autoMeasure:()=>controls.get('autoMeasure'),measureMove:points=>{ruler=points;renderRuler(true);}});
   if(!player){const overlay=svgNode('svg',{id:'party-overlay',preserveAspectRatio:'xMidYMid meet'});overlay.append($('party-layer'));$('map-stage').append(overlay);}
   fog=createFogTools({map,player,getState:()=>state,commit,preview,finishDrag,pointAt,setTool,sendPreview:strokes=>send({type:'fog-preview',mapId:map.id,revision:state.revision,fog:strokes}),announce});
-  const dice=player?null:createDiceTools();if(!player)createMapNavigation({map,getCamera:()=>state.camera,viewport:()=>viewportSize(),prepare:()=>{cameraAnimation.cancel();setTool(null);},setCamera:camera=>{focusedPlace=null;state={...state,camera,revision:state.revision+1};queueCamera();clearTimeout(zoomSave);zoomSave=setTimeout(save,100);}});
+  if(!player){const b=document.createElement('button');b.id='auto-measure';b.type='button';b.className='board-icon-control';b.setAttribute('aria-label','Measure token movement');b.append(boardIcon('autoMeasure'));b.addEventListener('click',()=>{controls.set('autoMeasure',!controls.get('autoMeasure'));b.setAttribute('aria-pressed',String(controls.get('autoMeasure')));});document.querySelector('.map-controls').append(b);}
+  const dice=player?null:createDiceTools(controls);if(!player)createMapNavigation({map,getCamera:()=>state.camera,viewport:()=>viewportSize(),prepare:()=>{cameraAnimation.cancel();setTool(null);},setCamera:camera=>{focusedPlace=null;state={...state,camera,revision:state.revision+1};queueCamera();clearTimeout(zoomSave);zoomSave=setTimeout(save,100);}});
   combat=createCombatUI({map,player,getState:()=>state,commit,announce,showStat:(m,side)=>references?.showStat(m,side),showAssigned:(id,side)=>references?.showAssigned(id,side),locate:id=>{references?.close();encounter.locateToken(id);},getPresentation:()=>project,advanceStory:()=>setProject({...project,vibe:nextStory(project)})});
 
   function remember(view) { currentHistory().record(state,view); }
@@ -278,7 +284,7 @@ async function start() {
     cameraAnimation.cancel();
     remember({selectedPlace:selected,ruler,project});
     if(restoredProject){project=normalizeProject(restoredProject,catalog,map.id);director.render();}
-    setTool(null);ruler=restored.view.ruler;measuring=false;$('map-stage').classList.remove('is-measuring');
+    setTool(null);ruler=[];measuring=false;$('map-stage').classList.remove('is-measuring');
     $('measure').setAttribute('aria-pressed','false');$('map').style.cursor='';
     encounter.clearSelection();clearTimeout(zoomSave);
     commit(restored.state,`Loaded ${restored.name}.`,false);
@@ -362,7 +368,6 @@ async function start() {
   function renderRuler(broadcast = false) {
     if (broadcast && !player) send({ type: 'ruler', mapId:map.id, points: ruler });
     const group = $('measurement'); group.replaceChildren();
-    $('clear-measurement').hidden = ruler.length === 0;
     if (!ruler.length) return;
     const unit=1/(viewGeometry?.scale||1),points=ruler.map(xy);
     for(const[x,y]of points)group.append(svgNode('circle',{cx:x,cy:y,r:4*unit,fill:'#fff6cb'}));
@@ -401,7 +406,7 @@ async function start() {
     const[x,y]=xy(point),glyph=svgNode('g',{class:'hotspot-glyph','data-x':x,'data-y':y});
     glyph.append(svgNode('circle',{r:21,fill:'#172a21',stroke:'#e8ba71','stroke-width':2}));
     glyph.append(svgNode('text',{'text-anchor':'middle',y:6,'font-size':17,'pointer-events':'none'},number));
-    const label=svgNode('g',{class:'place-name-tag','pointer-events':'none'});label.append(svgNode('rect',{x:-50,y:29,width:100,height:32,rx:4,fill:'#ffffff'}),svgNode('text',{'text-anchor':'middle',y:52,'font-size':22.5,fill:'#101710'},place.name));glyph.append(label);node.append(glyph);
+    const label=svgNode('g',{class:'place-name-tag','pointer-events':'none'});label.append(svgNode('rect',{x:-50,y:29,width:100,height:24,rx:4,fill:'#ffffff'}),svgNode('text',{'text-anchor':'middle',y:46,'font-size':15,fill:'#101710'},place.name));glyph.append(label);node.append(glyph);
     node.addEventListener('mousedown',event=>{if(event.button===0)event.preventDefault();});
     node.addEventListener('click',event=>{if(!drag)activateHotspot(node,event);});
     node.addEventListener('dblclick',event=>{if(tool||drag)return;event.preventDefault();event.stopPropagation();buildingUI.show(place,true);});
@@ -445,12 +450,11 @@ async function start() {
     });
     $('light-level').addEventListener('change',()=>{adjustingLighting=false;announce(`Map darkness: ${state.environment.darkness}%.`);});
     $('light-level').addEventListener('blur',()=>{adjustingLighting=false;});
-    $('measure').addEventListener('click',()=>{setTool(measuring?null:'measure');announce(measuring?'Drag between two points to measure. Clear ruler removes the line.':'Measurement off.');});
-    $('clear-measurement').addEventListener('click', () => { ruler = []; renderRuler(true); });
+    $('measure').addEventListener('click',()=>{setTool(measuring?null:'measure');announce(measuring?'Drag between two points to measure.':'Measurement off.');});
     document.addEventListener('keydown', event => { if(!event.defaultPrevented&&event.key==='Escape'&&tool){setTool(null);ruler=[];renderRuler(true);} });
     function travelHistory(direction){
       const entry=currentHistory()[direction](state,{selectedPlace:selected,ruler,project});if(!entry)return;
-      if(entry.view){ruler=entry.view.ruler;if(entry.view.project){project=entry.view.project;director.render();}}
+      if(entry.view){ruler=measuring?entry.view.ruler:[];if(entry.view.project){project=entry.view.project;director.render();}}
       commit(entry.state,direction==='undo'?'Last encounter change undone.':'Last encounter change redone.',false);
       if(entry.view)selectPlace(entry.view.selectedPlace);
     }
@@ -565,7 +569,7 @@ async function start() {
   }
   if(!embedded)setInterval(updateConnection,500);
   window.addEventListener('pagehide',()=>{if(!player&&runtimeReady)save();});
-  if(!player){createUserManual();director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});createLibraries({map,getState:()=>state,commit,announce});itemsUI=createItemsUI({map,getState:()=>state,commit,announce,pointAt,setTool,selectItem:id=>encounter.selectItem(id),editItem:id=>{references?.close();encounter.editItem(id);},showNotes:id=>{references?.close();encounter.showItemNotes(id);}});createSpellLibrary({getState:()=>state,commit,announce});references=createReferenceViewers({getState:()=>state,commit,announce,prepare:()=>{dice?.close();setTool(null);}});createBoardLayout();mapMenu.setUpload(createMapUpload({sessionKey,catalog,onAdded:entry=>{mapMenu.addEntry(entry);mapMenu.showEntry(entry);},announce}));}
+  if(!player){createUserManual();director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});createLibraries({map,getState:()=>state,commit,announce});itemsUI=createItemsUI({map,getState:()=>state,commit,announce,pointAt,setTool,selectItem:id=>encounter.selectItem(id),editItem:id=>{references?.close();encounter.editItem(id);},showNotes:id=>{references?.close();encounter.showItemNotes(id);}});createSpellLibrary({getState:()=>state,commit,announce});references=createReferenceViewers({getState:()=>state,commit,announce,prepare:()=>{dice?.close();setTool(null);}});createBoardLayout(controls);const auto=document.getElementById('auto-measure');auto.setAttribute('aria-pressed',String(controls.get('autoMeasure')));document.querySelector('.map-controls').addEventListener('click',event=>{if(!event.target.closest('#measure')&&tool==='measure')setTool(null);},true);mapMenu.setUpload(createMapUpload({sessionKey,catalog,onAdded:entry=>{mapMenu.addEntry(entry);mapMenu.showEntry(entry);},announce}));}
   if(embedded){
     let lastActivity=0;
     const activity=()=>{if(performance.now()-lastActivity>100){lastActivity=performance.now();window.parent.postMessage({type:'player-activity'},location.origin);}};

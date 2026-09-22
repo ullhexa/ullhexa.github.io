@@ -1,5 +1,5 @@
 import {button,el} from './editor-dom.js?v=62';
-import {chevronIcon} from './control-icons.js?v=62';
+import {chevronIcon} from './control-icons.js?v=81';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
 
 export function createScenePicker({id,label,onSelect,onError}){

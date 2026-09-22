@@ -1,27 +1,62 @@
 {
   "schemaVersion": 1,
   "id": "blighted-cavern",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "title": "The Blighted Cavern",
   "width": 3840,
   "height": 2160,
-  "grid": { "size": 80, "distance": 5, "unit": "ft", "color": "#d6cadf" },
+  "grid": {
+    "size": 80,
+    "distance": 5,
+    "unit": "ft",
+    "color": "#d6cadf"
+  },
   "art": {
-    "base": "./maps/blighted-cavern/cavern.png",
-    "roofs": "./maps/blighted-cavern/cavern.png",
-    "brokenCrossing": "./maps/blighted-cavern/crossing-broken.png"
+    "base": "./maps/blighted-cavern/cavern-lit.png",
+    "roofs": "./maps/blighted-cavern/cavern-lit.png",
+    "brokenCrossing": "./maps/blighted-cavern/crossing-broken-lit.png"
   },
   "places": [
     {
       "id": "plank-crossing",
       "name": "Plank crossing",
-      "point": [0.531, 0.458],
+      "point": [
+        0.531,
+        0.458
+      ],
       "focusZoom": 2.5,
-      "footprint": [[0.454,0.332],[0.591,0.332],[0.591,0.633],[0.454,0.633]],
-      "actions": ["crossing-broken"],
+      "footprint": [
+        [
+          0.454,
+          0.332
+        ],
+        [
+          0.591,
+          0.332
+        ],
+        [
+          0.591,
+          0.633
+        ],
+        [
+          0.454,
+          0.633
+        ]
+      ],
+      "actions": [
+        "crossing-broken"
+      ],
       "sequence": [
-        { "label": "Intact", "active": [] },
-        { "label": "Broken", "active": ["crossing-broken"] }
+        {
+          "label": "Intact",
+          "active": []
+        },
+        {
+          "label": "Broken",
+          "active": [
+            "crossing-broken"
+          ]
+        }
       ]
     }
   ],
@@ -33,10 +68,147 @@
       "label": "Break crossing",
       "activeLabel": "Restore crossing",
       "asset": "brokenCrossing",
-      "polygon": [[0.489,0.43],[0.57,0.43],[0.57,0.49],[0.489,0.49]]
+      "polygon": [
+        [
+          0.489,
+          0.43
+        ],
+        [
+          0.57,
+          0.43
+        ],
+        [
+          0.57,
+          0.49
+        ],
+        [
+          0.489,
+          0.49
+        ]
+      ]
     }
   ],
-  "partyStart": [0.054, 0.455],
-  "lighting": { "occluders": [], "lights": [] },
-  "decorations": []
+  "partyStart": [
+    0.054,
+    0.455
+  ],
+  "lighting": {
+    "occluders": [],
+    "lights": [
+      {
+        "id": "torch-1",
+        "point": [
+          0.074,
+          0.41
+        ],
+        "radius": 12
+      },
+      {
+        "id": "torch-2",
+        "point": [
+          0.269,
+          0.414
+        ],
+        "radius": 13
+      },
+      {
+        "id": "torch-3",
+        "point": [
+          0.438,
+          0.44
+        ],
+        "radius": 12
+      },
+      {
+        "id": "torch-4",
+        "point": [
+          0.472,
+          0.155
+        ],
+        "radius": 13
+      },
+      {
+        "id": "torch-5",
+        "point": [
+          0.647,
+          0.406
+        ],
+        "radius": 14
+      },
+      {
+        "id": "torch-6",
+        "point": [
+          0.794,
+          0.446
+        ],
+        "radius": 14
+      },
+      {
+        "id": "torch-7",
+        "point": [
+          0.945,
+          0.41
+        ],
+        "radius": 12
+      },
+      {
+        "id": "blight-1",
+        "point": [
+          0.179,
+          0.19
+        ],
+        "radius": 9,
+        "color": "#b267f0"
+      },
+      {
+        "id": "blight-2",
+        "point": [
+          0.215,
+          0.61
+        ],
+        "radius": 10,
+        "color": "#b267f0"
+      },
+      {
+        "id": "blight-3",
+        "point": [
+          0.546,
+          0.21
+        ],
+        "radius": 10,
+        "color": "#b267f0"
+      },
+      {
+        "id": "blight-4",
+        "point": [
+          0.541,
+          0.72
+        ],
+        "radius": 11,
+        "color": "#b267f0"
+      },
+      {
+        "id": "blight-5",
+        "point": [
+          0.834,
+          0.6
+        ],
+        "radius": 10,
+        "color": "#b267f0"
+      },
+      {
+        "id": "blight-6",
+        "point": [
+          0.828,
+          0.287
+        ],
+        "radius": 9,
+        "color": "#b267f0"
+      }
+    ]
+  },
+  "decorations": [],
+  "previousVersions": [
+    "0.1.0"
+  ]
 }

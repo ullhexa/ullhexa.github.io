@@ -39,8 +39,8 @@ export function createFloorTransitions(map,plane,art,light){
   }
   for(const entry of pending){
    if(active.has(entry.id))remove(active.get(entry.id));plane.append(entry.root);active.set(entry.id,entry);
-   const oldAnimation=entry.old.animate([{opacity:1},{opacity:0}],{duration:1500,easing:'steps(1, end)',fill:'forwards'});
-   const blackAnimation=entry.black.animate([{opacity:0,easing:'ease-in-out'},{opacity:1,offset:.5,easing:'ease-in-out'},{opacity:0}],{duration:3000,fill:'forwards'});
+   const oldAnimation=entry.old.animate([{opacity:1},{opacity:0}],{duration:1250,easing:'steps(1, end)',fill:'forwards'});
+   const blackAnimation=entry.black.animate([{opacity:0,easing:'ease-in-out'},{opacity:1,offset:.5,easing:'ease-in-out'},{opacity:0}],{duration:2500,fill:'forwards'});
    entry.animations=[oldAnimation,blackAnimation];blackAnimation.finished.then(()=>remove(entry),()=>{});
   }
  }

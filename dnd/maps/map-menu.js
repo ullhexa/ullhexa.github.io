@@ -1,4 +1,4 @@
-import {editCustomMap} from './custom-maps.js?v=79';
+import {editCustomMap} from './custom-maps.js?v=81';
 import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=62';
 import {assetId} from './combat-state.js?v=79';
 import {assetURL} from './local-assets.js?v=79';
