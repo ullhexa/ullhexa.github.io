@@ -18,7 +18,7 @@ import {buildingFocusCamera} from './building-focus.js?v=62';
 import {createDisplayPresence} from './display-presence.js?v=62';
 import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=62';
 import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=62';
-import {createDiceTools} from './dice.js?v=73';
+import {createDiceTools} from './dice.js?v=74';
 import {fetchJSON,loadRaster} from './resource-loading.js?v=62';
 import {storyCatalog,nextStory} from './story-assets.js?v=62';
 import {createItemsUI} from './items-ui.js?v=66';
@@ -462,7 +462,7 @@ async function start() {
       if(displayConnected()){
         send({type:'close-player'});announce('Closing the player display…');return;
       }
-      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'73',popup:'1'}).toString();
+      save();const url=new URL(location.href);url.search=new URLSearchParams({view:'player',session,map:map.id,build:'74',popup:'1'}).toString();
       playerWindow=dmHost?dmHost.openPlayer(url):openPlayerWindow(url);
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
