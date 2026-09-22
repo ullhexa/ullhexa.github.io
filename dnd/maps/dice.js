@@ -10,12 +10,20 @@ export function dieValue(sides,random=()=>crypto.getRandomValues(new Uint32Array
   const limit=2**32-(2**32%sides);let n;do{n=random();}while(n>=limit);return n%sides+1;
 }
 export function rollDice(counts,random){return DICE.flatMap(sides=>Array.from({length:Math.max(0,Math.min(20,Math.floor(counts[sides]||0)))},()=>({sides,value:dieValue(sides,random)})));}
+function drawChoice(canvas,sides){
+  const source=el('canvas'),shape=landingMesh(sides===100?10:sides);source.width=canvas.width;source.height=canvas.height;
+  drawDie(source,shape,sides,[0,0,0],false,[0,0]);
+  // Center the visible silhouette, keeping the D6's centerline and every die's size.
+  const pixels=source.getContext('2d').getImageData(0,0,source.width,source.height).data;let left=source.width,right=0,top=source.height,bottom=0;
+  for(let y=0;y<source.height;y++)for(let x=0;x<source.width;x++)if(pixels[(y*source.width+x)*4+3]>20){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
+  drawDie(source,shape,sides,[0,0,0],true,[0,0]);canvas.getContext('2d').drawImage(source,(canvas.width-left-right-1)/2,(canvas.height-top-bottom-1)/2);
+}
 export function createDiceTools(){
   const stage=document.getElementById('map-stage'),toggle=button('',()=>panel.hidden?open():close(),'toolbar-icon dice-toggle');toggle.id='open-dice';toggle.title='Dice';toggle.setAttribute('aria-label','Dice');toggle.setAttribute('aria-pressed','false');toggle.append(boardIcon('dice'));document.querySelector('.fog-controls').after(toggle);
   const panel=el('section',undefined,'dice-panel instant-dice'),controls=el('div',undefined,'dice-controls'),display=el('div',undefined,'dice-display'),tray=el('div',undefined,'dice-results'),total=el('output','0','dice-total');panel.hidden=true;panel.setAttribute('aria-label','Dice throw');panel.setAttribute('role','dialog');total.setAttribute('aria-label','Dice total');total.setAttribute('aria-live','polite');display.append(tray,total);panel.append(controls,display);stage.append(panel);
   const buttons=new Map();let pool=[],animation=0,sequence=0,choice=null,choiceTimer=0;
   function position(){if(panel.hidden)return;const r=toggle.getBoundingClientRect(),s=stage.getBoundingClientRect();panel.style.left=`${Math.max(0,Math.min(stage.clientWidth-panel.offsetWidth,r.left+r.width/2-s.left-panel.offsetWidth/2))}px`;panel.style.top='0px';}
-  function selectChoice(sides){clearTimeout(choiceTimer);choice=sides;for(const[value,b]of buttons)b.classList.toggle('keyboard-selected',value===choice);if(choice!==null)choiceTimer=setTimeout(()=>selectChoice(null),5000);}
+  function selectChoice(sides,keyboard=true){clearTimeout(choiceTimer);choice=sides;if(keyboard&&choice!==null&&controls.contains(document.activeElement))document.activeElement.blur();for(const[value,b]of buttons)b.classList.toggle('keyboard-selected',keyboard&&value===choice);if(choice!==null)choiceTimer=setTimeout(()=>selectChoice(null),5000);}
   function refresh(){
     for(const[sides,b]of buttons){const dice=pool.filter(d=>d.sides===sides),moving=dice.some(d=>d.parts.some(p=>!p.settled)),sum=dice.reduce((s,d)=>s+d.value,0);b.querySelector('.die-count').textContent=dice.length||'';b.querySelector('output').textContent=dice.length?(moving?'…':String(sum)):'';b.setAttribute('aria-label',dice.length?`Roll D${sides}, ${dice.length} dice, total ${moving?'rolling':sum}`:`Roll D${sides}`);b.disabled=dice.length>=20;}
     const moving=pool.some(d=>d.parts.some(p=>!p.settled));panel.classList.toggle('rolling',moving);total.textContent=moving?'…':String(pool.reduce((s,d)=>s+d.value,0));
@@ -29,7 +37,7 @@ export function createDiceTools(){
     for(const v of values){const canvas=el('canvas',undefined,'rolled-die');canvas.width=canvas.height=104*bank.ratio;canvas.style.marginTop=`${bank.offsetY}px`;canvas.setAttribute('aria-hidden','true');const part={canvas,shape:bank.shape,plate:bank.faces.get(String(v)),value:v,index:sequence++,color:bank.color,duration:reduced?0:rollDuration(),start:performance.now(),settled:false};canvas.dataset.duration=part.duration;die.parts.push(part);group.append(canvas);}
     pool.push(die);pool.sort((a,b)=>DICE.indexOf(a.sides)-DICE.indexOf(b.sides));const next=pool[pool.indexOf(die)+1];tray.insertBefore(group,next?.group||null);refresh();if(!animation)animation=requestAnimationFrame(frame);
   }
-  for(const sides of DICE){const b=button('',()=>{selectChoice(sides);add(sides);},'die-choice');b.dataset.die=sides;const canvas=el('canvas',undefined,'die-choice-face');canvas.width=canvas.height=208;canvas.setAttribute('aria-hidden','true');drawDie(canvas,landingMesh(sides===100?10:sides),sides,[0,0,0],true,[0,0]);b.append(el('span','','die-count'),canvas,el('output',''));controls.append(b);buttons.set(sides,b);}
+  for(const sides of DICE){const b=button('',()=>{selectChoice(sides,false);add(sides);},'die-choice');b.dataset.die=sides;const canvas=el('canvas',undefined,'die-choice-face');canvas.width=canvas.height=208;canvas.setAttribute('aria-hidden','true');drawChoice(canvas,sides);b.append(el('span','','die-count'),canvas,el('output',''));controls.append(b);buttons.set(sides,b);}
   display.addEventListener('click',e=>{if(!e.target.closest('.dice-result'))reset();});panel.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();reset();});
   function open(){reset();panel.hidden=false;toggle.setAttribute('aria-pressed','true');position();}function close(){reset();panel.hidden=true;toggle.setAttribute('aria-pressed','false');}
   document.addEventListener('pointerdown',e=>{if(!panel.hidden&&!panel.contains(e.target)&&!toggle.contains(e.target)){close();consumeMapDismissal(e,stage);}},true);
