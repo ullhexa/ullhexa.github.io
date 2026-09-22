@@ -1,12 +1,12 @@
 import {createScenePicker} from './scene-picker.js?v=76';
 import {chevronIcon} from './control-icons.js?v=62';
 import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=62';
-import {editTokenImage} from './token-image-editor.js?v=76';
-import {createSceneGroups} from './scene-groups-ui.js?v=62';
+import {editTokenImage} from './token-image-editor.js?v=79';
+import {createSceneGroups} from './scene-groups-ui.js?v=79';
 import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=62';
-import {storyCatalog} from './story-assets.js?v=62';
-import {createStoryPlayer} from './story-player.js?v=62';
-import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=62';
+import {storyCatalog} from './story-assets.js?v=79';
+import {createStoryPlayer} from './story-player.js?v=79';
+import {uploadImage,assetURL,assetRecord} from './local-assets.js?v=79';
 const $=id=>document.getElementById(id);
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
 

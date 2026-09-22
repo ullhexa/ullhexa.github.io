@@ -1,12 +1,12 @@
 import {featureEnabled} from './board-state.js?v=62';
-import {editStatCard} from './stat-card-editor.js?v=62';
+import {editStatCard} from './stat-card-editor.js?v=79';
 import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=76';
 import {statIcon} from './control-icons.js?v=62';
 import {el,button} from './editor-dom.js?v=62';
-import {assetURL} from './local-assets.js?v=62';
-import {loadSpells} from './spell-catalog.js?v=62';
-import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=62';
-import {patchMember} from './combat-state.js?v=62';
+import {assetURL} from './local-assets.js?v=79';
+import {loadSpells} from './spell-catalog.js?v=79';
+import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=79';
+import {patchMember} from './combat-state.js?v=79';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
 export function createReferenceViewers({getState,commit,prepare,announce}){
  const stage=document.getElementById('map-stage'),root=el('div',undefined,'reference-suite');root.hidden=true;stage.append(root);new ResizeObserver(()=>root.style.setProperty('--reference-height',`${stage.clientHeight}px`)).observe(stage);let catalog=[],assigned=null,view=null,expanded=false,query='',selected=null,request=0,encounterId=null,encounterTab='stat',statView=null,content=root;
@@ -14,7 +14,7 @@ export function createReferenceViewers({getState,commit,prepare,announce}){
  const deckButton=button('Spell Deck',()=>showDeck(),'spell-deck-button');deckButton.id='open-spell-deck';const section=el('section',undefined,'tool-section spell-deck-section');section.append(deckButton);document.getElementById('spell-areas').after(section);
  function close(){request++;assigned=null;view=null;encounterId=null;statView=null;root.replaceChildren();root.hidden=true;root.classList.remove('has-assignment','is-expanded','encounter-reference');}
  function closeViewer(){view=null;expanded=false;if(assigned)render();else close();}
- async function ensure(){catalog=await loadSpells();}
+ async function ensure(){catalog=await loadSpells(getState().campaign);}
  async function showDeck(id=null,linked=false){if(!featureEnabled(getState(),'spells'))return;if(!id&&!linked&&!root.hidden&&view?.kind==='deck'&&!assigned){close();return;}const ticket=++request;try{await ensure();if(ticket!==request)return;prepare();if(!linked){assigned=null;encounterId=null;statView=null;root.dataset.side='left';}view={kind:'deck'};query='';selected=id||findSpells(catalog,'',deck()?.spells||[])[0]?.id||null;expanded=false;render();}catch(e){announce(e.message);}}
  async function showAssigned(id,side='left'){if(!featureEnabled(getState(),'spells'))return;if(!root.hidden&&assigned===id&&root.dataset.side===side){close();return;}const ticket=++request;try{await ensure();if(ticket!==request)return;prepare();root.dataset.side=side;encounterId=null;statView=null;assigned=id;view=null;expanded=false;render();}catch(e){announce(e.message);}}
  async function showStat(m,side='left',force=false){if(!m)return;if(!force&&!root.hidden&&encounterId===m.id&&root.dataset.side===side){close();return;}const ticket=++request;try{const url=m.statCard?await assetURL(m.statCard):null;if(ticket!==request)return;prepare();root.dataset.side=side;encounterId=m.id;encounterTab='stat';assigned=null;expanded=false;statView={kind:'stat',id:m.id,title:m.name,url,text:m.statText||''};view=statView;render();}catch(e){announce(e.message);}}
