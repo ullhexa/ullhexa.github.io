@@ -20,7 +20,7 @@ export function facingMesh(sides){const source=DICE_MESHES[sides],face=source.fa
 export function rotateVertex(v,[rx,ry,rz]){let [x,y,z]=v;[y,z]=[y*Math.cos(rx)-z*Math.sin(rx),y*Math.sin(rx)+z*Math.cos(rx)];[x,z]=[x*Math.cos(ry)+z*Math.sin(ry),-x*Math.sin(ry)+z*Math.cos(ry)];return [x*Math.cos(rz)-y*Math.sin(rz),x*Math.sin(rz)+y*Math.cos(rz),z];}
 export const DICE_COLORS={4:[18,49],6:[235,36],8:[164,35],10:[42,53],12:[194,45],20:[344,39],100:[278,31]};
 export function landingMesh(sides){if(sides===8){const m=DICE_MESHES[8];return {vertices:m.vertices.map(v=>rotateVertex(rotateVertex(v,[0,Math.PI/4,0]),[.32,0,0])),faces:m.faces.map(f=>f.indices)};}if(sides===10){const m=DICE_MESHES[10];return {vertices:m.vertices.map(v=>rotateVertex(rotateVertex(v,[0,0,Math.PI/10]),[-Math.PI/2+.36,0,0])),faces:m.faces.map(f=>f.indices)};}return facingMesh(sides);}
-export function rollDuration(random=Math.random){return 440+Math.max(0,Math.min(1,random()))*2040;}
+export function rollDuration(random=Math.random){return 500+Math.max(0,Math.min(1,random()))*2200;}
 export function drawDie(canvas,shape,value,angles,settled,color=DICE_COLORS[4],numberOnly=false,numberLift=0){
  const size=104,dpr=canvas.width/size,ctx=canvas.getContext('2d'),vertices=shape.vertices.map(v=>rotateVertex(v,angles)),project=v=>[size/2+v[0]*40*4/(4-v[2]),size/2-v[1]*40*4/(4-v[2])];ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,size,size);
  const faces=shape.faces.map((ids,index)=>{const points=ids.map(i=>vertices[i]),normal=unit(cross(sub(points[1],points[0]),sub(points[2],points[0]))),center=points.reduce((s,v)=>s.map((n,j)=>n+v[j]/points.length),[0,0,0]);return {points,normal,center,index};}).filter(f=>dot(f.normal,sub([0,0,4],f.center))>0).sort((a,b)=>a.center[2]-b.center[2]);
