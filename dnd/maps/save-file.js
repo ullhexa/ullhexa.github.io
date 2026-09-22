@@ -1,13 +1,13 @@
 import {validFeatures,validAura,validPlaceNames} from './board-state.js?v=62';
 import {validGridColor,storedGridThickness} from './grid-state.js?v=62';
-import {validSpells,validSpellLibrary} from './spell-state.js?v=62';
+import {validSpells,validSpellLibrary} from './spell-state.js?v=79';
 import {validUserTokens} from './library-assets.js?v=62';
 import {validFloors} from './floors.js?v=62';
-import {sanitizeState,validPoint,validEnvironment} from './state.js?v=62';
-import {PORTRAITS,SHAPE_TYPES,SHAPE_COLORS} from './encounter-state.js?v=62';
-import {CONDITIONS,safeId,assetId,parseInitiative} from './combat-state.js?v=62';
+import {sanitizeState,validPoint,validEnvironment} from './state.js?v=79';
+import {PORTRAITS,SHAPE_TYPES,SHAPE_COLORS} from './encounter-state.js?v=79';
+import {CONDITIONS,safeId,assetId,parseInitiative} from './combat-state.js?v=79';
 import {normalizeFog,validFogSettings,validFogImages} from './fog-state.js?v=62';
-import {validProject} from './presentation-state.js?v=62';
+import {validProject} from './presentation-state.js?v=79';
 export const MAX_SAVE_BYTES=64*1024*1024;
 const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v),unique=a=>new Set(a).size===a.length;
 const check=(ok,message='This save contains incomplete or invalid game data.')=>{if(!ok)throw new Error(message);};

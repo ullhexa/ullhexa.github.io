@@ -1,3 +1,5 @@
-import {fetchJSON} from './resource-loading.js?v=62';
-let pending;
-export function loadSpells(){return pending??=fetchJSON('./spells/catalog.json?v=45').then(data=>data.spells).catch(error=>{pending=null;throw error;});}
+import {assetURL} from './local-assets.js?v=79';
+import {normalizeUserSpells} from './user-spells.js?v=79';
+// Intentionally empty until the owner clears a Factory collection for publication.
+export const FACTORY_SPELLS=Object.freeze([]);
+export async function loadSpells(campaign){return [...FACTORY_SPELLS,...await Promise.all(normalizeUserSpells(campaign?.userSpells).map(async s=>({...s,classes:[],user:true,cards:await Promise.all(s.cards.map(async c=>({...c,src:await assetURL(c.asset)})))})))];}

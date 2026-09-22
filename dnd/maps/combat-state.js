@@ -1,6 +1,6 @@
 import {normalizeFeatures,featureEnabled,normalizeAura,armorClass} from './board-state.js?v=62';
 import {normalizeFogImages} from './fog-state.js?v=62';
-import {normalizeSpells,normalizeSpellLibrary} from './spell-state.js?v=62';
+import {normalizeSpells,normalizeSpellLibrary} from './spell-state.js?v=79';
 import {normalizeUserTokens} from './library-assets.js?v=62';
 import {elevation} from './token-options.js?v=62';
 // Small, explicit session model. Roster and monsters are the active map instances.
