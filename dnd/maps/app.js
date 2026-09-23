@@ -4,7 +4,7 @@ import {boardIcon} from './control-icons.js?v=81';
 import {installBoardGestures} from './board-gestures.js?v=81';
 import {createBoardLayout} from './board-layout.js?v=81';
 import {featureEnabled,placeName} from './board-state.js?v=62';
-import {createGridControls} from './grid-controls.js?v=83';
+import {createGridControls} from './grid-controls.js?v=84';
 import {gridColor} from './grid-state.js?v=62';
 import {createBuildingControls} from './building-controls.js?v=82';
 import {buildingCollapsed} from './building-state.js?v=62';
@@ -16,37 +16,37 @@ import {createSpellLibrary} from './spell-library.js?v=83';
 import {createReferenceViewers} from './reference-viewers.js?v=83';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
 import {persistAssets} from './local-assets.js?v=83';
-import {createScenery} from './scenery.js?v=81';
+import {createScenery} from './scenery.js?v=84';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
 import {buildingFocusCamera} from './building-focus.js?v=82';
 import {createDisplayPresence} from './display-presence.js?v=62';
 import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=82';
 import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=83';
-import {createDiceTools} from './dice.js?v=83';
-import {fetchJSON,loadRaster} from './resource-loading.js?v=62';
+import {createDiceTools} from './dice.js?v=84';
+import {fetchJSON} from './resource-loading.js?v=84';
 import {storyCatalog,nextStory} from './story-assets.js?v=83';
-import {createItemsUI} from './items-ui.js?v=83';
+import {createItemsUI} from './items-ui.js?v=84';
 import {floorList,selectedFloor,selectFloor,interactionOnFloor} from './floors.js?v=62';
 import {createHistory} from './history.js?v=62';
 import {setupSidebarResize} from './sidebar-resize.js?v=76';
 import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=83';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=83';
-import {createFogTools} from './fog-tools.js?v=83';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=84';
+import {createFogTools} from './fog-tools.js?v=84';
 import {normalizeFog} from './fog-state.js?v=83';
 import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=83';
 import {createSessionBundle} from './session-bundle.js?v=83';
 import { startDMShell } from './dm-shell.js?v=62';
 import { openPlayerWindow } from './display-window.js?v=62';
 import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=83';
-import { createEncounterTools } from './encounter-tools.js?v=83';
+import { createEncounterTools } from './encounter-tools.js?v=84';
 import { playerProjection, formation, moveParty } from './encounter-state.js?v=83';
 import { createMapMenu } from './map-menu.js?v=83';
 import { createSaveControls } from './save-controls.js?v=83';
 import { parseSave, restoreSave } from './save-file.js?v=83';
 import { createLighting } from './lighting.js?v=83';
 import { setupFullscreen } from './fullscreen.js?v=76';
-import { startPlayerDisplay } from './player-display.js?v=83';
-import { createDirector } from './director.js?v=83';
+import { startPlayerDisplay } from './player-display.js?v=84';
+import { createDirector } from './director.js?v=84';
 import { normalizeProject } from './presentation-state.js?v=83';
 
 listenForBoardReset();
@@ -192,7 +192,7 @@ async function start() {
   const gridControls=player?null:createGridControls({map,getState:()=>state,commit});
   for (const [attr, value] of Object.entries(dimensions)) $('grid-overlay').setAttribute(attr, value);
   $('scale-label').textContent = `1 square = ${map.grid.distance} ${map.grid.unit}`;
-  $('artwork').append(svgNode('image', { ...dimensions, href: artwork.base }));
+  $('artwork').append(svgNode('image', { ...dimensions, 'data-src': artwork.base }));
   const renderLighting=createLighting(map,defs,$('lighting-layer'));
 
   for (const item of map.interactions) {
@@ -201,7 +201,7 @@ async function start() {
       const clip = svgNode('clipPath', { id: `clip-${item.id}` });
       clip.append(svgNode('polygon', { points: polygon(item.polygon) }));
       defs.append(clip);
-      node = svgNode('image', { ...dimensions, href: item.type === 'roof' ? artwork.roofs : artwork[item.asset], 'clip-path': `url(#clip-${item.id})`, 'pointer-events': 'none' });
+      node = svgNode('image', { ...dimensions, 'data-src': item.type === 'roof' ? artwork.roofs : artwork[item.asset], 'clip-path': `url(#clip-${item.id})`, 'pointer-events': 'none' });
       $(item.type === 'roof' ? 'roof-layers' : 'terrain-layers').append(node);
     } else if (item.type === 'fog') {
       node = svgNode('polygon', { points: polygon(item.polygon), class: 'fog-shape', 'pointer-events': 'none' });
@@ -221,18 +221,30 @@ async function start() {
     if(item.cover){
       const clip=svgNode('clipPath',{id:`clip-cover-${item.id}`});
       clip.append(svgNode('polygon',{points:polygon(item.cover.polygon)}));defs.append(clip);
-      const cover=svgNode('image',{...dimensions,href:artwork[item.cover.asset],'clip-path':`url(#clip-cover-${item.id})`,'pointer-events':'none'});
+      const cover=svgNode('image',{...dimensions,'data-src':artwork[item.cover.asset],'clip-path':`url(#clip-cover-${item.id})`,'pointer-events':'none'});
       cover.style.transition='opacity .3s ease';$('terrain-layers').append(cover);coverNodes.set(item.id,cover);
     }
     layerNodes.set(item.id, node);
   }
 
-  for(const [index,decoration] of (map.decorations||[]).entries()){const id=`decoration-${index}`,clip=svgNode('clipPath',{id});clip.append(svgNode('polygon',{points:polygon(decoration.polygon)}));defs.append(clip);$('terrain-layers').append(svgNode('image',{...dimensions,href:artwork[decoration.asset],'clip-path':`url(#${id})`,'pointer-events':'none'}));}
+  for(const [index,decoration] of (map.decorations||[]).entries()){const id=`decoration-${index}`,clip=svgNode('clipPath',{id});clip.append(svgNode('polygon',{points:polygon(decoration.polygon)}));defs.append(clip);$('terrain-layers').append(svgNode('image',{...dimensions,'data-src':artwork[decoration.asset],'clip-path':`url(#${id})`,'pointer-events':'none'}));}
 
   const floorNodes=new Map(),floorLayer=svgNode('g',{id:'floor-layers'});$('terrain-layers').before(floorLayer);
-  for(const place of map.places)for(const floor of floorList(place)){if(!floor.asset)continue;const id=`floor-${place.id}-${floor.id}`,clip=svgNode('clipPath',{id});clip.append(svgNode('polygon',{points:polygon(floor.polygon)}));defs.append(clip);const art=svgNode('image',{...dimensions,href:artwork[floor.asset],'clip-path':`url(#${id})`,'pointer-events':'none'});floorLayer.append(art);floorNodes.set(`${place.id}:${floor.id}`,art);}
+  for(const place of map.places)for(const floor of floorList(place)){if(!floor.asset)continue;const id=`floor-${place.id}-${floor.id}`,clip=svgNode('clipPath',{id});clip.append(svgNode('polygon',{points:polygon(floor.polygon)}));defs.append(clip);const art=svgNode('image',{...dimensions,'data-src':artwork[floor.asset],'clip-path':`url(#${id})`,'pointer-events':'none'});floorLayer.append(art);floorNodes.set(`${place.id}:${floor.id}`,art);}
 
-  const scenery=createScenery(map,$('map'));
+  // Artwork readiness must not block the control board or depend on unused variants.
+  let artworkShown=false;
+  const scenery=createScenery(map,$('map'),(status,error)=>{
+    sceneReady=status==='ready';
+    const loading=$('map-loading');
+    if(sceneReady){artworkShown=true;loading.hidden=true;reportScene();return;}
+    if(status==='loading'){if(!artworkShown){loading.textContent='Loading map…';loading.hidden=false;}return;}
+    loading.replaceChildren(document.createTextNode('The map image could not load. Check your connection and retry.'));
+    const retry=document.createElement('button');retry.id='retry-map-art';retry.textContent='Retry';retry.addEventListener('click',()=>{retry.disabled=true;render();});loading.append(retry);loading.hidden=false;
+    announce(error.message);
+    if(embedded)window.parent.postMessage({type:'scene-error'},location.origin);
+  });
+  window.addEventListener('online',()=>{if(runtimeReady&&!sceneReady)render();});
   $('dm-hotspots').after($('discovery-markers'));
   const party = svgNode('g', { class: 'party-token', ...(player ? {} : { role: 'button', tabindex: 0, 'aria-label': 'Party marker. Drag to move.' }) });
   party.append(svgNode('circle', { r: 21, fill: '#203d48', stroke: '#e9e7bb', 'stroke-width': 3 }));
@@ -582,15 +594,13 @@ async function start() {
   if(!embedded)setupFullscreen({player,announce});
   render(); updateConnection();
   if(player)send({type:'scene-hello'});
-  await Promise.all(Object.values(artwork).map(loadRaster));
-  $('map-loading').hidden = true;sceneReady=true;reportScene();
   if(!player) {
     const bundle=createSessionBundle({sessionKey,catalog,loadMap,getState:()=>state,readMapState,saveCurrent:save});
     const saveControls=createSaveControls({map,catalog,loadMap,bundle,getState:()=>state,getView:()=>({selectedPlace:selected,ruler:structuredClone(ruler)}),getProject:()=>project,announce,
       applySave:async(target,restored,data)=>{
         for(const entry of catalog)mapMenu.addEntry(entry);
         if(target.id===map.id){restoreEncounter(restored,data.project);return;}
-        // Hand off only a validated save. The destination restores it after its art loads.
+        // Hand off only a validated save. The destination restores it before reporting its artwork ready.
         try{sessionStorage.setItem(pendingLoadKey,JSON.stringify({...data,assets:undefined,mapStates:undefined,customMaps:undefined}));}
         catch{throw new Error('This browser could not prepare the saved map. Allow browser storage and try again.');}
         runtimeReady=false;

@@ -1,5 +1,5 @@
 import {el,button} from './editor-dom.js?v=62';
-import {setFace} from './token-portraits.js?v=83';
+import {setFace} from './token-portraits.js?v=84';
 import {groupSelection} from './group-selection.js?v=62';
 import {statIcon} from './control-icons.js?v=81';
 // Selection is independent of the member whose fields are being edited.
