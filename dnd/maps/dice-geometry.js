@@ -37,9 +37,21 @@ export function dieContainsPoint(shape,angles,[x,y],padding=2){
   return nearEdge||((positive||negative)&&!(positive&&negative));
  });
 }
-export function drawDie(canvas,shape,value,angles,settled,color=DICE_COLORS[4],numberOnly=false,numberLift=0){
+// Button-only bevel: 3 CSS px at the chooser's 0.6 scale. Clip the outer
+// stroke inward so the approved polyhedron silhouette does not grow.
+function drawChoiceEdges(ctx,faces){
+ const points=faces.flat().sort((a,b)=>a[0]-b[0]||a[1]-b[1]),turn=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
+ const chain=values=>{const out=[];for(const p of values){while(out.length>1&&turn(out.at(-2),out.at(-1),p)<=1e-8)out.pop();out.push(p);}return out;};
+ const lower=chain(points),upper=chain([...points].reverse()),hull=[...lower.slice(0,-1),...upper.slice(0,-1)];
+ const path=()=>{ctx.beginPath();hull.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();};
+ ctx.save();path();ctx.clip();const edge=ctx.createLinearGradient(20,15,82,89);edge.addColorStop(0,'#edf1f3');edge.addColorStop(.45,'#b9c2c8');edge.addColorStop(1,'#64717b');ctx.strokeStyle=edge;ctx.lineJoin='round';ctx.lineCap='round';ctx.lineWidth=5;
+ const seen=new Set();ctx.beginPath();for(const face of faces)for(let i=0;i<face.length;i++){const a=face[i],b=face[(i+1)%face.length],key=[a,b].map(p=>p.map(n=>n.toFixed(5)).join(',')).sort().join(':');if(seen.has(key))continue;seen.add(key);ctx.moveTo(...a);ctx.lineTo(...b);}ctx.stroke();
+ path();ctx.lineWidth=10;ctx.stroke();ctx.restore();
+}
+export function drawDie(canvas,shape,value,angles,settled,color=DICE_COLORS[4],numberOnly=false,numberLift=0,appearance=null){
  const size=104,dpr=canvas.width/size,ctx=canvas.getContext('2d'),vertices=shape.vertices.map(v=>rotateVertex(v,angles)),project=projectVertex;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,size,size);
  const faces=shape.faces.map((ids,index)=>{const points=ids.map(i=>vertices[i]),normal=unit(cross(sub(points[1],points[0]),sub(points[2],points[0]))),center=points.reduce((s,v)=>s.map((n,j)=>n+v[j]/points.length),[0,0,0]);return {points,normal,center,index};}).filter(f=>dot(f.normal,sub([0,0,4],f.center))>0).sort((a,b)=>a.center[2]-b.center[2]);
- if(!numberOnly)for(const f of faces){const points=f.points.map(project),light=Math.round(27+Math.max(0,dot(f.normal,unit([-.5,1,2])))*29);ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fillStyle=`hsl(${color[0]} ${color[1]}% ${light}% / .7)`;ctx.fill();ctx.strokeStyle=`hsl(${color[0]} ${color[1]}% 74%)`;ctx.lineWidth=1.4;ctx.lineJoin='round';ctx.stroke();}
+ if(!numberOnly)for(const f of faces){const points=f.points.map(project),light=Math.round(27+Math.max(0,dot(f.normal,unit([-.5,1,2])))*29);ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fillStyle=`hsl(${color[0]} ${color[1]}% ${light}% / .7)`;ctx.fill();ctx.strokeStyle=`hsl(${color[0]} ${color[1]}% 74%)`;ctx.lineWidth=1.4;ctx.lineJoin='round';if(!appearance?.button)ctx.stroke();}
+ if(!numberOnly&&appearance?.button)drawChoiceEdges(ctx,faces.map(f=>f.points.map(project)));
  if(settled){const front=faces.reduce((best,f)=>!best||f.normal[2]>best.normal[2]?f:best,null),p=project(front.center);ctx.fillStyle='#fff8e9';ctx.strokeStyle='#14241c';ctx.lineWidth=2;ctx.font=`700 ${String(value).length>1?29:34}px Georgia,serif`;ctx.textAlign='center';ctx.textBaseline='alphabetic';const metrics=ctx.measureText(String(value)),baseline=(metrics.actualBoundingBoxAscent-metrics.actualBoundingBoxDescent)/2,anchor=[p[0],p[1]+1-numberLift];ctx.translate(...anchor);ctx.scale(.85,1);ctx.strokeText(String(value),0,baseline);ctx.fillText(String(value),0,baseline);return anchor;}
 }

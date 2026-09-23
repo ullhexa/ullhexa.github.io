@@ -748,3 +748,5 @@ body :is(input,textarea,[contenteditable="true"],[contenteditable=""]){-webkit-u
 .selected-place.focus-only .place-controls-heading,.selected-place.focus-only #selected-actions{display:none}
 
 .token-status-editor>div.keyboard-active{background:#1a2b21f5}
+
+.fog-texture-tile{position:relative;min-width:0}.fog-options .fog-texture-tile>.fog-texture{width:100%;height:100%}.fog-options .fog-remove{position:absolute;right:4px;top:4px;width:22px;height:22px;min-height:22px;padding:0;border:0;border-radius:4px;background:#8b3434;color:white;font-size:20px;line-height:1;display:grid;place-items:center;opacity:0;pointer-events:none;box-shadow:none;outline:none}.fog-texture-tile:is(:hover,:focus-within) .fog-remove{opacity:1;pointer-events:auto}.fog-options .fog-remove:hover{background:#b04444}.fog-options .fog-remove:focus-visible{outline:1px solid white;outline-offset:1px}@media(hover:none){.fog-options .fog-remove{opacity:1;pointer-events:auto}}

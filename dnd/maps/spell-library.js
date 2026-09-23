@@ -1,4 +1,4 @@
-import {editUserSpell} from './spell-editor.js?v=79';
+import {editUserSpell} from './spell-editor.js?v=83';
 import {MAX_USER_SPELLS,removeUserSpell} from './user-spells.js?v=79';
 import {featureHeading} from './feature-controls.js?v=62';
 import {chevronIcon} from './control-icons.js?v=81';
@@ -8,7 +8,7 @@ import {el,button,label} from './editor-dom.js?v=62';
 import {showDialog} from './dialogs.js?v=62';
 import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=62';
 import {groupSelection} from './group-selection.js?v=62';
-import {loadSpells} from './spell-catalog.js?v=79';
+import {loadSpells} from './spell-catalog.js?v=83';
 import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=79';
 export function showSpellPages(spell){
  const dialog=el('dialog',undefined,'spell-page-dialog'),header=el('div',undefined,'reference-heading'),title=el('h2',spell.title),controls=el('div',undefined,'spell-page-controls'),count=el('span'),image=el('img'),body=el('div',undefined,'spell-page-body');let page=0,expanded=false;

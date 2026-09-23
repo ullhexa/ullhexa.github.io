@@ -1,12 +1,12 @@
 import {featureEnabled} from './board-state.js?v=62';
-import {editStatCard} from './stat-card-editor.js?v=79';
+import {editStatCard} from './stat-card-editor.js?v=83';
 import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=81';
 import {statIcon} from './control-icons.js?v=81';
 import {el,button} from './editor-dom.js?v=62';
-import {assetURL} from './local-assets.js?v=79';
-import {loadSpells} from './spell-catalog.js?v=79';
+import {assetURL} from './local-assets.js?v=83';
+import {loadSpells} from './spell-catalog.js?v=83';
 import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=79';
-import {patchMember} from './combat-state.js?v=79';
+import {patchMember} from './combat-state.js?v=83';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
 export function createReferenceViewers({getState,commit,prepare,announce}){
  const stage=document.getElementById('map-stage'),root=el('div',undefined,'reference-suite');root.hidden=true;stage.append(root);new ResizeObserver(()=>root.style.setProperty('--reference-height',`${stage.clientHeight}px`)).observe(stage);let catalog=[],assigned=null,view=null,expanded=false,query='',selected=null,request=0,encounterId=null,encounterTab='stat',statView=null,content=root;

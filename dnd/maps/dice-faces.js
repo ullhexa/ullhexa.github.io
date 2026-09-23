@@ -1,4 +1,4 @@
-import {drawDie,landingMesh,DICE_COLORS} from './dice-geometry.js?v=75';
+import {drawDie,landingMesh,DICE_COLORS} from './dice-geometry.js?v=83';
 
 const banks=new Map(),scratch=new Map();
 const numberLift={4:6,6:2,8:2,10:4,12:2,20:2,100:0};

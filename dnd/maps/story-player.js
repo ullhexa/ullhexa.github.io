@@ -1,5 +1,5 @@
 import {createStoryAnimation} from './story-scenes.js?v=62';
-import {assetURL,assetRecord} from './local-assets.js?v=79';
+import {assetURL,assetRecord} from './local-assets.js?v=83';
 import {loadRaster} from './resource-loading.js?v=62';
 
 export const STORY_FADE_MS=3000;

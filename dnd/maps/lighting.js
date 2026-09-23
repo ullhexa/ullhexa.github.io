@@ -1,4 +1,4 @@
-import {isVisible} from './state.js?v=82';
+import {isVisible} from './state.js?v=83';
 import {buildingParts,buildingCollapsed} from './building-state.js?v=62';
 
 const NS='http://www.w3.org/2000/svg';

@@ -1,6 +1,6 @@
 import {el,button,label} from './editor-dom.js?v=62';
 import {showDialog} from './dialogs.js?v=62';
-import {assetURL,putAssets} from './local-assets.js?v=79';
+import {assetURL,putAssets} from './local-assets.js?v=83';
 import {SPELL_SCHOOLS,MAX_SPELL_PAGES,MAX_SPELL_TEXT} from './user-spells.js?v=79';
 import {SPELL_ACCEPT,SPELL_FILE_TYPES,importSpellFiles,renderTypedSpell} from './spell-import.js?v=79';
 

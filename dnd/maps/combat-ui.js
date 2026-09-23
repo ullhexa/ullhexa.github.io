@@ -2,16 +2,16 @@ import {featureHeading} from './feature-controls.js?v=62';
 import {featureEnabled,encounterTitle,armorClass} from './board-state.js?v=62';
 import {statIcon,chevronIcon,boardIcon} from './control-icons.js?v=81';
 import {numberStepper} from './number-stepper.js?v=76';
-import {tokenGallery} from './token-gallery.js?v=79';
-import {createMemberStrip} from './member-strip.js?v=81';
-import {editStatCard} from './stat-card-editor.js?v=79';
+import {tokenGallery} from './token-gallery.js?v=83';
+import {createMemberStrip} from './member-strip.js?v=83';
+import {editStatCard} from './stat-card-editor.js?v=83';
 import {groupSelection} from './group-selection.js?v=62';
 import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=62';
 import {conditionIcon} from './condition-icons.js?v=62';
 import {shortcutAction,isTextEntry} from './keyboard.js?v=62';
-import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,setTemporaryHP,fiveFeet,resetInitiative} from './combat-state.js?v=79';
-import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=79';
-import {setFace,portraitStyle} from './token-portraits.js?v=79';
+import {CONDITIONS,MONSTERS,normalizeMember,syncCampaign,applyGroup,deleteGroup,combatants,initiativeOrder,stepTurn,patchMember,parseInitiative,changeHP,setTemporaryHP,fiveFeet,resetInitiative} from './combat-state.js?v=83';
+import {PORTRAITS,PARTY_CHOICES,formation} from './encounter-state.js?v=83';
+import {setFace,portraitStyle} from './token-portraits.js?v=83';
 const $=id=>document.getElementById(id);
 export function el(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
 export function button(text,fn,cls){const b=el('button',text,cls);b.type='button';if(fn)b.addEventListener('click',fn);return b;}
