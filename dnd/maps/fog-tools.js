@@ -1,8 +1,8 @@
 import {FOG_FEATHER,FOG_TEXTURES,fogAssetId,paintFogTexture} from './fog-state.js?v=83';
 import {fogIcon} from './control-icons.js?v=81';
-import {createFogOptions} from './fog-options.js?v=83';
+import {createFogOptions} from './fog-options.js?v=84';
 import {assetURL} from './local-assets.js?v=83';
-import {loadRaster} from './resource-loading.js?v=62';
+import {loadRaster} from './resource-loading.js?v=84';
 export function createFogTools({map,player,getState,commit,preview,finishDrag,pointAt,setTool,sendPreview,announce}){
   const stage=document.getElementById('map-stage'),svg=document.getElementById('map'),canvas=document.createElement('canvas');canvas.id='painted-fog';stage.append(canvas);
   const ratio=Math.min(1,2048/map.width,2048/map.height);canvas.width=Math.round(map.width*ratio);canvas.height=Math.round(map.height*ratio);
@@ -27,8 +27,9 @@ export function createFogTools({map,player,getState,commit,preview,finishDrag,po
     m.globalCompositeOperation=s.tool==='erase'?'destination-out':'source-over';m.drawImage(strokeCanvas,0,0);m.globalCompositeOperation='source-over';
   }
   function draw(){
-    const state=getState(),fog=state.fog||[],changedTexture=prepareTexture(state.fogSettings);options?.render();canvas.hidden=!fog.length;
+    const state=getState(),fog=state.fog||[];options?.render();canvas.hidden=!fog.length;
     if(!fog.length){if(lastFog!==fog){drawnSignature='';baseSignature='';m.clearRect(0,0,canvas.width,canvas.height);}lastFog=fog;return;}
+    const changedTexture=prepareTexture(state.fogSettings);
     if(fog===lastFog&&!changedTexture){position();return;}
     if(fog!==lastFog){
       const signature=JSON.stringify(fog),prefix=JSON.stringify(fog.slice(0,-1));

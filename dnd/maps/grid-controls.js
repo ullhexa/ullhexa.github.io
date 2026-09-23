@@ -1,5 +1,5 @@
 import {boardIcon} from './control-icons.js?v=81';
-import {button,el} from './combat-ui.js?v=83';
+import {button,el} from './combat-ui.js?v=84';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
 
 import {GRID_COLORS,MAX_GRID_THICKNESS,gridColor} from './grid-state.js?v=62';
