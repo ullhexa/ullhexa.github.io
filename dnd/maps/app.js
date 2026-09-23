@@ -11,7 +11,7 @@ import {buildingCollapsed} from './building-state.js?v=62';
 import {createCameraAnimation} from './camera-animation.js?v=87';
 import {createMapNavigation} from './map-navigation.js?v=82';
 import {createFloorControl} from './floor-controls.js?v=62';
-import {createUserManual} from './user-manual.js?v=87';
+import {createUserManual} from './user-manual.js?v=88';
 import {createSpellLibrary} from './spell-library.js?v=83';
 import {createReferenceViewers} from './reference-viewers.js?v=83';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
@@ -41,7 +41,7 @@ import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction,
 import { createEncounterTools } from './encounter-tools.js?v=86';
 import { playerProjection, formation, moveParty, feetToWorld } from './encounter-state.js?v=85';
 import {placeRulerLabel} from './ruler-label.js?v=85';
-import {createMapPings} from './map-pings.js?v=87';
+import {createMapPings} from './map-pings.js?v=88';
 import {createModifierZoom} from './modifier-zoom.js?v=87';
 import { createMapMenu } from './map-menu.js?v=83';
 import { createSaveControls } from './save-controls.js?v=85';
@@ -357,7 +357,7 @@ async function start() {
     if(!player)state={...state,camera:view.camera};
     viewGeometry=cameraGeometry(map,view.camera,viewport);scenery.position(viewGeometry);
     $('map-grid').firstElementChild.setAttribute('stroke-width',state.gridThickness/viewGeometry.scale);
-    const viewBox=view.viewBox.join(' ');if($('map').getAttribute('viewBox')!==viewBox)$('map').setAttribute('viewBox',viewBox);$('party-overlay')?.setAttribute('viewBox',viewBox);pings.position(viewBox);
+    const viewBox=view.viewBox.join(' ');if($('map').getAttribute('viewBox')!==viewBox)$('map').setAttribute('viewBox',viewBox);$('party-overlay')?.setAttribute('viewBox',viewBox);pings.position(viewBox,viewGeometry.scale);
     const label=`${Math.round(zoom * 100)}%`;if($('zoom-value').textContent!==label)$('zoom-value').textContent=label;
     if($('zoom-out').disabled!==(zoom <= 1))$('zoom-out').disabled=zoom <= 1;
     if($('zoom-in').disabled!==(zoom >= controls.getZoom().maximum))$('zoom-in').disabled=zoom >= controls.getZoom().maximum;
