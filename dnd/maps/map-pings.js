@@ -61,5 +61,5 @@ export function createMapPings({map,stage,player,pointAt,send}){
  }
  document.addEventListener('visibilitychange',()=>{cancel();prune();});
  window.addEventListener('pagehide',()=>{cancel();for(const id of [...active.keys()])remove(id);});
- return {add,current(){prune();return [...active.values()].map(entry=>entry.ping);},position(viewBox){plane.setAttribute('viewBox',viewBox);}};
+ return {add,cancelGesture:cancel,isHolding:()=>!!held,current(){prune();return [...active.values()].map(entry=>entry.ping);},position(viewBox){plane.setAttribute('viewBox',viewBox);}};
 }
