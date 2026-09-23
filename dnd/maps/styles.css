@@ -757,3 +757,5 @@ body :is(input,textarea,[contenteditable="true"],[contenteditable=""]){-webkit-u
 /* Measurements sit above tokens, fog and map handles, without intercepting input. */
 #measurement-overlay{position:absolute;inset:0;width:100%;height:100%;z-index:9;pointer-events:none}
 #measurement-overlay *{pointer-events:none}
+#map-pings{position:absolute;inset:0;width:100%;height:100%;z-index:8;pointer-events:none}
+#map-pings *{pointer-events:none}
