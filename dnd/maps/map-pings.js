@@ -1,5 +1,5 @@
 const NS='http://www.w3.org/2000/svg';
-export const PING_DURATION=4000,PING_LIMIT=10,PING_HOLD_LEASE=8000;
+export const PING_DURATION=3000,PING_LIMIT=10,PING_HOLD_LEASE=8000;
 export function validPing(ping,now=Date.now()){
  return !!ping&&typeof ping.id==='string'&&/^[-a-zA-Z0-9]{1,80}$/.test(ping.id)&&Array.isArray(ping.point)&&ping.point.length===2&&ping.point.every(n=>Number.isFinite(n)&&n>=0&&n<=1)&&typeof ping.held==='boolean'&&Number.isSafeInteger(ping.revision)&&ping.revision>=0&&Number.isFinite(ping.started)&&ping.started<=now&&now-ping.started<(ping.held?PING_HOLD_LEASE:PING_DURATION);
 }
