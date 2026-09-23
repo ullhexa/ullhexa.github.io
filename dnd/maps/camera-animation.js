@@ -34,13 +34,16 @@ export function createCameraAnimation({getCamera,update,complete,constrain=camer
  }
  function zoomStep(direction,maximum,anchor){
   const now=performance.now(),previous=run?.kind==='zoom'&&now<run.start+run.duration?run:null;
-  if(previous?.count>=4)return false;
-  const from={...getCamera()},zoom=clickZoomTarget(previous?.to.zoom??from.zoom,maximum,direction);
-  if(zoom===(previous?.to.zoom??from.zoom))return false;
-  const velocity=previous?zoomCurveAt(previous.from.zoom,previous.to.zoom,previous.velocity,previous.duration,(now-previous.start)/previous.duration).velocity:0;
+  // Reversing discards the old queue and starts at the displayed view. It must
+  // never keep approaching the old target or inherit seconds of unused travel.
+  const continuing=previous&&previous.direction===Math.sign(direction)?previous:null;
+  if(continuing?.count>=4)return false;
+  const from={...getCamera()},base=continuing?.to.zoom??from.zoom,zoom=clickZoomTarget(base,maximum,direction);
+  if(zoom===base)return false;
+  const velocity=continuing?zoomCurveAt(continuing.from.zoom,continuing.to.zoom,continuing.velocity,continuing.duration,(now-continuing.start)/continuing.duration).velocity:0;
   const ratio=from.zoom/zoom,to=constrain(zoom===1?{x:.5,y:.5,zoom}:{x:anchor[0]+(from.x-anchor[0])*ratio,y:anchor[1]+(from.y-anchor[1])*ratio,zoom});
-  const duration=(previous?previous.start+previous.duration-now:0)+1000,count=(previous?.count||0)+1;
-  cancel();run={kind:'zoom',from,to,velocity,start:now,duration,count,path:{id:++sequence,from,to}};
+  const duration=(continuing?continuing.start+continuing.duration-now:0)+1000,count=(continuing?.count||0)+1;
+  cancel();run={kind:'zoom',from,to,velocity,start:now,duration,count,direction:Math.sign(direction),path:{id:++sequence,from,to}};
   if(matchMedia('(prefers-reduced-motion: reduce)').matches)finish();else frame=requestAnimationFrame(tick);return true;
  }
  return {start,zoomStep,cancel,finish,get active(){return !!run;},get zoomPath(){return run?.path||null;}};

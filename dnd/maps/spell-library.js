@@ -1,14 +1,15 @@
+import {showSpellCredits} from './spell-license.js?v=92';
 import {editUserSpell} from './spell-editor.js?v=83';
 import {MAX_USER_SPELLS,removeUserSpell} from './user-spells.js?v=79';
 import {featureHeading} from './feature-controls.js?v=62';
 import {chevronIcon} from './control-icons.js?v=81';
 import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=81';
-import {openDeckPrint} from './spell-print.js?v=79';
+import {openDeckPrint} from './spell-print.js?v=92';
 import {el,button,label} from './editor-dom.js?v=62';
 import {showDialog} from './dialogs.js?v=62';
 import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=62';
 import {groupSelection} from './group-selection.js?v=62';
-import {loadSpells} from './spell-catalog.js?v=83';
+import {loadSpells} from './spell-catalog.js?v=92';
 import {findSpells,spellLabel,spellMeta} from './spell-state.js?v=79';
 export function showSpellPages(spell){
  const dialog=el('dialog',undefined,'spell-page-dialog'),header=el('div',undefined,'reference-heading'),title=el('h2',spell.title),controls=el('div',undefined,'spell-page-controls'),count=el('span'),image=el('img'),body=el('div',undefined,'spell-page-body');let page=0,expanded=false;
@@ -17,16 +18,16 @@ export function showSpellPages(spell){
 }
 export function createSpellLibrary({getState,commit,announce}){
  let catalog=[],selected=null,query='',chosen=null,source='factory',loaded=false,request=0;const selection=groupSelection();
- const shortcut=button('Spells',()=>openMenu('spells'),'map-picker');shortcut.append(chevronIcon());shortcut.id='open-spells-library';shortcut.setAttribute('aria-haspopup','dialog');document.querySelector('.site-identity').append(shortcut);
+ const shortcut=button('Spells',()=>openMenu('spells'),'map-picker');shortcut.append(chevronIcon());shortcut.id='open-spells-library';shortcut.setAttribute('aria-haspopup','dialog');document.querySelector('.header-libraries').append(shortcut);
  const panel=el('section',undefined,'library-dialog');panel.id='spells-dialog';const layout=el('div',undefined,'library-layout'),groups=el('section',undefined,'library-groups'),main=el('section',undefined,'library-members spell-library-main'),error=el('p','','save-error'),footer=el('div',undefined,'dialog-actions');error.setAttribute('role','alert');layout.append(groups,main);
  const remove=button('Delete spell deck',()=>{const s=getState(),ids=new Set(selection.ids),spellDecks=s.campaign.spellDecks.filter(d=>!ids.has(d.id));commit({...s,campaign:{...s.campaign,spellDecks,activeSpellDeck:ids.has(s.campaign.activeSpellDeck)?null:s.campaign.activeSpellDeck}},'Spell decks deleted.');selected=null;selection.reset();render();},'delete-group');
  const activate=button('Done',()=>{if(selected&&selected!==getState().campaign.activeSpellDeck){const s=getState();commit({...s,campaign:{...s.campaign,activeSpellDeck:selected}},'Spell deck activated.');}closeMenu();},'primary');const print=button('Print deck',()=>openDeckPrint(getState().campaign.spellDecks.find(d=>d.id===selected),catalog),'print-deck');footer.append(remove,print,activate);panel.append(error,layout,footer);document.body.append(panel);
  function edit(fn,redraw=true){const s=getState();commit({...s,campaign:{...s.campaign,spellDecks:s.campaign.spellDecks.map(d=>d.id===selected?fn(d):d)}},'Spell deck updated.');if(redraw)render();}
- async function refresh(){const ticket=++request;try{const next=await loadSpells(getState().campaign);if(ticket!==request)return;catalog=next;loaded=true;error.textContent='';render();}catch(e){if(ticket===request){error.textContent=e.message;loaded=true;render();}}}
+ async function refresh(){const ticket=++request;try{const next=await loadSpells(getState().campaign);if(ticket!==request)return;catalog=next;loaded=true;error.textContent=next.factoryError||'';render();}catch(e){if(ticket===request){error.textContent=e.message;loaded=true;render();}}}
  async function editCard(id=null){
   const current=getState().campaign.userSpells||[],existing=current.find(s=>s.id===id);if(!existing&&current.length>=MAX_USER_SPELLS){error.textContent=`Up to ${MAX_USER_SPELLS} user spells.`;return;}
   const deckId=selected;
-  try{const spell=await editUserSpell(existing);if(!spell)return;const s=getState(),userSpells=s.campaign.userSpells||[];if(id&&!userSpells.some(s=>s.id===id))return;const spellDecks=s.campaign.spellDecks.map(d=>!id&&d.id===deckId?{...d,spells:[...new Set([...d.spells,spell.id])]}:d);commit({...s,campaign:{...s.campaign,userSpells:id?userSpells.map(s=>s.id===id?spell:s):[...userSpells,spell],spellDecks}},id?'Spell updated.':'Spell created.');chosen=spell.id;source='user';await refresh();}catch(e){error.textContent=e.message;}
+  try{const spell=await editUserSpell(existing);if(!spell)return;const s=getState(),userSpells=s.campaign.userSpells||[];if(id&&!userSpells.some(s=>s.id===id))return;const spellDecks=s.campaign.spellDecks.map(d=>!id&&d.id===deckId?{...d,spells:[...new Set([...d.spells,spell.id])]}:d);commit({...s,campaign:{...s.campaign,userSpells:id?userSpells.map(s=>s.id===id?spell:s):[...userSpells,spell],spellDecks}},id?'Spell updated.':'Spell created.');chosen=spell.id;source='user';query='';await refresh();}catch(e){error.textContent=e.message;}
  }
  function render(){
   const s=getState(),decks=s.campaign.spellDecks;if(!decks.some(d=>d.id===selected))selected=s.campaign.activeSpellDeck||decks[0]?.id||null;selection.prune(decks.map(d=>d.id),selected);const deck=decks.find(d=>d.id===selected);
@@ -36,13 +37,13 @@ export function createSpellLibrary({getState,commit,announce}){
   if(deck){const name=el('input');name.value=deck.name;name.maxLength=48;name.setAttribute('aria-label','Spell deck name');name.addEventListener('input',()=>{edit(d=>({...d,name:name.value.trim()||'Spell deck'}),false);const b=groups.querySelector(`[data-spell-deck="${selected}"]`);if(b)b.textContent=name.value.trim()||'Spell deck';});main.append(label('Deck name',name));const applied=el('div',undefined,'applied-spells');applied.setAttribute('aria-label','Spells in this deck');for(const spell of findSpells(catalog,'',deck.spells)){const chip=el('div',undefined,'applied-spell'),view=button(spellLabel(spell),()=>showSpellPages(spell)),del=button('×',()=>edit(d=>({...d,spells:d.spells.filter(id=>id!==spell.id)})));del.setAttribute('aria-label',`Remove ${spell.title} from deck`);chip.append(view,del);applied.append(chip);}main.append(applied);}
   const tabs=el('div',undefined,'source-tabs'),factory=button('Factory',()=>{source='factory';chosen=null;render();}),user=button('User',()=>{source='user';chosen=null;render();});factory.setAttribute('aria-pressed',source==='factory');user.setAttribute('aria-pressed',source==='user');tabs.append(factory,user);
   const change=button('Edit',()=>editCard(chosen),'edit-asset'),del=button('Delete spell',async()=>{if(!chosen)return;commit(removeUserSpell(getState(),chosen),'User spell deleted.');chosen=null;await refresh();},'delete-token');
-  const updateActions=()=>{change.disabled=del.disabled=!catalog.some(s=>s.user&&s.id===chosen);};if(source==='user'){tabs.append(change,del);updateActions();}main.append(tabs);
+  const updateActions=()=>{change.disabled=del.disabled=!catalog.some(s=>s.user&&s.id===chosen);};if(source==='user'){tabs.append(change,del);updateActions();}else{tabs.append(button('SRD 5.2.1 · Credits',showSpellCredits,'spell-credits-button'));}main.append(tabs);
   const search=el('input');search.type='search';search.value=query;search.placeholder='Search spells';search.setAttribute('aria-label','Search spell library');search.className='spell-search';const grid=el('div',undefined,'spell-catalog');grid.setAttribute('aria-label','Available spell cards');
   function filter(){
    grid.replaceChildren();if(source==='user'){const create=button('Create spell',()=>editCard(),'create-token create-spell');grid.append(create);}
    const available=catalog.filter(s=>source==='user'?s.user:!s.user),matches=findSpells(available,query);
-   for(const spell of matches){const card=el('div',undefined,'spell-catalog-card'),preview=button('',()=>{chosen=spell.id;for(const b of grid.querySelectorAll('.spell-card-choice'))b.setAttribute('aria-pressed',b.dataset.spell===chosen);updateActions();},'spell-card-choice'),img=el('img'),title=el('span',spellLabel(spell),'spell-card-title');img.src=spell.cards[0].src;img.alt='';img.loading='lazy';img.decoding='async';img.width=150;img.height=210;preview.dataset.spell=spell.id;preview.setAttribute('aria-label',`Preview ${spell.title}`);preview.setAttribute('aria-pressed',chosen===spell.id);preview.append(img,title,el('span',spellMeta(spell),'spell-meta'));preview.addEventListener('dblclick',()=>showSpellPages(spell));const included=deck?.spells.includes(spell.id),add=button(included?'Added':'＋ Add',()=>edit(d=>({...d,spells:[...new Set([...d.spells,spell.id])]})),'add-spell');add.disabled=!deck||included;add.setAttribute('aria-label',`Add ${spell.title} to deck`);card.append(preview,add);grid.append(card);}
-   if(!matches.length)grid.append(el('p',!loaded?'Loading…':source==='factory'?'Factory library is empty.':available.length?'No matching spells.':'No user spells yet.','tool-hint spell-catalog-empty'));
+   for(const spell of matches){const card=el('div',undefined,'spell-catalog-card'),preview=button('',()=>{chosen=spell.id;for(const b of grid.querySelectorAll('.spell-card-choice'))b.setAttribute('aria-pressed',b.dataset.spell===chosen);updateActions();},'spell-card-choice'),img=el('img'),title=el('span',spellLabel(spell),'spell-card-title');img.src=spell.thumbnail||spell.cards[0].src;img.alt='';img.loading='lazy';img.decoding='async';img.width=150;img.height=210;preview.dataset.spell=spell.id;preview.setAttribute('aria-label',`Preview ${spell.title}`);preview.setAttribute('aria-pressed',chosen===spell.id);preview.append(img,title,el('span',spellMeta(spell),'spell-meta'));preview.addEventListener('dblclick',()=>showSpellPages(spell));const included=deck?.spells.includes(spell.id),add=button(included?'Added':'＋ Add',()=>edit(d=>({...d,spells:[...new Set([...d.spells,spell.id])]})),'add-spell');add.disabled=!deck||included;add.setAttribute('aria-label',`Add ${spell.title} to deck`);card.append(preview,add);grid.append(card);}
+   if(!matches.length)grid.append(el('p',!loaded?'Loading…':available.length?'No matching spells.':source==='factory'?'SRD library unavailable. Reopen Spells to retry.':'No user spells yet.','tool-hint spell-catalog-empty'));
   }
   search.addEventListener('input',()=>{query=search.value;filter();});main.append(search,grid);filter();
  }
