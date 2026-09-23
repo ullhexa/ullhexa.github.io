@@ -8,10 +8,10 @@ import {createGridControls} from './grid-controls.js?v=85';
 import {gridColor} from './grid-state.js?v=62';
 import {createBuildingControls} from './building-controls.js?v=82';
 import {buildingCollapsed} from './building-state.js?v=62';
-import {createCameraAnimation} from './camera-animation.js?v=62';
+import {createCameraAnimation} from './camera-animation.js?v=87';
 import {createMapNavigation} from './map-navigation.js?v=82';
 import {createFloorControl} from './floor-controls.js?v=62';
-import {createUserManual} from './user-manual.js?v=86';
+import {createUserManual} from './user-manual.js?v=87';
 import {createSpellLibrary} from './spell-library.js?v=83';
 import {createReferenceViewers} from './reference-viewers.js?v=83';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
@@ -41,7 +41,8 @@ import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction,
 import { createEncounterTools } from './encounter-tools.js?v=86';
 import { playerProjection, formation, moveParty, feetToWorld } from './encounter-state.js?v=85';
 import {placeRulerLabel} from './ruler-label.js?v=85';
-import {createMapPings} from './map-pings.js?v=86';
+import {createMapPings} from './map-pings.js?v=87';
+import {createModifierZoom} from './modifier-zoom.js?v=87';
 import { createMapMenu } from './map-menu.js?v=83';
 import { createSaveControls } from './save-controls.js?v=85';
 import { parseSave, restoreSave } from './save-file.js?v=85';
@@ -258,6 +259,7 @@ async function start() {
   measurementOverlay.append($('measurement'));$('map-stage').append(measurementOverlay);
   const rulerTextMetrics=document.createElement('canvas').getContext('2d');rulerTextMetrics.font='700 18px "DM Sans",sans-serif';
   const pings=createMapPings({map,stage:$('map-stage'),player,pointAt,send:ping=>send({type:'ping',mapId:map.id,ping})});
+  if(!player)createModifierZoom({stage:$('map-stage'),busy:()=>!!drag||encounter.isDragging()||fog?.isDrawing()||pings.isHolding(),prepare:()=>pings.cancelGesture(),pointAt,zoomStep:(direction,point)=>{focusedPlace=null;clearTimeout(zoomSave);state={...state,revision:state.revision+1};cameraAnimation.zoomStep(direction,controls.getZoom().maximum,point);}});
   function finishDrag(before,message){currentHistory().record(before);state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
   function preview(next,mode=false){state=next;if(mode==='fog')fog?.render();else if(mode==='shape')encounter.renderShapes();else if(mode==='aura')encounter.renderAuras();else if(mode)encounter.renderCharacterPositions(typeof mode==='string'?mode:null);else render();}
   let positionSequence=0,lastPositionSequence=-1;
@@ -504,7 +506,7 @@ async function start() {
       const p = pointAt(event);
       if(measuring&&!right){if(inBounds(p)){ruler=[p,p];drag={id:event.pointerId,measure:true,start:structuredClone(state),moved:false};$('map').setPointerCapture(event.pointerId);renderRuler(true);}return;}
       const token = !right&&party.contains(event.target);
-      if(!token&&!right&&!event.ctrlKey&&!event.metaKey)return;
+      if(!token&&!right)return;
       cameraAnimation.cancel();renderControls(true);const ctm = $('map').getScreenCTM();
       drag = { id: event.pointerId, x: event.clientX, y: event.clientY, camera: { ...state.camera }, scale: ctm.a, point: p, start: structuredClone(state), token, moved: false, hotspot: !right&&!!event.target.closest('.hotspot,.map-door') };
       $('map-stage').classList.toggle('is-panning',!token);
@@ -512,8 +514,8 @@ async function start() {
       $('map').setPointerCapture(event.pointerId);
     });
     $('map-stage').addEventListener('contextmenu',event=>{if($('map').contains(event.target)||party.contains(event.target)||event.target.closest('#character-tokens [data-character],#shape-handle-overlay,#aura-handles'))event.preventDefault();});
-    const panCursor=event=>{const held=event.ctrlKey||event.metaKey;$('map-stage').classList.toggle('can-pan',!measuring&&held);if(drag?.measure&&['Control','Meta'].includes(event.key)){if(held&&!drag.bend)drag.bend=[...ruler.at(-1)];if(!held)drag.bend=null;ruler=[ruler[0],...(drag.bend?[drag.bend]:[]),ruler.at(-1)];renderRuler(true);}};
-    document.addEventListener('keydown',panCursor);document.addEventListener('keyup',panCursor);window.addEventListener('blur',()=>$('map-stage').classList.remove('can-pan'));
+    const rulerBend=event=>{const held=event.ctrlKey||event.metaKey;if(drag?.measure&&['Control','Meta'].includes(event.key)){if(held&&!drag.bend)drag.bend=[...ruler.at(-1)];if(!held)drag.bend=null;ruler=[ruler[0],...(drag.bend?[drag.bend]:[]),ruler.at(-1)];renderRuler(true);}};
+    document.addEventListener('keydown',rulerBend);document.addEventListener('keyup',rulerBend);
     $('map').addEventListener('pointermove', event => {
       if (!drag || drag.id !== event.pointerId) return;
       if(!event.buttons){endDrag(event);return;}

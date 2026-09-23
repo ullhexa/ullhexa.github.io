@@ -340,7 +340,7 @@ body:not(.player-mode) #painted-fog{opacity:.8;z-index:2}body:not(.player-mode) 
 #character-tokens .monster-token .token-ring{stroke:#d9635c!important}
 #character-tokens .character-token.concealed-token .token-ring{stroke:#080b09!important;stroke-dasharray:none}
 #character-tokens .character-token.token-selected:not(.item-token) .token-ring{stroke-width:calc(var(--token-ring-width,3px) + 2px)}
-body:not(.player-mode) #map{cursor:default}body:not(.player-mode) .can-pan #map{cursor:grab}
+body:not(.player-mode) #map{cursor:default}
 body:not(.player-mode) .is-measuring #map{cursor:crosshair}
 
 .token-crop-frame.story-crop-frame{width:100%;aspect-ratio:16/9;border-radius:0}.token-crop-frame.story-crop-frame canvas{height:100%}.source-tabs .edit-asset{margin-left:auto}.source-tabs .edit-asset+.delete-token{margin-left:0}
@@ -759,3 +759,4 @@ body :is(input,textarea,[contenteditable="true"],[contenteditable=""]){-webkit-u
 #measurement-overlay *{pointer-events:none}
 #map-pings{position:absolute;inset:0;width:100%;height:100%;z-index:8;pointer-events:none}
 #map-pings *{pointer-events:none}
+#map-stage.modifier-zoom :is(#map,#map *,#party-overlay,#party-overlay *,#character-tokens,#character-tokens *,#shape-handle-overlay,#shape-handle-overlay *,#aura-handles,#aura-handles *){cursor:zoom-in!important}
