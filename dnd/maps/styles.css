@@ -727,8 +727,8 @@ body :is(input,textarea,[contenteditable="true"],[contenteditable=""]){-webkit-u
 .map-controls .dice-toolbar>.dice-toggle{height:40px;min-height:40px;width:40px;min-width:40px;border:1px solid #465a49;background:#203027;border-radius:6px;padding:0;display:grid;place-items:center}
 .map-controls .dice-toolbar>.dice-toggle[aria-pressed=true],#auto-measure[aria-pressed=true]{color:var(--ink);background:var(--gold);border-color:var(--gold)}
 .quick-dice{display:flex;gap:3px;align-items:center}.quick-dice[hidden]{display:none}
-.map-controls .quick-die{height:32px;min-height:32px;width:29px;min-width:29px;padding:2px;border:0;border-radius:4px;background:#edf0e8;display:grid;place-items:center}
-.quick-die svg{width:25px;height:25px;pointer-events:none}.map-controls .quick-die:hover{background:#fff}
+.map-controls .quick-die{height:32px;min-height:32px;width:29px;min-width:29px;padding:2px;border:0;border-radius:4px;background:var(--die-color);display:grid;place-items:center}
+.quick-die svg{width:25px;height:25px;pointer-events:none}.map-controls .quick-die:hover{background:var(--die-color);filter:brightness(1.12)}
 .dice-summary{align-self:stretch;display:flex;flex-direction:column;justify-content:center;position:relative;min-width:0;padding-bottom:25px}
 .dice-summary .dice-total{display:block}.quick-dice-toggle{position:absolute;right:0;bottom:0;display:flex;align-items:center;gap:4px;font-size:10px;white-space:nowrap;cursor:pointer}
 .quick-dice-toggle input{accent-color:var(--gold);margin:0;width:12px;height:12px}
