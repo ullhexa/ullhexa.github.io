@@ -6,7 +6,9 @@ export function validPing(ping,now=Date.now()){
 export function createMapPings({map,stage,player,pointAt,send}){
  const node=(tag,attrs)=>{const e=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);return e;};
  const plane=node('svg',{id:'map-pings','aria-hidden':'true',preserveAspectRatio:'xMidYMid meet'});stage.append(plane);
- const active=new Map(),diameter=map.grid.size/map.grid.distance; // One foot: 20% of a five-foot player token.
+ const active=new Map(),diameter=12; // CSS pixels, matching the token-label text size.
+ let screenScale=1;
+ function positionEntry(entry){entry.node.setAttribute('transform',`translate(${entry.ping.point[0]*map.width} ${entry.ping.point[1]*map.height}) scale(${1/screenScale})`);}
  function remove(id){const entry=active.get(id);if(!entry)return;clearTimeout(entry.timer);entry.animation?.cancel();entry.node.remove();active.delete(id);}
  function prune(){const now=Date.now();for(const[id,entry]of active)if(!validPing(entry.ping,now))remove(id);}
  function add(ping){
@@ -16,7 +18,7 @@ export function createMapPings({map,stage,player,pointAt,send}){
    const g=node('g',{'data-ping':ping.id});
    g.append(node('circle',{r:diameter*.36,fill:'none',stroke:'#0a110e','stroke-width':diameter*.28}),node('circle',{r:diameter*.36,fill:'none',stroke:'#ffd786','stroke-width':diameter*.13}),node('circle',{r:diameter*.095,fill:'#fff4cf'}));plane.append(g);entry={node:g};active.set(ping.id,entry);
   }
-  clearTimeout(entry.timer);entry.animation?.cancel();entry.animation=null;entry.ping={...ping,point:[...ping.point]};entry.node.dataset.held=String(ping.held);entry.node.setAttribute('transform',`translate(${ping.point[0]*map.width} ${ping.point[1]*map.height})`);
+  clearTimeout(entry.timer);entry.animation?.cancel();entry.animation=null;entry.ping={...ping,point:[...ping.point]};entry.node.dataset.held=String(ping.held);positionEntry(entry);
   const age=now-ping.started;
   if(!ping.held){entry.animation=entry.node.animate([{opacity:1},{opacity:0}],{duration:PING_DURATION,easing:'linear',fill:'forwards'});entry.animation.currentTime=age;}
   entry.timer=setTimeout(()=>remove(ping.id),(ping.held?PING_HOLD_LEASE:PING_DURATION)-age);return true;
@@ -61,5 +63,5 @@ export function createMapPings({map,stage,player,pointAt,send}){
  }
  document.addEventListener('visibilitychange',()=>{cancel();prune();});
  window.addEventListener('pagehide',()=>{cancel();for(const id of [...active.keys()])remove(id);});
- return {add,cancelGesture:cancel,isHolding:()=>!!held,current(){prune();return [...active.values()].map(entry=>entry.ping);},position(viewBox){plane.setAttribute('viewBox',viewBox);}};
+ return {add,cancelGesture:cancel,isHolding:()=>!!held,current(){prune();return [...active.values()].map(entry=>entry.ping);},position(viewBox,scale){plane.setAttribute('viewBox',viewBox);screenScale=scale;for(const entry of active.values())positionEntry(entry);}};
 }
