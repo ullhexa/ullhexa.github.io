@@ -8,8 +8,8 @@ import {createGridControls} from './grid-controls.js?v=85';
 import {gridColor} from './grid-state.js?v=62';
 import {createBuildingControls} from './building-controls.js?v=82';
 import {buildingCollapsed} from './building-state.js?v=62';
-import {createCameraAnimation} from './camera-animation.js?v=87';
-import {createMapNavigation} from './map-navigation.js?v=82';
+import {createCameraAnimation,zoomCameraAt,validZoomPath} from './camera-animation.js?v=91';
+import {createMapNavigation} from './map-navigation.js?v=91';
 import {createFloorControl} from './floor-controls.js?v=62';
 import {createUserManual} from './user-manual.js?v=89';
 import {createSpellLibrary} from './spell-library.js?v=83';
@@ -18,9 +18,9 @@ import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setA
 import {persistAssets} from './local-assets.js?v=83';
 import {createScenery} from './scenery.js?v=84';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
-import {buildingFocusCamera} from './building-focus.js?v=82';
+import {buildingFocusCamera} from './building-focus.js?v=91';
 import {createDisplayPresence} from './display-presence.js?v=62';
-import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=82';
+import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=91';
 import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=83';
 import {createDiceTools} from './dice.js?v=90';
 import {fetchJSON} from './resource-loading.js?v=84';
@@ -172,6 +172,7 @@ async function start() {
   let ruler = [];
   let measuring = false;
   let drag = null;
+  let playerZoomPath=null;
   let zoomSave,partyFrame=0,cameraFrame=0,wheelFrame=0,wheelDelta=0,wheelPoint=null;
   function paintParty(){partyFrame=0;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);encounter.renderPartyPosition();livePositions();}
   let storageWorks = true;
@@ -288,7 +289,7 @@ async function start() {
   function publish(){
     if(player||!runtimeReady||window.ullhexaResetting)return;
     const visible=privatePreview?.base||state;
-    send({type:'state',state:playerProjection(visible),...(pendingCameraDuration?{cameraDuration:pendingCameraDuration}:{})});pendingCameraDuration=0;
+    send({type:'state',state:playerProjection(visible),...(!privatePreview&&cameraAnimation.zoomPath?{zoomPath:cameraAnimation.zoomPath}:{}),...(pendingCameraDuration?{cameraDuration:pendingCameraDuration}:{})});pendingCameraDuration=0;
     send({type:'ruler',mapId:map.id,points:privatePreview?.ruler||ruler},true);
     const storyAsset=storyCatalog(project).find(s=>s.id===project.vibe);
     const presentation={...(storyAsset?.asset?{storyAsset}:{}),mode:project.mode,vibe:project.vibe,mapId:map.id,mapContent:mapContentKey(map),sceneRevision:visible.revision,revision:++presentationRevision};
@@ -339,7 +340,15 @@ async function start() {
   }
   let viewport=[$('map').clientWidth,$('map').clientHeight],viewGeometry;
   const viewportSize=()=>viewport;
-  const cameraAnimation=createCameraAnimation({getCamera:()=>state.camera,update:camera=>{state={...state,camera:boundedCamera(map,camera,viewportSize())};renderCamera();if(!player)send({type:'camera',mapId:map.id,camera:state.camera,revision:state.revision});},complete:()=>{renderControls(true);if(!player)save();}});
+  const cameraMessage=()=>({type:'camera',mapId:map.id,camera:state.camera,revision:state.revision,...(cameraAnimation.zoomPath?{zoomPath:cameraAnimation.zoomPath}:{})});
+  const cameraAnimation=createCameraAnimation({getCamera:()=>state.camera,constrain:camera=>boundedCamera(map,camera,viewportSize()),update:camera=>{state={...state,camera:cameraAnimation.zoomPath?camera:boundedCamera(map,camera,viewportSize())};renderCamera();if(!player)send(cameraMessage());},complete:()=>{renderControls(true);if(!player)save();}});
+  function receiveCamera(camera,path){
+    if(!validZoomPath(path)){playerZoomPath=null;return camera;}
+    // A TV may have different edge limits than the DM pane. Give it its own
+    // continuous path from its displayed view to the shared destination.
+    if(playerZoomPath?.id!==path.id)playerZoomPath={id:path.id,from:{...(viewGeometry?.camera||boundedCamera(map,path.from,viewportSize()))},to:boundedCamera(map,path.to,viewportSize())};
+    return zoomCameraAt(playerZoomPath.from,playerZoomPath.to,camera.zoom);
+  }
   function focusBuilding(place){
     const overview=!place||focusedPlace===place.id;focusedPlace=overview?null:place.id;
     if(privatePreview)privatePreview.focus=true;
@@ -353,9 +362,10 @@ async function start() {
   }
   function cameraView(){
     const camera=player?state.camera:{...state.camera,zoom:Math.min(state.camera.zoom,controls.getZoom().maximum)};
-    const view=cameraViewBox(map,camera,viewportSize()),{zoom}=view.camera;
+    const transition=player?!!playerZoomPath:!!cameraAnimation.zoomPath;
+    const view=cameraViewBox(map,camera,viewportSize(),transition),{zoom}=view.camera;
     if(!player)state={...state,camera:view.camera};
-    viewGeometry=cameraGeometry(map,view.camera,viewport);scenery.position(viewGeometry);
+    viewGeometry=cameraGeometry(map,view.camera,viewport,transition);scenery.position(viewGeometry);
     $('map-grid').firstElementChild.setAttribute('stroke-width',state.gridThickness/viewGeometry.scale);
     const viewBox=view.viewBox.join(' ');if($('map').getAttribute('viewBox')!==viewBox)$('map').setAttribute('viewBox',viewBox);$('party-overlay')?.setAttribute('viewBox',viewBox);pings.position(viewBox,viewGeometry.scale);
     const label=`${Math.round(zoom * 100)}%`;if($('zoom-value').textContent!==label)$('zoom-value').textContent=label;
@@ -363,7 +373,7 @@ async function start() {
     if($('zoom-in').disabled!==(zoom >= controls.getZoom().maximum))$('zoom-in').disabled=zoom >= controls.getZoom().maximum;
   }
   function renderCamera(){cameraFrame=0;cameraView();encounter.renderCamera(viewGeometry);fog?.position(viewGeometry);renderRuler();renderControls(true);reportScene();}
-  function queueCamera(){if(!cameraFrame)cameraFrame=requestAnimationFrame(()=>{renderCamera();if(!player)send({type:'camera',mapId:map.id,camera:state.camera,revision:state.revision});});}
+  function queueCamera(){if(!cameraFrame)cameraFrame=requestAnimationFrame(()=>{renderCamera();if(!player)send(cameraMessage());});}
   function render() {
     renderLighting(state);
     document.querySelector('.map-name').textContent=map.title;
@@ -572,12 +582,12 @@ async function start() {
       state={...state,roster:state.roster.map(m=>({...m,...(positions.get(m.id)||{})})),items:(state.items||[]).map(m=>({...m,...(positions.get(m.id)||{})})),monsters:state.monsters.map(m=>({...m,...(positions.get(m.id)||{})}))};
       if(inBounds(message.party)){state.party=message.party;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);}encounter.renderCharacterPositions(positions.size===1?[...positions.keys()][0]:null);if(ruler.length)renderRuler();
     }
-    if(player&&message.type==='camera'&&message.mapId===map.id&&Number.isSafeInteger(message.revision)&&message.revision>=state.revision&&inBounds([message.camera?.x,message.camera?.y])&&Number.isFinite(message.camera?.zoom)&&message.camera.zoom>=1&&message.camera.zoom<=20){cameraAnimation.cancel();state={...state,camera:message.camera,revision:message.revision};queueCamera();return;}
+    if(player&&message.type==='camera'&&message.mapId===map.id&&Number.isSafeInteger(message.revision)&&message.revision>=state.revision&&inBounds([message.camera?.x,message.camera?.y])&&Number.isFinite(message.camera?.zoom)&&message.camera.zoom>=1&&message.camera.zoom<=20){cameraAnimation.cancel();state={...state,camera:receiveCamera(message.camera,message.zoomPath),revision:message.revision};queueCamera();return;}
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='fog-preview'){state={...state,fog:normalizeFog(message.fog)};fog.render();}
     if(player&&message.type==='ruler'&&message.mapId===map.id&&Array.isArray(message.points)&&message.points.length<=3&&message.points.every(inBounds)){ruler=message.points;renderRuler();}
     if (player && message.type === 'state' && message.state?.mapId === map.id && message.state?.mapVersion === map.version) {
       const incoming = playerProjection(sanitizeState(map, message.state));
-      if(incoming.revision>=state.revision){const previousCamera=state.camera;cameraAnimation.cancel();state=incoming;lastPositionSequence=-1;if(message.cameraDuration===2000){state={...state,camera:previousCamera};render();cameraAnimation.start(incoming.camera);}else render();}
+      if(incoming.revision>=state.revision){const previousCamera=state.camera;cameraAnimation.cancel();incoming.camera=receiveCamera(incoming.camera,message.zoomPath);state=incoming;lastPositionSequence=-1;if(message.cameraDuration===2000){state={...state,camera:previousCamera};render();cameraAnimation.start(incoming.camera);}else render();}
       lastPeer = Date.now(); updateConnection();
     }
   }
