@@ -1,4 +1,4 @@
-import {assetURL} from './local-assets.js?v=79';
+import {assetURL} from './local-assets.js?v=83';
 import {normalizeUserSpells} from './user-spells.js?v=79';
 // Intentionally empty until the owner clears a Factory collection for publication.
 export const FACTORY_SPELLS=Object.freeze([]);

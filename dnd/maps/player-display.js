@@ -1,10 +1,10 @@
 import {configureSession,readSessionValue} from './session-storage.js?v=62';
-import {customCatalog} from './custom-maps.js?v=82';
+import {customCatalog} from './custom-maps.js?v=83';
 import { setupFullscreen } from './fullscreen.js?v=76';
-import {storyCatalog} from './story-assets.js?v=79';
-import {createStoryPlayer,MODE_FADE_MS} from './story-player.js?v=79';
+import {storyCatalog} from './story-assets.js?v=83';
+import {createStoryPlayer,MODE_FADE_MS} from './story-player.js?v=83';
 import {fetchJSON} from './resource-loading.js?v=62';
-import { validPresentation, sceneCanShow } from './presentation-state.js?v=79';
+import { validPresentation, sceneCanShow } from './presentation-state.js?v=83';
 const $=id=>document.getElementById(id);
 const read=readSessionValue;
 
