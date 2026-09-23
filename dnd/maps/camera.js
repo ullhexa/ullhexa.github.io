@@ -2,7 +2,7 @@ const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 // SVG meet-fit can expose more world area than its nominal viewBox on one axis.
 // Bound that actual visible area, independently for each display's aspect ratio.
 export function boundedCamera(map,camera,viewport=[map.width,map.height]){
-  const zoom=clamp(camera.zoom,1,3),[width,height]=viewport;
+  const zoom=clamp(camera.zoom,1,20),[width,height]=viewport;
   if(zoom===1)return {x:.5,y:.5,zoom};
   const scale=Math.min(Math.max(1,width)/map.width,Math.max(1,height)/map.height)*zoom;
   const half=[width/(scale*map.width*2),height/(scale*map.height*2)];

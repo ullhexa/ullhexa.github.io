@@ -1,3 +1,4 @@
+import {createGridPlaces} from './grid-places.js?v=82';
 import {orientationIcon} from './control-icons.js?v=81';
 import {showDialog} from './dialogs.js?v=62';
 import {imageTypeNote} from './image-import.js?v=62';
@@ -10,7 +11,7 @@ export function zoomAt(view,point,next,frame=[960,540]){
   return {...view,zoom,center};
 }
 export function panEditorImage(view,origin,delta,together=false){const shift=delta.map(n=>n/(view.fit*view.zoom));return {view:{...view,center:view.center.map((n,i)=>n-shift[i])},origin:together?origin:origin.map((n,i)=>n-shift[i])};}
-export async function editMapGrid(asset,title,grid=null){
+export async function editMapGrid(asset,title,grid=null,places=[]){
   const image=new Image();image.src=asset.data;await image.decode();
   return new Promise(resolve=>{
     const dialog=el('dialog',null,'grid-editor-dialog');dialog.setAttribute('aria-label','Map grid editor');
@@ -30,29 +31,32 @@ export async function editMapGrid(asset,title,grid=null){
       if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}c.setTransform(pixels,0,0,pixels,0,0);c.fillStyle='#090c10';c.fillRect(0,0,960,540);const p=screen([0,0]),s=scale();if(visibility.map)c.drawImage(art,p[0],p[1],dimensions[0]*s,dimensions[1]*s);
       if(visibility.grid){const step=size*s,start=screen(origin);c.beginPath();for(let x=gridOrigin(start[0],step);x<960;x+=step){const crisp=snap(x);c.moveTo(crisp,0);c.lineTo(crisp,540);}for(let y=gridOrigin(start[1],step);y<540;y+=step){const crisp=snap(y);c.moveTo(0,crisp);c.lineTo(960,crisp);}c.strokeStyle='#ffffffbf';c.lineWidth=linePixels/pixels;c.stroke();
         for(const [x,y]of corners()){c.fillStyle='#15191e';c.fillRect(x-6,y-6,12,12);c.strokeStyle='#d6dfd8';c.lineWidth=linePixels/pixels;c.strokeRect(x-6,y-6,12,12);}}
+      placeEditor.draw(c);
     }
     const queue=()=>{if(!frame)frame=requestAnimationFrame(draw);};const observer=new ResizeObserver(queue);observer.observe(canvas);
+    const placeEditor=createGridPlaces({places,dimensions:()=>dimensions,screen,world:p=>p.map((n,i)=>view.center[i]+(n-[480,270][i])/scale()),queue,canvas,dialog,center:()=>[...view.center]});
     const sync=(except=-1)=>{counts.forEach((input,i)=>{if(i!==except)input.value=Math.max(1,Math.round(dimensions[i]/size));});mapZoom.value=view.zoom;queue();};
     const resetScale=()=>{baseSize=size;gridZoom.value=0;};
-    function orient(kind){const op=imageOperation(kind,dimensions);matrix=composeTransform(op.matrix,matrix);origin=transformPoint(op.matrix,origin).map(n=>gridOrigin(n,size));dimensions=op.dimensions;const raster=document.createElement('canvas');[raster.width,raster.height]=dimensions;const ctx=raster.getContext('2d');ctx.setTransform(...matrix);ctx.drawImage(image,0,0);art=raster;view={fit:Math.min(960/dimensions[0],540/dimensions[1]),zoom:1,center:dimensions.map(n=>n/2),dimensions};sync();}
+    function orient(kind){const op=imageOperation(kind,dimensions);placeEditor.orient(op,dimensions);matrix=composeTransform(op.matrix,matrix);origin=transformPoint(op.matrix,origin).map(n=>gridOrigin(n,size));dimensions=op.dimensions;const raster=document.createElement('canvas');[raster.width,raster.height]=dimensions;const ctx=raster.getContext('2d');ctx.setTransform(...matrix);ctx.drawImage(image,0,0);art=raster;view={fit:Math.min(960/dimensions[0],540/dimensions[1]),zoom:1,center:dimensions.map(n=>n/2),dimensions};sync();}
     const orientation=el('div',null,'grid-orientation-controls');orientation.setAttribute('role','group');orientation.setAttribute('aria-label','Map orientation');
     for(const [kind,text,name]of [['left','↶ 90°','Rotate map left 90 degrees'],['right','↷ 90°','Rotate map right 90 degrees'],['x','Mirror X','Mirror map horizontally'],['y','Mirror Y','Mirror map vertically']]){const b=button('',()=>orient(kind));b.append(orientationIcon(kind));b.setAttribute('aria-label',name);orientation.append(b);}
+    orientation.append(placeEditor.root);
     counts.forEach((input,i)=>{input.addEventListener('input',()=>{if(input.value==='')return;const n=Math.max(1,Math.min(512,Math.round(Number(input.value))));if(Number.isFinite(n)){input.value=n;size=Math.max(1,dimensions[i]/n);resetScale();sync(i);}});input.addEventListener('blur',()=>sync());});
     feet.addEventListener('input',()=>{if(feet.value==='')return;const n=Math.max(1,Math.min(1000,Math.round(Number(feet.value))));if(Number.isFinite(n))feet.value=distance=n;});feet.addEventListener('blur',()=>feet.value=distance);
     mapZoom.addEventListener('input',()=>{view={...view,zoom:Number(mapZoom.value)};if(view.zoom===1)view.center=dimensions.map(n=>n/2);queue();});
     gridZoom.addEventListener('input',()=>{size=Math.max(1,Math.min(Math.max(...dimensions),baseSize*2**(Number(gridZoom.value)/100)));sync();});
     canvas.addEventListener('wheel',e=>{e.preventDefault();view=zoomAt(view,point(e),view.zoom*Math.exp(-e.deltaY*.0015));sync();},{passive:false});
     const dragMode=(e,button,index)=>e.ctrlKey||e.metaKey?'both':button===2?'image':index<0?'grid':'scale';
-    canvas.addEventListener('pointerdown',e=>{if(e.button!==0&&e.button!==2)return;const p=point(e),cs=corners(),index=cs.findIndex(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<16);drag={id:e.pointerId,button:e.button,p,last:p,size,scale:scale(),index,mode:dragMode(e,e.button,index),anchor:index<0?null:cs[(index+2)%4]};canvas.setPointerCapture(e.pointerId);canvas.classList.add('is-dragging');e.preventDefault();});
-    canvas.addEventListener('pointermove',e=>{const p=point(e);if(!drag){const index=corners().findIndex(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<16);canvas.style.cursor=e.ctrlKey||e.metaKey||index<0?'grab':index%2?'nesw-resize':'nwse-resize';return;}if(e.pointerId!==drag.id)return;
+    canvas.addEventListener('pointerdown',e=>{if(e.button!==0&&e.button!==2)return;const p=point(e);if(placeEditor.begin(e,p))return;const cs=corners(),index=cs.findIndex(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<16);drag={id:e.pointerId,button:e.button,p,last:p,size,scale:scale(),index,mode:dragMode(e,e.button,index),anchor:index<0?null:cs[(index+2)%4]};canvas.setPointerCapture(e.pointerId);canvas.classList.add('is-dragging');e.preventDefault();});
+    canvas.addEventListener('pointermove',e=>{const p=point(e);if(placeEditor.move(e,p))return;if(!drag){const cursor=placeEditor.cursor(p);if(cursor){canvas.style.cursor=cursor;return;}const index=corners().findIndex(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<16);canvas.style.cursor=e.ctrlKey||e.metaKey||index<0?'grab':index%2?'nesw-resize':'nwse-resize';return;}if(e.pointerId!==drag.id)return;
       const mode=dragMode(e,drag.button,drag.index);if(mode!==drag.mode){drag.mode=mode;drag.p=p;drag.last=p;drag.size=size;return;}
       if(mode==='image'||mode==='both'){const next=panEditorImage(view,origin,p.map((n,i)=>n-drag.last[i]),mode==='both');view=next.view;origin=next.origin;}
       else if(mode==='grid')origin=origin.map((n,i)=>n+(p[i]-drag.last[i])/drag.scale);
       else {const before=drag.p.map((n,i)=>n-drag.anchor[i]),after=p.map((n,i)=>n-drag.anchor[i]),ratio=Math.max(.05,after.reduce((sum,n,i)=>sum+n*before[i],0)/before.reduce((sum,n)=>sum+n*n,0));size=Math.max(1,Math.min(Math.max(...dimensions),drag.size*ratio));resetScale();}drag.last=p;sync();
     });
     canvas.addEventListener('contextmenu',e=>e.preventDefault());
-    const end=e=>{if(drag?.id!==e.pointerId)return;drag=null;canvas.classList.remove('is-dragging');if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);};canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
-    const actions=el('div',null,'dialog-actions');actions.append(button('Cancel',()=>dialog.close()),button('Apply grid',()=>{const changed=matrix.some((n,i)=>n!==identityTransform()[i]);let data=changed?art.toDataURL('image/png'):null;result={...(changed?{asset:{id:`asset-${crypto.randomUUID()}`,width:dimensions[0],height:dimensions[1],data}}:{}),title:name.value.trim()||'Custom map',grid:{size,distance,unit:'ft',color:'#ffffff',offset:origin.map(n=>gridOrigin(n,size))}};dialog.close();},'primary'));
+    const end=e=>{if(placeEditor.end(e))return;if(drag?.id!==e.pointerId)return;drag=null;canvas.classList.remove('is-dragging');if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);};canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
+    const actions=el('div',null,'dialog-actions');actions.append(button('Cancel',()=>dialog.close()),button('Apply grid',()=>{const changed=matrix.some((n,i)=>n!==identityTransform()[i]);let data=changed?art.toDataURL('image/png'):null;result={...(changed?{asset:{id:`asset-${crypto.randomUUID()}`,width:dimensions[0],height:dimensions[1],data}}:{}),title:name.value.trim()||'Custom map',places:placeEditor.export(),grid:{size,distance,unit:'ft',color:'#ffffff',offset:origin.map(n=>gridOrigin(n,size))}};dialog.close();},'primary'));
     dialog.append(el('h2','Align map grid'),imageTypeNote(),label('Map title',name),controls,orientation,canvas,actions);document.body.append(dialog);dialog.addEventListener('close',()=>{observer.disconnect();cancelAnimationFrame(frame);dialog.remove();resolve(result);},{once:true});showDialog(dialog);sync();
   });
 }

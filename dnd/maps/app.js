@@ -1,27 +1,28 @@
-import {createControlPreferences} from './control-preferences.js?v=81';
+import {createZoomControls} from './zoom-controls.js?v=82';
+import {createControlPreferences} from './control-preferences.js?v=82';
 import {boardIcon} from './control-icons.js?v=81';
 import {installBoardGestures} from './board-gestures.js?v=81';
 import {createBoardLayout} from './board-layout.js?v=81';
 import {featureEnabled,placeName} from './board-state.js?v=62';
 import {createGridControls} from './grid-controls.js?v=81';
 import {gridColor} from './grid-state.js?v=62';
-import {createBuildingControls} from './building-controls.js?v=81';
+import {createBuildingControls} from './building-controls.js?v=82';
 import {buildingCollapsed} from './building-state.js?v=62';
 import {createCameraAnimation} from './camera-animation.js?v=62';
-import {createMapNavigation} from './map-navigation.js?v=81';
+import {createMapNavigation} from './map-navigation.js?v=82';
 import {createFloorControl} from './floor-controls.js?v=62';
-import {createUserManual} from './user-manual.js?v=81';
+import {createUserManual} from './user-manual.js?v=82';
 import {createSpellLibrary} from './spell-library.js?v=81';
 import {createReferenceViewers} from './reference-viewers.js?v=81';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
 import {persistAssets} from './local-assets.js?v=79';
 import {createScenery} from './scenery.js?v=81';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
-import {buildingFocusCamera} from './building-focus.js?v=62';
+import {buildingFocusCamera} from './building-focus.js?v=82';
 import {createDisplayPresence} from './display-presence.js?v=62';
-import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=62';
+import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=82';
 import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=79';
-import {createDiceTools} from './dice.js?v=81';
+import {createDiceTools} from './dice.js?v=82';
 import {fetchJSON,loadRaster} from './resource-loading.js?v=62';
 import {storyCatalog,nextStory} from './story-assets.js?v=79';
 import {createItemsUI} from './items-ui.js?v=81';
@@ -32,19 +33,19 @@ import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './c
 import {createCombatUI,createLibraries} from './combat-ui.js?v=81';
 import {createFogTools} from './fog-tools.js?v=81';
 import {normalizeFog} from './fog-state.js?v=62';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=81';
-import {createSessionBundle} from './session-bundle.js?v=81';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=82';
+import {createSessionBundle} from './session-bundle.js?v=82';
 import { startDMShell } from './dm-shell.js?v=62';
 import { openPlayerWindow } from './display-window.js?v=62';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=81';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=82';
 import { createEncounterTools } from './encounter-tools.js?v=81';
 import { playerProjection, formation, moveParty } from './encounter-state.js?v=79';
-import { createMapMenu } from './map-menu.js?v=81';
-import { createSaveControls } from './save-controls.js?v=81';
-import { parseSave, restoreSave } from './save-file.js?v=81';
-import { createLighting } from './lighting.js?v=81';
+import { createMapMenu } from './map-menu.js?v=82';
+import { createSaveControls } from './save-controls.js?v=82';
+import { parseSave, restoreSave } from './save-file.js?v=82';
+import { createLighting } from './lighting.js?v=82';
 import { setupFullscreen } from './fullscreen.js?v=76';
-import { startPlayerDisplay } from './player-display.js?v=81';
+import { startPlayerDisplay } from './player-display.js?v=82';
 import { createDirector } from './director.js?v=81';
 import { normalizeProject } from './presentation-state.js?v=79';
 
@@ -310,7 +311,7 @@ async function start() {
     if($('redo').disabled!==(!currentHistory().canRedo))$('redo').disabled=!currentHistory().canRedo;
     const overview = Math.abs(state.camera.zoom-1)<.001 && Math.abs(state.camera.x-.5)<.001 && Math.abs(state.camera.y-.5)<.001;
     const place=map.places.find(p=>p.id===focusedPlace);
-    const focus=place?buildingFocusCamera(map,place,viewportSize()):null;
+    const focus=place?buildingFocusCamera(map,place,viewportSize(),controls.getZoom().maximum):null;
     if(!cameraAnimation.active&&(!focus||selected!==focusedPlace||Math.abs(state.camera.x-focus.x)>.00001||Math.abs(state.camera.y-focus.y)>.00001||Math.abs(state.camera.zoom-focus.zoom)>.00001))focusedPlace=null;
     buildingUI?.render();
     if($('fit-map').disabled!==(overview))$('fit-map').disabled=overview;
@@ -321,7 +322,7 @@ async function start() {
   function focusBuilding(place){
     const overview=!place||focusedPlace===place.id;focusedPlace=overview?null:place.id;
     if(privatePreview)privatePreview.focus=true;
-    state={...state,revision:state.revision+1};cameraAnimation.start(overview?{x:.5,y:.5,zoom:1}:buildingFocusCamera(map,place,viewportSize()));renderControls(true);
+    state={...state,revision:state.revision+1};cameraAnimation.start(overview?{x:.5,y:.5,zoom:1}:buildingFocusCamera(map,place,viewportSize(),controls.getZoom().maximum));renderControls(true);
   }
   function beginBuildingPreview(){cameraAnimation.cancel();clearTimeout(zoomSave);privatePreview={base:structuredClone(state),ruler:structuredClone(ruler),history:createHistory(),focus:false};renderControls();}
   function endBuildingPreview(){
@@ -330,14 +331,15 @@ async function start() {
     render();save();
   }
   function cameraView(){
-    const view=cameraViewBox(map,state.camera,viewportSize()),{zoom}=view.camera;
+    const camera=player?state.camera:{...state.camera,zoom:Math.min(state.camera.zoom,controls.getZoom().maximum)};
+    const view=cameraViewBox(map,camera,viewportSize()),{zoom}=view.camera;
     if(!player)state={...state,camera:view.camera};
     viewGeometry=cameraGeometry(map,view.camera,viewport);scenery.position(viewGeometry);
     $('map-grid').firstElementChild.setAttribute('stroke-width',state.gridThickness/viewGeometry.scale);
     const viewBox=view.viewBox.join(' ');if($('map').getAttribute('viewBox')!==viewBox)$('map').setAttribute('viewBox',viewBox);$('party-overlay')?.setAttribute('viewBox',viewBox);
     const label=`${Math.round(zoom * 100)}%`;if($('zoom-value').textContent!==label)$('zoom-value').textContent=label;
     if($('zoom-out').disabled!==(zoom <= 1))$('zoom-out').disabled=zoom <= 1;
-    if($('zoom-in').disabled!==(zoom >= 3))$('zoom-in').disabled=zoom >= 3;
+    if($('zoom-in').disabled!==(zoom >= controls.getZoom().maximum))$('zoom-in').disabled=zoom >= controls.getZoom().maximum;
   }
   function renderCamera(){cameraFrame=0;cameraView();encounter.renderCamera(viewGeometry);fog?.position(viewGeometry);renderRuler();renderControls(true);reportScene();}
   function queueCamera(){if(!cameraFrame)cameraFrame=requestAnimationFrame(()=>{renderCamera();if(!player)send({type:'camera',mapId:map.id,camera:state.camera,revision:state.revision});});}
@@ -387,7 +389,7 @@ async function start() {
   function zoomBy(factor, anchor, immediate=false) {
     cameraAnimation.cancel();focusedPlace=null;
     const before = state.camera;
-    const zoom = clamp(before.zoom * factor, 1, 3);
+    const zoom = clamp(before.zoom * factor, 1, controls.getZoom().maximum);
     const ratio = before.zoom / zoom;
     const camera = zoom === 1 ? { x: .5, y: .5, zoom } : { x: clamp(anchor ? anchor[0] + (before.x-anchor[0])*ratio : before.x, 0, 1), y: clamp(anchor ? anchor[1] + (before.y-anchor[1])*ratio : before.y, 0, 1), zoom };
     state = { ...state, camera, revision: state.revision+1 };if(immediate){renderCamera();if(!player)send({type:'camera',mapId:map.id,camera:state.camera,revision:state.revision});}else queueCamera();
@@ -437,8 +439,8 @@ async function start() {
     selectPlace(selected);
     if(!map.places.length){$('places').previousElementSibling.hidden=true;$('places').hidden=true;announce('Custom map ready. Paint fog or add tokens and spell areas.');}
     setupSidebarResize();
-    $('zoom-in').addEventListener('click', () => zoomBy(1.25));
-    $('zoom-out').addEventListener('click', () => zoomBy(.8));
+    $('zoom-in').addEventListener('click', () => zoomBy(1+controls.getZoom().step/100));
+    $('zoom-out').addEventListener('click', () => zoomBy(1/(1+controls.getZoom().step/100)));
     $('fit-map').addEventListener('click',()=>focusBuilding(null));
 
     let adjustingLighting=false;
@@ -470,7 +472,7 @@ async function start() {
       if(playerWindow){updateConnection();announce('Move the player window to your TV/projector using an extended display.');}
       else announce('Your browser blocked the player window. Allow pop-ups for this page and try again.');
     });
-    $('map-stage').addEventListener('wheel', event => {if(event.target.closest('.token-status-editor,.shape-palette,.item-comment,.dice-panel,.reference-suite,.building-popup')||encounter.isDragging()||fog.isDrawing())return;event.preventDefault();wheelDelta+=event.deltaY;wheelPoint={clientX:event.clientX,clientY:event.clientY};if(!wheelFrame)wheelFrame=requestAnimationFrame(()=>{wheelFrame=0;const delta=wheelDelta;wheelDelta=0;zoomBy(Math.exp(-delta*.0015),pointAt(wheelPoint),true);});}, { passive: false });
+    $('map-stage').addEventListener('wheel', event => {if(event.target.closest('.token-status-editor,.shape-palette,.item-comment,.dice-panel,.reference-suite,.building-popup')||encounter.isDragging()||fog.isDrawing())return;event.preventDefault();wheelDelta+=event.deltaY;wheelPoint={clientX:event.clientX,clientY:event.clientY};if(!wheelFrame)wheelFrame=requestAnimationFrame(()=>{wheelFrame=0;const delta=wheelDelta;wheelDelta=0;zoomBy(Math.exp(-delta*.0015*controls.getZoom().wheel/100),pointAt(wheelPoint),true);});}, { passive: false });
     $('map-stage').addEventListener('pointerdown', event => {
       const right=event.button===2;
       if(!$('map').contains(event.target)&&!party.contains(event.target)&&!(right&&event.target.closest('#character-tokens [data-character],#shape-handle-overlay,#aura-handles')))return;
@@ -543,7 +545,7 @@ async function start() {
       state={...state,roster:state.roster.map(m=>({...m,...(positions.get(m.id)||{})})),items:(state.items||[]).map(m=>({...m,...(positions.get(m.id)||{})})),monsters:state.monsters.map(m=>({...m,...(positions.get(m.id)||{})}))};
       if(inBounds(message.party)){state.party=message.party;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);}encounter.renderCharacterPositions(positions.size===1?[...positions.keys()][0]:null);
     }
-    if(player&&message.type==='camera'&&message.mapId===map.id&&Number.isSafeInteger(message.revision)&&message.revision>=state.revision&&inBounds([message.camera?.x,message.camera?.y])&&Number.isFinite(message.camera?.zoom)&&message.camera.zoom>=1&&message.camera.zoom<=3){cameraAnimation.cancel();state={...state,camera:message.camera,revision:message.revision};queueCamera();return;}
+    if(player&&message.type==='camera'&&message.mapId===map.id&&Number.isSafeInteger(message.revision)&&message.revision>=state.revision&&inBounds([message.camera?.x,message.camera?.y])&&Number.isFinite(message.camera?.zoom)&&message.camera.zoom>=1&&message.camera.zoom<=20){cameraAnimation.cancel();state={...state,camera:message.camera,revision:message.revision};queueCamera();return;}
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='fog-preview'){state={...state,fog:normalizeFog(message.fog)};fog.render();}
     if(player&&message.type==='ruler'&&message.mapId===map.id&&Array.isArray(message.points)&&message.points.length<=3&&message.points.every(inBounds)){ruler=message.points;renderRuler();}
     if (player && message.type === 'state' && message.state?.mapId === map.id && message.state?.mapVersion === map.version) {
@@ -569,7 +571,7 @@ async function start() {
   }
   if(!embedded)setInterval(updateConnection,500);
   window.addEventListener('pagehide',()=>{if(!player&&runtimeReady)save();});
-  if(!player){createUserManual();director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});createLibraries({map,getState:()=>state,commit,announce});itemsUI=createItemsUI({map,getState:()=>state,commit,announce,pointAt,setTool,selectItem:id=>encounter.selectItem(id),editItem:id=>{references?.close();encounter.editItem(id);},showNotes:id=>{references?.close();encounter.showItemNotes(id);}});createSpellLibrary({getState:()=>state,commit,announce});references=createReferenceViewers({getState:()=>state,commit,announce,prepare:()=>{dice?.close();setTool(null);}});createBoardLayout(controls);const auto=document.getElementById('auto-measure');auto.setAttribute('aria-pressed',String(controls.get('autoMeasure')));document.querySelector('.map-controls').addEventListener('click',event=>{if(!event.target.closest('#measure')&&tool==='measure')setTool(null);},true);mapMenu.setUpload(createMapUpload({sessionKey,catalog,onAdded:entry=>{mapMenu.addEntry(entry);mapMenu.showEntry(entry);},announce}));}
+  if(!player){createUserManual();director=createDirector({catalog,mapId:map.id,getProject:()=>project,setProject,prepareMap,announce});createLibraries({map,getState:()=>state,commit,announce});itemsUI=createItemsUI({map,getState:()=>state,commit,announce,pointAt,setTool,selectItem:id=>encounter.selectItem(id),editItem:id=>{references?.close();encounter.editItem(id);},showNotes:id=>{references?.close();encounter.showItemNotes(id);}});createSpellLibrary({getState:()=>state,commit,announce});references=createReferenceViewers({getState:()=>state,commit,announce,prepare:()=>{dice?.close();setTool(null);}});createBoardLayout(controls);createZoomControls({preferences:controls,onChange:()=>zoomBy(1)});const auto=document.getElementById('auto-measure');auto.setAttribute('aria-pressed',String(controls.get('autoMeasure')));document.querySelector('.map-controls').addEventListener('click',event=>{if(!event.target.closest('#measure')&&tool==='measure')setTool(null);},true);mapMenu.setUpload(createMapUpload({sessionKey,catalog,onAdded:entry=>{mapMenu.addEntry(entry);mapMenu.showEntry(entry);},announce}));}
   if(embedded){
     let lastActivity=0;
     const activity=()=>{if(performance.now()-lastActivity>100){lastActivity=performance.now();window.parent.postMessage({type:'player-activity'},location.origin);}};
@@ -606,7 +608,7 @@ async function start() {
     }
   }
 
-  runtimeReady=true;if(!player)save();
+  runtimeReady=true;if(!player){save();requestAnimationFrame(()=>document.querySelector('.map-controls').classList.remove('controls-pending'));}
   new ResizeObserver(entries=>{const r=entries[0].contentRect;viewport=[r.width,r.height];if(runtimeReady)queueCamera();}).observe($('map-stage'));
   window.addEventListener('pageshow',event=>{if(event.persisted){render();updateConnection();if(player){send({type:'scene-hello'});reportScene();}else save();}});
   if(dmFrame)window.parent.postMessage({type:'dm-ready',url:location.href,title:document.title},location.origin);
