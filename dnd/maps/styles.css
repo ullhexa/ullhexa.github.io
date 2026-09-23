@@ -655,7 +655,7 @@ body.map-expanded .workspace{grid-template-columns:minmax(0,1fr)}body.map-expand
 .hp-adjust .hp-display{display:flex;align-items:center;gap:7px;flex-wrap:wrap;line-height:1.1}.temp-hp-value{display:inline-flex;align-items:center;gap:2px;font-size:.75rem;color:#d3d8df}.temp-hp-value svg{width:13px;height:15px;flex:none}
 .hp-amount{position:relative}.hp-adjust .temp-hp-apply{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:24px;height:19px;min-height:19px;padding:1px;border:0;background:transparent}.temp-hp-apply svg{width:17px;height:17px}
 .token-label,.map-party-label{font-size:12px}
-.player-initiative,.initiative-preview{width:285px;max-width:37.5%;padding:9px}.public-turn{font-size:18px;gap:9px;padding:7.5px}.public-turn img{width:48px;height:48px}.overlay-kicker{font-size:13.5px}
+.player-initiative,.initiative-preview{width:214px;max-width:28.125%;padding:7px}.public-turn{font-size:13.5px;gap:7px;padding:5.625px}.public-turn img{width:36px;height:36px}
 #map-stage,#map-stage *{-webkit-user-select:none;user-select:none}#map-stage :is(input,textarea,[contenteditable=true]){-webkit-user-select:text;user-select:text}
 .ruler-label{font-family:'DM Sans',sans-serif;font-weight:700;fill:#fff;stroke:#0b1410;paint-order:stroke;stroke-linejoin:round;pointer-events:none}
 .token-status-editor{grid-template-columns:120px var(--status-token-gap,64px) 170px}.aura-colors{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:6px 2px;border-top:1px solid #ffffff25}.aura-colors .color-swatch{width:20px;height:20px;min-height:20px;padding:0;border-radius:50%;background:var(--swatch);border:1px solid #ffffff55}.aura-colors .color-swatch:is(:hover,:focus-visible){filter:none;border-color:#fff}.aura-colors .color-swatch[aria-pressed=true]{background:var(--swatch);outline:2px solid var(--gold);outline-offset:2px}
@@ -753,3 +753,7 @@ body :is(input,textarea,[contenteditable="true"],[contenteditable=""]){-webkit-u
 
 /* Recover failed artwork without restarting the controls or clearing game state. */
 #retry-map-art{justify-self:center;margin-top:12px;min-width:88px}
+
+/* Measurements sit above tokens, fog and map handles, without intercepting input. */
+#measurement-overlay{position:absolute;inset:0;width:100%;height:100%;z-index:9;pointer-events:none}
+#measurement-overlay *{pointer-events:none}

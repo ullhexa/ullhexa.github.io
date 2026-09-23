@@ -9,16 +9,16 @@ import {elevation,tokenName,statusCursor} from './token-options.js?v=62';
 import {shapeBounds,placeShapeLabel} from './shape-label.js?v=62';
 import {conditionIcon} from './condition-icons.js?v=62';
 import {shortcutAction,isTextEntry} from './keyboard.js?v=62';
-import {setFace} from './token-portraits.js?v=84';
-import {SHAPE_COLORS,clamp,feetToWorld,setTokenMode,newShape,resizeShape,rotateShape} from './encounter-state.js?v=83';
+import {setFace} from './token-portraits.js?v=85';
+import {SHAPE_COLORS,clamp,feetToWorld,activePartyName,setTokenMode,newShape,resizeShape,rotateShape} from './encounter-state.js?v=85';
 import {CONDITIONS,mapTokens as combatants,patchToken as patchMember,snapPoint,initiativeOrder,bringTokenToFront as bringToFront} from './combat-state.js?v=83';
-import {el,button,badgeNodes} from './combat-ui.js?v=84';
+import {el,button,badgeNodes} from './combat-ui.js?v=85';
 const NS='http://www.w3.org/2000/svg',$=id=>document.getElementById(id);
 const node=(tag,attrs={},text)=>{const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(text!==undefined)e.textContent=text;return e;};
 const names=['Blue','Brown','Red','Orange','Black','White','Green','Purple'];
 export function createEncounterTools({map,player,getState,commit,preview,finishDrag,pointAt,announce,getTool,setTool,livePositions,autoMeasure=()=>false,measureMove=()=>{}}){
   const svg=$('map'),stage=$('map-stage'),tokens=el('div'),partyName=el('span','Party','map-party-label');tokens.id='character-tokens';tokens.append(partyName);stage.append(tokens);
-  const borderWorld=3*feetToWorld(map,5)/50;svg.querySelector('.party-token>circle').setAttribute('stroke-width',borderWorld);
+  const partyDiameter=feetToWorld(map,5),borderWorld=3*partyDiameter/50;svg.querySelector('.party-token>circle').setAttribute('stroke-width',borderWorld);
   const overlay=node('svg',{id:'shape-handle-overlay','aria-label':'Spell area handles'});if(!player){overlay.append($('shape-handles'));stage.append(overlay);}
   const sizeLabel=el('span',undefined,'shape-size-label');sizeLabel.hidden=true;if(!player)stage.append(sizeLabel);
   const coverage=node('g',{id:'shape-grid-preview','pointer-events':'none'}),coverageMask=node('mask',{id:'shape-grid-mask','mask-type':'luminance',maskUnits:'userSpaceOnUse',x:0,y:0,width:map.width,height:map.height});const coveragePath=node('path',{'fill-opacity':.3,mask:'url(#shape-grid-mask)'});coverage.append(coveragePath);if(!player){$('shape-layer').before(coverage);svg.querySelector('defs').append(coverageMask);}let coverageKey='';
@@ -30,7 +30,7 @@ export function createEncounterTools({map,player,getState,commit,preview,finishD
   const world=p=>[p[0]*map.width,p[1]*map.height];
   const auras=createAuras({map,player,getState,getTokenNode:id=>tokenNodes.get(id),getDraft:m=>status?.id===m.id?status.draft:m,getTool,preview,finishDrag,prepare:()=>{selected=null;renderShapes();}});
   // Portrait dimensions follow world scale; labels stay in screen pixels and all rings match a five-foot player.
-  function positionParty(){if(!geometry)return;const s=getState(),{matrix,left,top}=tokenBasis||geometry,[x,y]=world(s.party),scale=Math.hypot(matrix.a,matrix.b);partyName.hidden=s.tokenMode!=='party'||!featureEnabled(s,'party');partyName.style.transform=`translate3d(${matrix.a*x+matrix.c*y+matrix.e-left}px,${matrix.b*x+matrix.d*y+matrix.f-top+(21+borderWorld/2)*scale+6}px,0) translateX(-50%)`;}
+  function positionParty(){if(!geometry)return;const s=getState(),{matrix,left,top}=tokenBasis||geometry,[x,y]=world(s.party),scale=Math.hypot(matrix.a,matrix.b);partyName.textContent=activePartyName(s);partyName.hidden=s.tokenMode!=='party'||!featureEnabled(s,'party');partyName.style.transform=`translate3d(${matrix.a*x+matrix.c*y+matrix.e-left}px,${matrix.b*x+matrix.d*y+matrix.f-top+partyDiameter/2*scale+6}px,0) translateX(-50%)`;}
   function position(id=null){if(!geometry)return;const{matrix,left,top}=tokenBasis||geometry,scale=Math.hypot(matrix.a,matrix.b),ringWidth=borderWorld*scale;if(!id)positionParty();for(const m of combatants(getState())){if(id&&m.id!==id)continue;const t=tokenNodes.get(m.id);if(!t)continue;if(t.style.zIndex!==String(m.stack||0))t.style.zIndex=String(m.stack||0);const[x,y]=world(m.position),diameter=feetToWorld(map,m.size||5)*scale,signature=`${diameter}:${ringWidth}`;if(t.dataset.geometry!==signature){t.dataset.geometry=signature;t.style.width=t.style.height=`${diameter}px`;t.style.setProperty('--token-scale',String(diameter/50));t.style.setProperty('--token-ring-width',`${ringWidth}px`);const ring=t.querySelector('.token-ring').firstElementChild;if(m.item){ring.setAttribute('x',ringWidth/2);ring.setAttribute('y',ringWidth/2);ring.setAttribute('width',Math.max(0,diameter-ringWidth));ring.setAttribute('height',Math.max(0,diameter-ringWidth));}else{ring.setAttribute('cx',diameter/2);ring.setAttribute('cy',diameter/2);ring.setAttribute('r',Math.max(0,(diameter-ringWidth)/2));}}const transform=`translate3d(${matrix.a*x+matrix.c*y+matrix.e-left-diameter/2}px,${matrix.b*x+matrix.d*y+matrix.f-top-diameter/2}px,0)`;if(t._position!==transform){t._position=transform;t.style.transform=transform;}}positionItemControls();auras.render();}
   function updateGeometry(view){
     let next;if(view?.scale){next={matrix:{a:view.scale,b:0,c:0,d:view.scale,e:view.x,f:view.y},left:0,top:0};}

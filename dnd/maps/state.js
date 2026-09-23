@@ -3,7 +3,7 @@ import {validateFloors,normalizeFloors,interactionOnFloor} from './floors.js?v=6
 import {buildingCollapsed} from './building-state.js?v=62';
 import {normalizeFog,normalizeFogSettings,defaultFogSettings} from './fog-state.js?v=83';
 import {assetId} from './combat-state.js?v=83';
-import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=83';
+import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=85';
 import {validGridColor,normalizeGridThickness} from './grid-state.js?v=62';
 export {GRID_COLORS} from './grid-state.js?v=62';
 export const defaultEnvironment = () => ({darkness:0});

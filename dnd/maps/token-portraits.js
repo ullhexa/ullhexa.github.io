@@ -1,7 +1,7 @@
 import {cleanCropEdges} from './item-crop-cleanup.js?v=62';
 import {loadRaster} from './resource-loading.js?v=84';
 import {itemAsset} from './items-catalog.js?v=62';
-import {portraitAsset} from './encounter-state.js?v=83';
+import {portraitAsset} from './encounter-state.js?v=85';
 import {assetURL} from './local-assets.js?v=83';
 export const TOKEN_FACE_SIZE=96;
 const sources=new Map(),faces=new Map();
