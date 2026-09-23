@@ -189,7 +189,7 @@ body:not(.player-mode) .map-controls{align-items:center;gap:8px;padding:9px;bord
 .condition-icon{display:block;width:18px;height:18px;flex:0 0 18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .condition-options button{display:flex;align-items:center;gap:8px;min-height:28px}.condition-options button>span{flex:1}
 .token-status-editor>div.keyboard-active{border-color:#efd69c;box-shadow:0 0 0 1px #efd69c66,0 6px 24px #0007}
-.token-status-editor button.keyboard-choice{outline:1px solid #f5e3b5;outline-offset:-1px}
+.token-status-editor button.keyboard-choice{outline:none;background:#344338;border-color:#718168}
 .token-status-editor button[aria-pressed=true]{background:#494b32;color:#fff0c5}
 .condition-badges{display:grid;grid-template-columns:repeat(4,18px);gap:2px;justify-content:start;width:max-content;max-width:none;flex:none}
 .condition-badges:empty{display:none}.condition-badge{width:18px;min-width:18px;height:18px;padding:1px;box-sizing:border-box}.condition-badge .condition-icon{width:14px;height:14px;stroke-width:2}
@@ -544,7 +544,7 @@ body:not(.player-mode) .map-topline{display:grid;grid-template-columns:minmax(0,
 .building-quick{padding:5px}.building-editor{width:290px}.building-editor header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:5px}.building-editor header strong{font-size:12px}
 .building-close{width:27px;height:27px;min-height:27px;flex:none;display:grid;place-items:center;padding:0;border:0;background:none;font-size:22px;line-height:1}
 .building-editor section{padding:9px 0 0;margin-top:8px;border-top:1px solid var(--line)}.building-editor h3{font-size:10px;font-weight:600;color:var(--muted);margin:0 0 7px}.building-editor .place-floors{justify-content:space-between}.building-effects{display:flex;flex-direction:column;gap:5px}.building-editor .building-effect{padding:6px 8px}
-.hotspot .place-name-tag text{fill:#fff;stroke:none;font-size:22.5px;font-weight:600}.hotspot .place-name-tag rect{stroke:none}
+.hotspot .place-name-tag text{fill:#fff;stroke:none;font-size:15px;font-weight:600}.hotspot .place-name-tag rect{stroke:none}
 
 /* Compact paired effects share the sidebar and preparation layout. */
 #selected-actions,.building-effects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
@@ -735,3 +735,16 @@ body :is(input,textarea,[contenteditable="true"],[contenteditable=""]){-webkit-u
 .instant-dice .dice-empty-slot{visibility:hidden;pointer-events:none}
 .elevation-control{grid-template-columns:26px 34px minmax(20px,1fr)}
 .elevation-control>span{grid-column:1/3;white-space:nowrap}.elevation-control>output{grid-column:3;text-align:right}
+
+/* Keep the toolbar invisible until its final drawer layout is installed. */
+.map-controls.controls-pending{visibility:hidden;max-height:54px;overflow:hidden;pointer-events:none}
+.token-status-editor button:focus-visible{outline:none}
+.is-measuring .spell-shape,.is-measuring .spell-shape *{cursor:crosshair}
+
+.zoom-options{width:240px;display:grid;gap:10px}.zoom-options .field-label{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px}.zoom-options input{width:74px;padding:6px;border:1px solid #465a49;border-radius:4px;background:#0d1913;color:var(--text);outline:none}.zoom-overview{font-size:12px;color:var(--muted)}.map-controls #zoom-value{min-width:44px;font-variant-numeric:tabular-nums}
+
+.grid-places{margin-left:auto;position:relative;min-width:0}.grid-places-heading{display:flex;align-items:center;gap:6px}.grid-places-heading>span{font-size:12px;color:var(--muted)}.grid-places input{width:150px;min-width:70px;padding:7px;background:#101b15;color:var(--text);border:1px solid #465a49;border-radius:4px}.grid-orientation-controls .grid-places button{width:auto;min-width:30px;height:34px;padding:0 8px;font-size:12px}.grid-orientation-controls{flex-wrap:wrap}.grid-places-list{position:absolute;top:100%;right:0;z-index:2;min-width:230px;max-height:230px;overflow:auto;padding:7px;display:grid;gap:4px;background:#14221a;border:1px solid #899178;border-radius:6px}.grid-places-list button{text-align:left}.grid-places-list button[aria-pressed=true],.grid-places-list button[aria-pressed=true]:hover{background:#e8ba7126;border-color:var(--gold)}.grid-places-list>span{padding:8px;font-size:12px;color:var(--muted)}
+
+.selected-place.focus-only .place-controls-heading,.selected-place.focus-only #selected-actions{display:none}
+
+.token-status-editor>div.keyboard-active{background:#1a2b21f5}

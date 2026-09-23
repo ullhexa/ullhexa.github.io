@@ -1,4 +1,4 @@
-import {cameraGeometry,boundedCamera} from './camera.js?v=62';
+import {cameraGeometry,boundedCamera} from './camera.js?v=82';
 import {isTextEntry} from './keyboard.js?v=62';
 import {button} from './editor-dom.js?v=62';
 import {icon} from './control-icons.js?v=81';

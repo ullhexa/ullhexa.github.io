@@ -84,7 +84,7 @@ export function sanitizeState(map,input){
   fresh.gridColor=validGridColor(input.gridColor)?input.gridColor:'map';
   fresh.gridThickness=normalizeGridThickness(input.gridThickness);
   fresh.environment=sanitizeEnvironment(input.environment);
-  if(input.camera&&validPoint([input.camera.x,input.camera.y])&&Number.isFinite(input.camera.zoom))fresh.camera={x:input.camera.x,y:input.camera.y,zoom:Math.max(1,Math.min(3,input.camera.zoom))};
+  if(input.camera&&validPoint([input.camera.x,input.camera.y])&&Number.isFinite(input.camera.zoom))fresh.camera={x:input.camera.x,y:input.camera.y,zoom:Math.max(1,Math.min(20,input.camera.zoom))};
   fresh.revision=Number.isSafeInteger(input.revision)&&input.revision>=0?input.revision:0;
   return fresh;
 }
