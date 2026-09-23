@@ -4,7 +4,7 @@ import {boardIcon} from './control-icons.js?v=81';
 import {installBoardGestures} from './board-gestures.js?v=81';
 import {createBoardLayout} from './board-layout.js?v=81';
 import {featureEnabled,placeName} from './board-state.js?v=62';
-import {createGridControls} from './grid-controls.js?v=84';
+import {createGridControls} from './grid-controls.js?v=85';
 import {gridColor} from './grid-state.js?v=62';
 import {createBuildingControls} from './building-controls.js?v=82';
 import {buildingCollapsed} from './building-state.js?v=62';
@@ -22,28 +22,29 @@ import {buildingFocusCamera} from './building-focus.js?v=82';
 import {createDisplayPresence} from './display-presence.js?v=62';
 import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=82';
 import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=83';
-import {createDiceTools} from './dice.js?v=84';
+import {createDiceTools} from './dice.js?v=85';
 import {fetchJSON} from './resource-loading.js?v=84';
 import {storyCatalog,nextStory} from './story-assets.js?v=83';
-import {createItemsUI} from './items-ui.js?v=84';
-import {floorList,selectedFloor,selectFloor,interactionOnFloor} from './floors.js?v=62';
+import {createItemsUI} from './items-ui.js?v=85';
+import {floorList,selectedFloor,selectFloor,interactionOnFloor,itemOnSelectedFloor} from './floors.js?v=62';
 import {createHistory} from './history.js?v=62';
 import {setupSidebarResize} from './sidebar-resize.js?v=76';
 import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=83';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=84';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=85';
 import {createFogTools} from './fog-tools.js?v=84';
 import {normalizeFog} from './fog-state.js?v=83';
 import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=83';
-import {createSessionBundle} from './session-bundle.js?v=83';
+import {createSessionBundle} from './session-bundle.js?v=85';
 import { startDMShell } from './dm-shell.js?v=62';
 import { openPlayerWindow } from './display-window.js?v=62';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=83';
-import { createEncounterTools } from './encounter-tools.js?v=84';
-import { playerProjection, formation, moveParty } from './encounter-state.js?v=83';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=85';
+import { createEncounterTools } from './encounter-tools.js?v=85';
+import { playerProjection, formation, moveParty, feetToWorld } from './encounter-state.js?v=85';
+import {placeRulerLabel} from './ruler-label.js?v=85';
 import { createMapMenu } from './map-menu.js?v=83';
-import { createSaveControls } from './save-controls.js?v=83';
-import { parseSave, restoreSave } from './save-file.js?v=83';
-import { createLighting } from './lighting.js?v=83';
+import { createSaveControls } from './save-controls.js?v=85';
+import { parseSave, restoreSave } from './save-file.js?v=85';
+import { createLighting } from './lighting.js?v=85';
 import { setupFullscreen } from './fullscreen.js?v=76';
 import { startPlayerDisplay } from './player-display.js?v=84';
 import { createDirector } from './director.js?v=84';
@@ -247,10 +248,14 @@ async function start() {
   window.addEventListener('online',()=>{if(runtimeReady&&!sceneReady)render();});
   $('dm-hotspots').after($('discovery-markers'));
   const party = svgNode('g', { class: 'party-token', ...(player ? {} : { role: 'button', tabindex: 0, 'aria-label': 'Party marker. Drag to move.' }) });
-  party.append(svgNode('circle', { r: 21, fill: '#203d48', stroke: '#e9e7bb', 'stroke-width': 3 }));
-  party.append(svgNode('circle', { r: 12, fill: '#84c5d6', opacity: .28 }));
-  party.append(svgNode('text', { 'text-anchor': 'middle', y: 5, fill: '#fff9dc', 'font-size': 14, 'font-weight': 700 }, 'P'));
+  const partyDiameter=feetToWorld(map,5),partyUnit=partyDiameter/50;
+  party.append(svgNode('circle', { r: (partyDiameter-3*partyUnit)/2, fill: '#203d48', stroke: '#e9e7bb', 'stroke-width': 3*partyUnit }));
+  party.append(svgNode('circle', { r: 12*partyUnit, fill: '#84c5d6', opacity: .28 }));
+  party.append(svgNode('text', { 'text-anchor': 'middle', y: 5*partyUnit, fill: '#fff9dc', 'font-size': 14*partyUnit, 'font-weight': 700 }, 'P'));
   $('party-layer').append(party);
+  const measurementOverlay=svgNode('svg',{id:'measurement-overlay','aria-hidden':'true',preserveAspectRatio:'xMidYMid meet'});
+  measurementOverlay.append($('measurement'));$('map-stage').append(measurementOverlay);
+  const rulerTextMetrics=document.createElement('canvas').getContext('2d');rulerTextMetrics.font='700 18px "DM Sans",sans-serif';
   function finishDrag(before,message){currentHistory().record(before);state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
   function preview(next,mode=false){state=next;if(mode==='fog')fog?.render();else if(mode==='shape')encounter.renderShapes();else if(mode==='aura')encounter.renderAuras();else if(mode)encounter.renderCharacterPositions(typeof mode==='string'?mode:null);else render();}
   let positionSequence=0,lastPositionSequence=-1;
@@ -381,15 +386,20 @@ async function start() {
   }
   function renderRuler(broadcast = false) {
     if (broadcast && !player) send({ type: 'ruler', mapId:map.id, points: ruler });
+    measurementOverlay.setAttribute('viewBox',$('map').getAttribute('viewBox'));
     const group = $('measurement'); group.replaceChildren();
     if (!ruler.length) return;
     const unit=1/(viewGeometry?.scale||1),points=ruler.map(xy);
     for(const[x,y]of points)group.append(svgNode('circle',{cx:x,cy:y,r:4*unit,fill:'#fff6cb'}));
     if(points.length<2)return;
     group.append(svgNode('polyline',{points:points.map(p=>p.join(',')).join(' '),fill:'none',stroke:'#fff6cb','stroke-width':2*unit,'stroke-dasharray':`${7*unit} ${4*unit}`}));
-    if(points.length<2)return;
-    const distance=ruler.slice(1).reduce((sum,p,i)=>sum+distanceBetween(map,ruler[i],p),0),[a,b]=points.slice(-2),x=(a[0]+b[0])/2,y=(a[1]+b[1])/2-14*unit;
-    group.append(svgNode('text',{class:'ruler-label',x,y,'text-anchor':'middle','font-size':18*unit,'stroke-width':3*unit},`${distance.toFixed(1)} ${map.grid.unit}`));
+    const distance=ruler.slice(1).reduce((sum,p,i)=>sum+distanceBetween(map,ruler[i],p),0),[a,b]=points.slice(-2),text=`${distance.toFixed(1)} ${map.grid.unit}`;
+    const {scale,x:offsetX,y:offsetY}=viewGeometry,obstacles=[];
+    const addObstacle=(position,size)=>{const [x,y]=xy(position),radius=feetToWorld(map,size)*scale/2;obstacles.push({left:x*scale+offsetX-radius,right:x*scale+offsetX+radius,top:y*scale+offsetY-radius,bottom:y*scale+offsetY+radius});};
+    for(const member of mapTokens(state)){if(!member.monster&&!member.item&&state.tokenMode!=='players')continue;if(player&&(member.monster||member.item)&&(!member.visible||member.item&&!itemOnSelectedFloor(member,state)))continue;addObstacle(member.position,member.size||5);}
+    if(state.tokenMode==='party'&&featureEnabled(state,'party'))addObstacle(state.party,5);
+    const [labelX,labelY]=placeRulerLabel([(a[0]+b[0])/2*scale+offsetX,(a[1]+b[1])/2*scale+offsetY-22],[rulerTextMetrics.measureText(text).width+8,24],viewportSize(),obstacles);
+    group.append(svgNode('text',{class:'ruler-label',x:(labelX-offsetX)/scale,y:(labelY-offsetY)/scale,'text-anchor':'middle','dominant-baseline':'central','font-size':18*unit,'stroke-width':3*unit},text));
   }
   function pointAt(event) {
     const transform = $('map').getScreenCTM();
@@ -555,7 +565,7 @@ async function start() {
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='positions'&&Number.isSafeInteger(message.sequence)&&message.sequence>lastPositionSequence){
       lastPositionSequence=message.sequence;const positions=new Map((Array.isArray(message.positions)?message.positions:[]).filter(p=>p&&typeof p.id==='string'&&inBounds(p.position)).map(p=>[p.id,{position:p.position,...(Number.isSafeInteger(p.stack)&&p.stack>=0?{stack:p.stack}:{})}]));
       state={...state,roster:state.roster.map(m=>({...m,...(positions.get(m.id)||{})})),items:(state.items||[]).map(m=>({...m,...(positions.get(m.id)||{})})),monsters:state.monsters.map(m=>({...m,...(positions.get(m.id)||{})}))};
-      if(inBounds(message.party)){state.party=message.party;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);}encounter.renderCharacterPositions(positions.size===1?[...positions.keys()][0]:null);
+      if(inBounds(message.party)){state.party=message.party;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);}encounter.renderCharacterPositions(positions.size===1?[...positions.keys()][0]:null);if(ruler.length)renderRuler();
     }
     if(player&&message.type==='camera'&&message.mapId===map.id&&Number.isSafeInteger(message.revision)&&message.revision>=state.revision&&inBounds([message.camera?.x,message.camera?.y])&&Number.isFinite(message.camera?.zoom)&&message.camera.zoom>=1&&message.camera.zoom<=20){cameraAnimation.cancel();state={...state,camera:message.camera,revision:message.revision};queueCamera();return;}
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='fog-preview'){state={...state,fog:normalizeFog(message.fog)};fog.render();}
