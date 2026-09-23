@@ -11,7 +11,7 @@ import {buildingCollapsed} from './building-state.js?v=62';
 import {createCameraAnimation} from './camera-animation.js?v=62';
 import {createMapNavigation} from './map-navigation.js?v=82';
 import {createFloorControl} from './floor-controls.js?v=62';
-import {createUserManual} from './user-manual.js?v=83';
+import {createUserManual} from './user-manual.js?v=86';
 import {createSpellLibrary} from './spell-library.js?v=83';
 import {createReferenceViewers} from './reference-viewers.js?v=83';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
@@ -38,9 +38,10 @@ import {createSessionBundle} from './session-bundle.js?v=85';
 import { startDMShell } from './dm-shell.js?v=62';
 import { openPlayerWindow } from './display-window.js?v=62';
 import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=85';
-import { createEncounterTools } from './encounter-tools.js?v=85';
+import { createEncounterTools } from './encounter-tools.js?v=86';
 import { playerProjection, formation, moveParty, feetToWorld } from './encounter-state.js?v=85';
 import {placeRulerLabel} from './ruler-label.js?v=85';
+import {createMapPings} from './map-pings.js?v=86';
 import { createMapMenu } from './map-menu.js?v=83';
 import { createSaveControls } from './save-controls.js?v=85';
 import { parseSave, restoreSave } from './save-file.js?v=85';
@@ -256,6 +257,7 @@ async function start() {
   const measurementOverlay=svgNode('svg',{id:'measurement-overlay','aria-hidden':'true',preserveAspectRatio:'xMidYMid meet'});
   measurementOverlay.append($('measurement'));$('map-stage').append(measurementOverlay);
   const rulerTextMetrics=document.createElement('canvas').getContext('2d');rulerTextMetrics.font='700 18px "DM Sans",sans-serif';
+  const pings=createMapPings({map,stage:$('map-stage'),player,pointAt,send:ping=>send({type:'ping',mapId:map.id,ping})});
   function finishDrag(before,message){currentHistory().record(before);state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
   function preview(next,mode=false){state=next;if(mode==='fog')fog?.render();else if(mode==='shape')encounter.renderShapes();else if(mode==='aura')encounter.renderAuras();else if(mode)encounter.renderCharacterPositions(typeof mode==='string'?mode:null);else render();}
   let positionSequence=0,lastPositionSequence=-1;
@@ -353,7 +355,7 @@ async function start() {
     if(!player)state={...state,camera:view.camera};
     viewGeometry=cameraGeometry(map,view.camera,viewport);scenery.position(viewGeometry);
     $('map-grid').firstElementChild.setAttribute('stroke-width',state.gridThickness/viewGeometry.scale);
-    const viewBox=view.viewBox.join(' ');if($('map').getAttribute('viewBox')!==viewBox)$('map').setAttribute('viewBox',viewBox);$('party-overlay')?.setAttribute('viewBox',viewBox);
+    const viewBox=view.viewBox.join(' ');if($('map').getAttribute('viewBox')!==viewBox)$('map').setAttribute('viewBox',viewBox);$('party-overlay')?.setAttribute('viewBox',viewBox);pings.position(viewBox);
     const label=`${Math.round(zoom * 100)}%`;if($('zoom-value').textContent!==label)$('zoom-value').textContent=label;
     if($('zoom-out').disabled!==(zoom <= 1))$('zoom-out').disabled=zoom <= 1;
     if($('zoom-in').disabled!==(zoom >= controls.getZoom().maximum))$('zoom-in').disabled=zoom >= controls.getZoom().maximum;
@@ -433,7 +435,7 @@ async function start() {
     const label=svgNode('g',{class:'place-name-tag','pointer-events':'none'});label.append(svgNode('rect',{x:-50,y:29,width:100,height:24,rx:4,fill:'#ffffff'}),svgNode('text',{'text-anchor':'middle',y:46,'font-size':15,fill:'#101710'},place.name));glyph.append(label);node.append(glyph);
     node.addEventListener('mousedown',event=>{if(event.button===0)event.preventDefault();});
     node.addEventListener('click',event=>{if(!drag)activateHotspot(node,event);});
-    node.addEventListener('dblclick',event=>{if(tool||drag)return;event.preventDefault();event.stopPropagation();buildingUI.show(place,true);});
+    node.addEventListener('dblclick',event=>{if(event.button!==0||tool||drag)return;event.preventDefault();event.stopPropagation();buildingUI.show(place,true);});
     node.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();event.stopPropagation();activateHotspot(node,event);}});
     return node;
   }
@@ -557,7 +559,8 @@ async function start() {
       const probe=presence.hello(message.playerId);if(probe)send(probe);
       if(runtimeReady){const presentation=readStored(`${sessionKey}:presentation`);if(presentation)send({type:'presentation',presentation});else publish();}
     }
-    if(!player&&message.type==='scene-hello')publish();
+    if(!player&&message.type==='scene-hello'){publish();send({type:'pings',mapId:map.id,pings:pings.current()});}
+    if(player&&message.mapId===map.id){if(message.type==='ping')pings.add(message.ping);if(message.type==='pings'&&Array.isArray(message.pings))for(const ping of message.pings.slice(0,10))pings.add(ping);}
     if(!player&&message.type==='display-alive'){presence.confirm(message);updateConnection();}
     if(!player&&message.type==='bye'){presence.bye(message.playerId);updateConnection();}
     if(!player&&message.type==='close-blocked')announce('This player tab was opened manually. Close it using the browser’s tab controls.');
