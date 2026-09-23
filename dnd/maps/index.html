@@ -6,12 +6,13 @@
   <meta name="description" content="A ready-to-play interactive encounter map for an in-person tabletop session.">
   <title>Ull Hexa D&amp;D</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141b1a'/%3E%3Cpath d='M16 5 26 16 16 27 6 16Z' fill='%23e8ba71'/%3E%3Cpath d='M16 11v10M11 16h10' stroke='%23141b1a' stroke-width='2'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./styles.css?v=90">
-  <script type="module" src="./app.js?v=91"></script>
+  <link rel="stylesheet" href="./styles.css?v=93">
+  <script type="module" src="./app.js?v=93"></script>
 </head>
 <body>
   <header class="topbar">
-    <div class="site-identity"><a class="brand" href="./" aria-label="Ull Hexa D&amp;D home"><img class="brand-logo" src="./assets/ull-hexa-logo-gold.webp" width="216" height="86" alt="" draggable="false"><span class="brand-copy"><span id="map-identity">Ull Hexa D&amp;D</span><span class="edition">DM Control Center</span></span></a><button id="open-maps" class="map-picker" aria-haspopup="dialog" aria-controls="map-dialog">Maps<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+    <div class="site-identity"><div class="brand"><img class="brand-logo" src="./assets/ull-hexa-logo-gold.webp" width="216" height="86" alt="" draggable="false"><span class="brand-copy"><span id="map-identity">Ull Hexa D&amp;D</span><span class="edition">DM Control Center</span></span></div></div>
+    <nav class="header-libraries" aria-label="Game libraries" aria-busy="true" inert><button id="open-maps" class="map-picker" aria-haspopup="dialog" aria-controls="map-dialog">Maps<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></nav>
     <div class="top-actions"><div id="save-controls" class="save-controls" role="group" aria-label="Game save files"><button id="open-manual" class="quiet manual-button" type="button" aria-label="Open user manual" aria-haspopup="dialog" aria-controls="user-manual">?</button><button id="initialize-board" class="quiet" aria-description="Clear saved games, uploaded assets and control settings from this browser">Initialize Control Board</button><div class="save-game-stack"><button id="save-game" class="quiet" disabled>Save game</button><label class="auto-save-label"><input id="auto-save" type="checkbox" checked disabled>Auto save</label></div><button id="load-game" class="quiet" disabled>Load game</button></div><span id="save-status" class="status" hidden></span><button id="fullscreen" class="quiet">Full screen</button></div>
   </header>
   <main class="workspace">

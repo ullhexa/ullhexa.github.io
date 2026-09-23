@@ -6,7 +6,7 @@ import {itemFloorAt} from './floors.js?v=62';
 import {tokenGallery} from './token-gallery.js?v=83';
 import {createMemberStrip} from './member-strip.js?v=85';
 import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=62';
-import {el,button} from './combat-ui.js?v=85';
+import {el,button} from './combat-ui.js?v=93';
 import {ITEMS,searchItems} from './items-catalog.js?v=62';
 import {setFace} from './token-portraits.js?v=85';
 import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=83';
@@ -22,7 +22,7 @@ export function createItemsUI({map,getState,commit,announce,pointAt,setTool,sele
   const footer=document.querySelector('.map-footer');footer.before(tray);footer.classList.add('status-only');$('live-message').setAttribute('role','status');
   function layoutTray(){const overflow=trayGrid.scrollHeight>60;expand.hidden=!overflow&&!expanded;tray.classList.toggle('expanded',expanded);expand.textContent=expanded?'⌄':'⌃';expand.setAttribute('aria-expanded',expanded);expand.setAttribute('aria-label',expanded?'Collapse item tray':'Expand item tray');tray.style.setProperty('--tray-max-height',`${Math.max(64,Math.min(360,$('map-stage').clientHeight*.7))}px`);}
   new ResizeObserver(layoutTray).observe(tray);
-  const open=button('Items',()=>openMenu('items'),'map-picker');open.append(chevronIcon());open.id='open-items-library';open.setAttribute('aria-haspopup','dialog');document.querySelector('.site-identity').append(open);
+  const open=button('Items',()=>openMenu('items'),'map-picker');open.append(chevronIcon());open.id='open-items-library';open.setAttribute('aria-haspopup','dialog');document.querySelector('.header-libraries').append(open);
   const panel=el('section',undefined,'library-dialog');panel.id='items-dialog';
   const layout=el('div',undefined,'library-layout'),groups=el('section',undefined,'library-groups'),main=el('section',undefined,'library-members');layout.append(groups,main);
   const hint=el('p','','library-save-hint'),error=el('p','','save-error');error.setAttribute('role','alert');
