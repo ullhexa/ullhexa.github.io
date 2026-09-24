@@ -1,56 +1,58 @@
+import {applyAreaPreview} from './area-preview.js?v=98';
+import {placeMarkersVisible} from './place-markers.js?v=97';
 import {createZoomControls} from './zoom-controls.js?v=82';
 import {createControlPreferences} from './control-preferences.js?v=82';
 import {boardIcon} from './control-icons.js?v=81';
 import {installBoardGestures} from './board-gestures.js?v=81';
 import {createBoardLayout} from './board-layout.js?v=93';
 import {featureEnabled,placeName} from './board-state.js?v=62';
-import {createGridControls} from './grid-controls.js?v=93';
+import {createGridControls} from './grid-controls.js?v=100';
 import {gridColor} from './grid-state.js?v=62';
-import {createBuildingControls} from './building-controls.js?v=82';
+import {createBuildingControls} from './building-controls.js?v=97';
 import {buildingCollapsed} from './building-state.js?v=62';
 import {createCameraAnimation,zoomCameraAt,validZoomPath} from './camera-animation.js?v=93';
 import {createMapNavigation} from './map-navigation.js?v=91';
 import {createFloorControl} from './floor-controls.js?v=62';
-import {createUserManual} from './user-manual.js?v=93';
-import {createSpellLibrary} from './spell-library.js?v=93';
-import {createReferenceViewers} from './reference-viewers.js?v=92';
+import {createUserManual} from './user-manual.js?v=105';
+import {createSpellLibrary} from './spell-library.js?v=97';
+import {createReferenceViewers} from './reference-viewers.js?v=97';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
-import {persistAssets} from './local-assets.js?v=83';
+import {persistAssets} from './local-assets.js?v=97';
 import {createScenery} from './scenery.js?v=84';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
 import {buildingFocusCamera} from './building-focus.js?v=91';
 import {createDisplayPresence} from './display-presence.js?v=62';
 import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=91';
-import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=83';
+import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=97';
 import {createDiceTools} from './dice.js?v=90';
 import {fetchJSON} from './resource-loading.js?v=84';
-import {storyCatalog,nextStory} from './story-assets.js?v=83';
-import {createItemsUI} from './items-ui.js?v=93';
+import {storyCatalog,nextStory} from './story-assets.js?v=97';
+import {createItemsUI} from './items-ui.js?v=100';
 import {floorList,selectedFloor,selectFloor,interactionOnFloor,itemOnSelectedFloor} from './floors.js?v=62';
 import {createHistory} from './history.js?v=62';
 import {setupSidebarResize} from './sidebar-resize.js?v=76';
-import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=83';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=93';
-import {createFogTools} from './fog-tools.js?v=84';
+import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=97';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=100';
+import {createFogTools} from './fog-tools.js?v=97';
 import {normalizeFog} from './fog-state.js?v=83';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=83';
-import {createSessionBundle} from './session-bundle.js?v=85';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=97';
+import {createSessionBundle} from './session-bundle.js?v=97';
 import { startDMShell } from './dm-shell.js?v=62';
 import { openPlayerWindow } from './display-window.js?v=62';
-import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=85';
-import { createEncounterTools } from './encounter-tools.js?v=93';
-import { playerProjection, formation, moveParty, feetToWorld } from './encounter-state.js?v=85';
+import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=97';
+import { createEncounterTools } from './encounter-tools.js?v=100';
+import { playerProjection, formation, moveParty, feetToWorld } from './encounter-state.js?v=97';
 import {placeRulerLabel} from './ruler-label.js?v=85';
-import {createMapPings} from './map-pings.js?v=89';
+import {createMapPings} from './map-pings.js?v=105';
 import {createModifierZoom} from './modifier-zoom.js?v=87';
-import { createMapMenu } from './map-menu.js?v=83';
-import { createSaveControls } from './save-controls.js?v=85';
-import { parseSave, restoreSave } from './save-file.js?v=85';
-import { createLighting } from './lighting.js?v=85';
+import { createMapMenu } from './map-menu.js?v=97';
+import { createSaveControls } from './save-controls.js?v=97';
+import { parseSave, restoreSave } from './save-file.js?v=97';
+import { createLighting } from './lighting.js?v=97';
 import { setupFullscreen } from './fullscreen.js?v=76';
-import { startPlayerDisplay } from './player-display.js?v=84';
-import { createDirector } from './director.js?v=84';
-import { normalizeProject } from './presentation-state.js?v=83';
+import { startPlayerDisplay } from './player-display.js?v=97';
+import { createDirector } from './director.js?v=100';
+import { normalizeProject } from './presentation-state.js?v=97';
 
 listenForBoardReset();
 const $ = id => document.getElementById(id);
@@ -177,7 +179,7 @@ async function start() {
   let storageWorks = true;
   let channel;
   try { channel = new BroadcastChannel(sessionKey); } catch { /* Storage events also synchronize windows. */ }
-  const send = (value,publicSnapshot=false) => { if(!publicSnapshot&&privatePreview&&['camera','positions','fog-preview','ruler'].includes(value.type))return;if(channel)channel.postMessage(value);else writeStored(`${sessionKey}:signal`, { ...value, nonce: crypto.randomUUID() }); };
+  const send = (value,publicSnapshot=false) => { if(!publicSnapshot&&privatePreview&&['camera','positions','fog-preview','ruler','area-preview'].includes(value.type))return;if(channel)channel.postMessage(value);else writeStored(`${sessionKey}:signal`, { ...value, nonce: crypto.randomUUID() }); };
   const announce = text => { $('live-message').textContent = text; };
   const xy = point => [point[0] * map.width, point[1] * map.height];
   const polygon = points => points.map(point => xy(point).join(',')).join(' ');
@@ -261,12 +263,12 @@ async function start() {
   if(!player)createModifierZoom({stage:$('map-stage'),busy:()=>!!drag||encounter.isDragging()||fog?.isDrawing()||pings.isHolding(),prepare:()=>pings.cancelGesture(),pointAt,zoomStep:(direction,point)=>{focusedPlace=null;clearTimeout(zoomSave);state={...state,revision:state.revision+1};cameraAnimation.zoomStep(direction,controls.getZoom().maximum,point);}});
   function finishDrag(before,message){currentHistory().record(before);state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
   function preview(next,mode=false){state=next;if(mode==='fog')fog?.render();else if(mode==='shape')encounter.renderShapes();else if(mode==='aura')encounter.renderAuras();else if(mode)encounter.renderCharacterPositions(typeof mode==='string'?mode:null);else render();}
-  let positionSequence=0,lastPositionSequence=-1;
+  let positionSequence=0,lastPositionSequence=-1,areaSequence=0,lastAreaSequence=-1;
   function livePositions(id){const members=mapTokens(state).filter(m=>(!id||m.id===id)&&(!(m.monster||m.item)||m.visible&&(!m.item||!m.floor||state.floors?.[m.floor.placeId]===m.floor.floorId)));send({type:'positions',mapId:map.id,revision:state.revision,sequence:++positionSequence,...(!id?{party:state.party}:{}),positions:members.map(m=>({id:m.id,position:m.position,stack:m.stack||0}))});}
   function setTool(value){if(value!=='measure'&&ruler.length){ruler=[];renderRuler(true);}if(drag?.measure){const id=drag.id;drag=null;ruler=[];if($('map').hasPointerCapture(id))$('map').releasePointerCapture(id);renderRuler(true);}tool=value;measuring=value==='measure';$('map-stage').classList.toggle('is-measuring',measuring);$('measure').setAttribute('aria-pressed',measuring);fog?.setMode(value);$('map').style.cursor=value==='measure'?'crosshair':'';encounter.clearSelection();}
   if(!player){$('map-stage').addEventListener('pointerdown',event=>{if(event.button!==2||!['measure','paint','erase'].includes(tool)||event.target.closest('.reference-suite,.dice-panel,.token-status-editor,.item-comment,.building-popup'))return;fog?.cancel();setTool(null);ruler=[];renderRuler(true);consumeMapDismissal(event,$('map-stage'));},true);}
   let references;
-  const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,setTool,livePositions,autoMeasure:()=>controls.get('autoMeasure'),measureMove:points=>{ruler=points;renderRuler(true);}});
+  const encounter=createEncounterTools({map,player,getState:()=>state,commit,pointAt,announce,preview,finishDrag,getTool:()=>tool,setTool,livePositions,sendAreaPreview:area=>send({type:'area-preview',mapId:map.id,revision:state.revision,sequence:++areaSequence,area}),autoMeasure:()=>controls.get('autoMeasure'),measureMove:points=>{ruler=points;renderRuler(true);}});
   if(!player){const overlay=svgNode('svg',{id:'party-overlay',preserveAspectRatio:'xMidYMid meet'});overlay.append($('party-layer'));$('map-stage').append(overlay);}
   fog=createFogTools({map,player,getState:()=>state,commit,preview,finishDrag,pointAt,setTool,sendPreview:strokes=>send({type:'fog-preview',mapId:map.id,revision:state.revision,fog:strokes}),announce});
   if(!player){const b=document.createElement('button');b.id='auto-measure';b.type='button';b.className='board-icon-control';b.setAttribute('aria-label','Measure token movement');b.append(boardIcon('autoMeasure'));b.addEventListener('click',()=>{controls.set('autoMeasure',!controls.get('autoMeasure'));b.setAttribute('aria-pressed',String(controls.get('autoMeasure')));});document.querySelector('.map-controls').append(b);}
@@ -289,6 +291,7 @@ async function start() {
     const visible=privatePreview?.base||state;
     send({type:'state',state:playerProjection(visible),...(!privatePreview&&cameraAnimation.zoomPath?{zoomPath:cameraAnimation.zoomPath}:{}),...(pendingCameraDuration?{cameraDuration:pendingCameraDuration}:{})});pendingCameraDuration=0;
     send({type:'ruler',mapId:map.id,points:privatePreview?.ruler||ruler},true);
+    if(!privatePreview)encounter.broadcastArea();
     const storyAsset=storyCatalog(project).find(s=>s.id===project.vibe);
     const presentation={...(storyAsset?.asset?{storyAsset}:{}),mode:project.mode,vibe:project.vibe,mapId:map.id,mapContent:mapContentKey(map),sceneRevision:visible.revision,revision:++presentationRevision};
     writeStored(`${sessionKey}:presentation`,presentation);send({type:'presentation',presentation});
@@ -321,12 +324,17 @@ async function start() {
     selected=id;buildingUI?.render();renderControls();
   }
   function renderControls(cameraOnly=false) {
-    if(player)return;
-    if(!cameraOnly)for(const place of map.places){
-      placeButtons.get(place.id)?.setAttribute('aria-pressed',String(place.id===selected));floorControls.get(place.id)?.render();
-      const node=hotspots.get(place.id);if(node){node.querySelector('circle').setAttribute('fill',place.id===selected?'#e8ba71':'#172a21');const name=placeName(place,state),tag=node.querySelector('.place-name-tag');if(tag.lastElementChild.textContent!==name){tag.lastElementChild.textContent=name;delete tag._width;}const row=placeButtons.get(place.id)?.firstElementChild;if(row?.lastChild)row.lastChild.textContent=name;node.setAttribute('aria-label',`${name}. Click for quick actions; double-click to prepare building.`);}
+    if(!cameraOnly){
+      const visible=placeMarkersVisible(state),layer=$('dm-hotspots');layer.style.display=player&&!visible?'none':'';layer.classList.toggle('place-markers-public',visible);layer.setAttribute('aria-hidden',String(player&&!visible));
+      if(!player)$('show-place-markers').checked=visible;
+      for(const place of map.places){
+        const isSelected=!player&&place.id===selected;
+        if(!player){placeButtons.get(place.id)?.setAttribute('aria-pressed',String(isSelected));floorControls.get(place.id)?.render();}
+        const node=hotspots.get(place.id);if(node){node.classList.toggle('is-selected',isSelected);node.querySelector('circle').setAttribute('fill',isSelected?'#e8ba71':'#172a21');const name=placeName(place,state),tag=node.querySelector('.place-name-tag');if(tag.lastElementChild.textContent!==name){tag.lastElementChild.textContent=name;delete tag._width;}const row=placeButtons.get(place.id)?.firstElementChild;if(row?.lastChild)row.lastChild.textContent=name;node.setAttribute('aria-label',player?`${map.places.indexOf(place)+1}. ${name}`:`${name}. Click for quick actions; double-click to prepare building.`);}
+      }
     }
     sizeHotspots();
+    if(player)return;
     if($('undo').disabled!==(!currentHistory().canUndo))$('undo').disabled=!currentHistory().canUndo;
     if($('redo').disabled!==(!currentHistory().canRedo))$('redo').disabled=!currentHistory().canRedo;
     const overview = Math.abs(state.camera.zoom-1)<.001 && Math.abs(state.camera.x-.5)<.001 && Math.abs(state.camera.y-.5)<.001;
@@ -434,15 +442,17 @@ async function start() {
     if(tool||event.button===2)return;const place=map.places.find(p=>p.id===node.dataset.place);if(place)buildingUI?.show(place);
   }
   function sizeHotspots(){
+    if(player&&!placeMarkersVisible(state))return;
     const scale=.8/(viewGeometry?.scale||cameraGeometry(map,state.camera,viewport).scale);
     for(const node of hotspots.values()){const label=node.querySelector('.place-name-tag'),width=label._width??(label._width=label.lastElementChild.getComputedTextLength()+14);if(label.firstElementChild.getAttribute('width')!==String(width)){label.firstElementChild.setAttribute('x',-width/2);label.firstElementChild.setAttribute('width',width);}const glyph=node.querySelector('.hotspot-glyph');if(glyph._scale!==scale){glyph._scale=scale;glyph.setAttribute('transform',`translate(${glyph.dataset.x} ${glyph.dataset.y}) scale(${scale})`);}}
   }
   function makeHotspot(place,point,number){
-    const node=svgNode('g',{class:'hotspot',role:'button',tabindex:0,'data-place':place.id});
+    const node=svgNode('g',{class:'hotspot','data-place':place.id,...(player?{role:'img','pointer-events':'none'}:{role:'button',tabindex:0})});
     const[x,y]=xy(point),glyph=svgNode('g',{class:'hotspot-glyph','data-x':x,'data-y':y});
     glyph.append(svgNode('circle',{r:21,fill:'#172a21',stroke:'#e8ba71','stroke-width':2}));
-    glyph.append(svgNode('text',{'text-anchor':'middle',y:6,'font-size':17,'pointer-events':'none'},number));
+    glyph.append(svgNode('text',{class:'place-number-label','text-anchor':'middle',y:6,'font-size':17,'pointer-events':'none'},number));
     const label=svgNode('g',{class:'place-name-tag','pointer-events':'none'});label.append(svgNode('rect',{x:-50,y:29,width:100,height:24,rx:4,fill:'#ffffff'}),svgNode('text',{'text-anchor':'middle',y:46,'font-size':15,fill:'#101710'},place.name));glyph.append(label);node.append(glyph);
+    if(player)return node;
     node.addEventListener('mousedown',event=>{if(event.button===0)event.preventDefault();});
     node.addEventListener('click',event=>{if(!drag)activateHotspot(node,event);});
     node.addEventListener('dblclick',event=>{if(event.button!==0||tool||drag)return;event.preventDefault();event.stopPropagation();buildingUI.show(place,true);});
@@ -450,8 +460,12 @@ async function start() {
     return node;
   }
 
+  for(const [index,place] of map.places.entries()){const node=makeHotspot(place,place.point,String(index+1));$('dm-hotspots').append(node);hotspots.set(place.id,node);}
+  document.fonts.ready.then(()=>{for(const node of hotspots.values())delete node.querySelector('.place-name-tag')._width;sizeHotspots();});
+  const setPlaceMarkers=visible=>commit({...state,campaign:{...state.campaign,placeMarkers:visible}},'Place marker visibility updated.');
   if (!player) {
-    buildingUI=createBuildingControls({map,getState:()=>state,getSelected:()=>selected,rename:(place,name)=>commit({...state,placeNames:{...state.placeNames,[place.id]:name.trim().slice(0,64)||place.name}},'Place renamed.'),getFocused:()=>focusedPlace,select:selectPlace,focus:focusBuilding,toggle:activate,setFloor:(place,floor,level)=>{selectPlace(place.id);commit(selectFloor(map,state,place.id,floor.id),`${place.name}: floor ${level}.`);},beginPreview:beginBuildingPreview,endPreview:endBuildingPreview,prepare:()=>{references?.close();dice?.close();setTool(null);},getGeometry:()=>viewGeometry});
+    $('show-place-markers').addEventListener('change',e=>setPlaceMarkers(e.target.checked));
+    buildingUI=createBuildingControls({map,getState:()=>state,setMarkersVisible:setPlaceMarkers,getSelected:()=>selected,rename:(place,name)=>commit({...state,placeNames:{...state.placeNames,[place.id]:name.trim().slice(0,64)||place.name}},'Place renamed.'),getFocused:()=>focusedPlace,select:selectPlace,focus:focusBuilding,toggle:activate,setFloor:(place,floor,level)=>{selectPlace(place.id);commit(selectFloor(map,state,place.id,floor.id),`${place.name}: floor ${level}.`);},beginPreview:beginBuildingPreview,endPreview:endBuildingPreview,prepare:()=>{references?.close();dice?.close();setTool(null);},getGeometry:()=>viewGeometry});
     new ResizeObserver(()=>{sizeHotspots();buildingUI.position();}).observe($('map-stage'));
     for (const [index, place] of map.places.entries()) {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'place-button';
@@ -465,11 +479,8 @@ async function start() {
         floorControls.set(place.id,control);row.append(control.root);
       }else row.classList.add('single-floor');
       $('places').append(row);
-      const node=makeHotspot(place,place.point,String(index+1));
-      $('dm-hotspots').append(node);hotspots.set(place.id,node);
 
     }
-    document.fonts.ready.then(()=>{for(const node of hotspots.values())delete node.querySelector('.place-name-tag')._width;sizeHotspots();});
     selectPlace(selected);
     if(!map.places.length){$('places').previousElementSibling.hidden=true;$('places').hidden=true;announce('Custom map ready. Paint fog or add tokens and spell areas.');}
     setupSidebarResize();
@@ -580,12 +591,15 @@ async function start() {
       state={...state,roster:state.roster.map(m=>({...m,...(positions.get(m.id)||{})})),items:(state.items||[]).map(m=>({...m,...(positions.get(m.id)||{})})),monsters:state.monsters.map(m=>({...m,...(positions.get(m.id)||{})}))};
       if(inBounds(message.party)){state.party=message.party;const[x,y]=xy(state.party);party.setAttribute('transform',`translate(${x} ${y})`);}encounter.renderCharacterPositions(positions.size===1?[...positions.keys()][0]:null);if(ruler.length)renderRuler();
     }
+    if(player&&message.type==='area-preview'&&message.mapId===map.id&&message.revision===state.revision&&Number.isSafeInteger(message.sequence)&&message.sequence>lastAreaSequence){
+      lastAreaSequence=message.sequence;const next=applyAreaPreview(state,message.area);state=next.state;encounter.receiveAreaPreview(next);
+    }
     if(player&&message.type==='camera'&&message.mapId===map.id&&Number.isSafeInteger(message.revision)&&message.revision>=state.revision&&inBounds([message.camera?.x,message.camera?.y])&&Number.isFinite(message.camera?.zoom)&&message.camera.zoom>=1&&message.camera.zoom<=20){cameraAnimation.cancel();state={...state,camera:receiveCamera(message.camera,message.zoomPath),revision:message.revision};queueCamera();return;}
     if(player&&message.mapId===map.id&&message.revision===state.revision&&message.type==='fog-preview'){state={...state,fog:normalizeFog(message.fog)};fog.render();}
     if(player&&message.type==='ruler'&&message.mapId===map.id&&Array.isArray(message.points)&&message.points.length<=3&&message.points.every(inBounds)){ruler=message.points;renderRuler();}
     if (player && message.type === 'state' && message.state?.mapId === map.id && message.state?.mapVersion === map.version) {
       const incoming = playerProjection(sanitizeState(map, message.state));
-      if(incoming.revision>=state.revision){const previousCamera=state.camera;cameraAnimation.cancel();incoming.camera=receiveCamera(incoming.camera,message.zoomPath);state=incoming;lastPositionSequence=-1;if(message.cameraDuration===2000){state={...state,camera:previousCamera};render();cameraAnimation.start(incoming.camera);}else render();}
+      if(incoming.revision>=state.revision){const previousCamera=state.camera;cameraAnimation.cancel();incoming.camera=receiveCamera(incoming.camera,message.zoomPath);state=incoming;lastPositionSequence=-1;lastAreaSequence=-1;encounter.receiveAreaPreview();if(message.cameraDuration===2000){state={...state,camera:previousCamera};render();cameraAnimation.start(incoming.camera);}else render();}
       lastPeer = Date.now(); updateConnection();
     }
   }

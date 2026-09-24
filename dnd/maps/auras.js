@@ -1,10 +1,11 @@
-import {mapTokens,patchToken,fiveFeet,bringTokenToFront} from './combat-state.js?v=83';
+import {createGridCoverage} from './grid-coverage.js?v=98';
+import {mapTokens,patchToken,fiveFeet,bringTokenToFront} from './combat-state.js?v=97';
 import {auraRadius} from './board-state.js?v=62';
 const NS='http://www.w3.org/2000/svg';
 function node(tag,attrs={}){const n=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,v);return n;}
 export function createAuras({map,player,getState,getTokenNode,getDraft,getTool,preview,finishDrag,prepare}){
   const stage=document.getElementById('map-stage'),svg=document.getElementById('map'),handles=node('svg',{id:'aura-handles',preserveAspectRatio:'xMidYMid meet'}),label=document.createElement('span');label.className='aura-size-label';label.hidden=true;if(!player)stage.append(handles,label);
-  const circles=new Map();let selected=null,drag=null,frame=0,pending=null;
+  const circles=new Map();let held=null,selected=null,drag=null,frame=0,pending=null;
   const members=()=>mapTokens(getState()).filter(m=>!m.item&&(m.monster||getState().tokenMode==='players')).map(getDraft);
   function clear(){selected=null;handles.replaceChildren();label.hidden=true;}
   function positionHandles(){
@@ -14,7 +15,7 @@ export function createAuras({map,player,getState,getTokenNode,getDraft,getTool,p
     label.textContent=`${m.aura.range} ft aura`;const bounds=stage.getBoundingClientRect(),px=matrix.a*x+matrix.e-bounds.left,py=matrix.d*(y-r)+matrix.f-bounds.top;
     label.style.left=`${Math.max(4,Math.min(stage.clientWidth-label.offsetWidth-4,px-label.offsetWidth/2))}px`;label.style.top=`${Math.max(4,Math.min(stage.clientHeight-label.offsetHeight-4,py-label.offsetHeight-6))}px`;
   }
-  function render(){const list=members().filter(m=>m.aura);for(const[id,c]of circles)if(!list.some(m=>m.id===id)){c.ownerSVGElement.remove();circles.delete(id);}for(const m of list){let c=circles.get(m.id);if(!c){c=node('circle',{'data-aura':m.id,class:'token-aura','fill-opacity':.18,...(player?{'pointer-events':'none'}:{role:'button','aria-label':`${m.name} aura`})});const wrap=node('svg',{class:'token-aura-plane','aria-hidden':'true'});wrap.append(c);getTokenNode(m.id)?.append(wrap);circles.set(m.id,c);}const r=auraRadius(m),ratio=2*r/(m.size||5),wrap=c.ownerSVGElement;wrap.setAttribute('viewBox',`${-r} ${-r} ${2*r} ${2*r}`);wrap.style.width=wrap.style.height=`${ratio*100}%`;c.setAttribute('cx',0);c.setAttribute('cy',0);c.setAttribute('r',r);c.setAttribute('fill',m.aura.color);c.setAttribute('stroke',m.aura.color);c.setAttribute('stroke-width',3*5/50);}positionHandles();}
+  function render(){const list=members().filter(m=>m.aura);for(const[id,c]of circles)if(!list.some(m=>m.id===id)){c.ownerSVGElement.remove();circles.delete(id);}for(const m of list){let c=circles.get(m.id);if(!c){c=node('circle',{'data-aura':m.id,class:'token-aura','fill-opacity':.18,...(player?{'pointer-events':'none'}:{role:'button','aria-label':`${m.name} aura`})});const wrap=node('svg',{class:'token-aura-plane','aria-hidden':'true'});c._coverage=createGridCoverage(map,`aura-grid-${m.id}`);wrap.append(c._coverage.root,c);getTokenNode(m.id)?.append(wrap);circles.set(m.id,c);}const r=auraRadius(m),ratio=2*r/(m.size||5),wrap=c.ownerSVGElement;wrap.setAttribute('viewBox',`${-r} ${-r} ${2*r} ${2*r}`);wrap.style.width=wrap.style.height=`${ratio*100}%`;c.setAttribute('cx',0);c.setAttribute('cy',0);c.setAttribute('r',r);c.setAttribute('fill',m.aura.color);c.setAttribute('stroke',m.aura.color);c.setAttribute('stroke-width',3*5/50);const coverage=c._coverage;coverage.root.setAttribute('transform',`scale(${map.grid.distance/map.grid.size}) translate(${-m.position[0]*map.width} ${-m.position[1]*map.height})`);coverage.render(held===m.id?{type:'circle',center:m.position,size:r,rotation:0,color:m.aura.color}:null);}positionHandles();}
   function flush(){cancelAnimationFrame(frame);frame=0;if(pending){preview(pending,'aura');pending=null;}}
   if(!player){
     stage.addEventListener('pointerdown',e=>{if(e.button!==0||e.ctrlKey||e.metaKey||getTool())return;if(e.target.closest('.token-status-editor,.shape-palette,.item-comment,.dice-panel,.reference-suite,.building-popup'))return;const handle=e.target.closest('[data-aura-handle]'),circle=e.target.closest('[data-character]')?null:members().filter(m=>m.aura).sort((a,b)=>(b.stack||0)-(a.stack||0)).map(m=>circles.get(m.id)).find(c=>{if(!c)return false;const b=c.ownerSVGElement.getBoundingClientRect();return Math.hypot(e.clientX-b.left-b.width/2,e.clientY-b.top-b.height/2)<=b.width/2;});if(!handle&&!circle){if(!e.target.closest('.token-status-editor'))clear();return;}e.preventDefault();e.stopImmediatePropagation();prepare();selected=handle?.dataset.auraHandle||circle.dataset.aura;preview(bringTokenToFront(getState(),selected),true);positionHandles();if(handle){drag={id:e.pointerId,token:selected,start:structuredClone(getState()),inverse:svg.getScreenCTM().inverse()};stage.setPointerCapture(e.pointerId);}},true);
@@ -22,5 +23,5 @@ export function createAuras({map,player,getState,getTokenNode,getDraft,getTool,p
     stage.addEventListener('pointerup',e=>{if(drag?.id!==e.pointerId)return;e.stopImmediatePropagation();flush();const before=drag.start;drag=null;if(stage.hasPointerCapture(e.pointerId))stage.releasePointerCapture(e.pointerId);finishDrag(before,'Aura resized.');},true);
     stage.addEventListener('pointercancel',e=>{if(drag?.id!==e.pointerId)return;e.stopImmediatePropagation();const before=drag.start;drag=null;pending=null;cancelAnimationFrame(frame);frame=0;preview(before,'aura');},true);
   }
-  return{render,position:positionHandles,clear,isDragging:()=>!!drag};
+  return{render,setHeld:id=>{if(held===id)return;held=id;render();},position:positionHandles,clear,isDragging:()=>!!drag};
 }

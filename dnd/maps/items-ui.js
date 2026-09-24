@@ -3,13 +3,13 @@ import {featureEnabled} from './board-state.js?v=62';
 import {chevronIcon,icon} from './control-icons.js?v=81';
 import {numberStepper} from './number-stepper.js?v=76';
 import {itemFloorAt} from './floors.js?v=62';
-import {tokenGallery} from './token-gallery.js?v=83';
-import {createMemberStrip} from './member-strip.js?v=85';
+import {tokenGallery} from './token-gallery.js?v=100';
+import {createMemberStrip} from './member-strip.js?v=97';
 import {registerMenu,openMenu,closeMenu} from './main-menu.js?v=62';
-import {el,button} from './combat-ui.js?v=93';
+import {el,button} from './combat-ui.js?v=100';
 import {ITEMS,searchItems} from './items-catalog.js?v=62';
-import {setFace} from './token-portraits.js?v=85';
-import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=83';
+import {setFace} from './token-portraits.js?v=97';
+import {normalizeItem,syncCampaign,applyItemList,deleteGroup,patchToken,placeItem,snapPoint} from './combat-state.js?v=97';
 import {groupSelection} from './group-selection.js?v=62';
 const $=id=>document.getElementById(id);
 function face(item){const img=el('img');img.alt='';img.width=img.height=40;img.draggable=false;setFace(img,item);return img;}

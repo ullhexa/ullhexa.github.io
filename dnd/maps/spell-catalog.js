@@ -1,4 +1,4 @@
-import {assetURL} from './local-assets.js?v=83';
+import {assetURL} from './local-assets.js?v=97';
 import {normalizeUserSpells} from './user-spells.js?v=79';
 export const FACTORY_COLLECTION='SRD 5.2.1';
 export function createFactoryLoader(fetcher=(...args)=>fetch(...args)){

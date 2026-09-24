@@ -1,5 +1,5 @@
 import {readRaster,rasterRecord} from './image-import.js?v=62';
-import {assetURL,putAssets} from './local-assets.js?v=83';
+import {assetURL,putAssets} from './local-assets.js?v=97';
 import {paintFogTexture,defaultFogSettings} from './fog-state.js?v=83';
 import {loadRaster} from './resource-loading.js?v=84';
 export const FOG_PREVIEW_WIDTH=288,FOG_PREVIEW_HEIGHT=144;
