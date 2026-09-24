@@ -14,17 +14,17 @@ export function shapeFootprint(map,s,thumb=false){
 export function createGridCoverage(map,id){
   const root=node('g',{id,'pointer-events':'none','aria-hidden':'true'}),defs=node('defs');
   const mask=node('mask',{id:`${id}-mask`,'mask-type':'luminance',maskUnits:'userSpaceOnUse',x:0,y:0,width:map.width,height:map.height});
-  const path=node('path',{'fill-opacity':.3,mask:`url(#${id}-mask)`});
+  const path=node('path',{'fill-opacity':.3,'vector-effect':'non-scaling-stroke',mask:`url(#${id}-mask)`});
   defs.append(mask);root.append(defs,path);let key;
-  function render(shape){
-    const next=shape?JSON.stringify([shape.type,shape.center,shape.size,shape.rotation,shape.color]):'';
+  function render(shape,thickness=1){
+    const next=shape?JSON.stringify([shape.type,shape.center,shape.size,shape.rotation,shape.color,thickness]):'';
     if(key===next)return;key=next;root.dataset.cells='0';path.setAttribute('d','');
     if(!shape)return;
     const cells=affectedCells(map,shape),cutout=shapeFootprint(map,shape);
     cutout.setAttribute('fill','black');cutout.setAttribute('fill-opacity',1);cutout.setAttribute('stroke','none');
     cutout.setAttribute('transform',`translate(${shape.center[0]*map.width} ${shape.center[1]*map.height}) rotate(${shape.rotation})`);
     mask.replaceChildren(node('rect',{width:map.width,height:map.height,fill:'white'}),cutout);
-    path.setAttribute('fill',shape.color);path.setAttribute('d',cells.map(c=>`M${c.x} ${c.y}h${c.size}v${c.size}h${-c.size}Z`).join(''));
+    path.setAttribute('fill',shape.color);path.setAttribute('stroke',shape.color);path.setAttribute('stroke-width',thickness);path.setAttribute('d',cells.map(c=>`M${c.x} ${c.y}h${c.size}v${c.size}h${-c.size}Z`).join(''));
     root.dataset.cells=String(cells.length);
   }
   return {root,render};
