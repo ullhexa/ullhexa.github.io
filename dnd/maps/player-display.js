@@ -21,7 +21,7 @@ export async function startPlayerDisplay(){
   const canvas=document.createElement('div');canvas.id='story-screen';canvas.className='story-screen';canvas.setAttribute('aria-label','Story scene');stage.append(canvas);
   const animation=createStoryPlayer(canvas,{onError:error=>{send({type:'display-error',message:error.message});$('live-message').textContent=error.message;}});
   const fullscreen=setupFullscreen({player:true,announce:text=>$('live-message').textContent=text});
-  const catalog=(await fetchJSON('./maps/catalog.json?v=81')).maps;
+  const catalog=(await fetchJSON('./maps/catalog.json?v=108')).maps;
   catalog.push(...customCatalog(sessionKey));
   const stored=read(`${sessionKey}:presentation`);
   const initialMap=catalog.find(entry=>entry.id===query.get('map'))||catalog[0];
