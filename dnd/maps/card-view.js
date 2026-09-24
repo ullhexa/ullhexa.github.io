@@ -1,3 +1,4 @@
+import {installCardWheel} from './card-wheel.js?v=94';
 import {el,button} from './editor-dom.js?v=62';
 import {icon} from './control-icons.js?v=81';
 import {showDialog} from './dialogs.js?v=62';
@@ -7,5 +8,6 @@ export function fullscreenButton(action){const b=button('',action,'card-fullscre
 export function openCardFullscreen({title,pages=[],text='',index=0}){if(!pages.length&&!text)return;const dialog=el('dialog',undefined,'card-fullscreen-dialog'),heading=el('div',undefined,'reference-heading'),body=el('div',undefined,'card-fullscreen-body'),count=el('span',undefined,'card-page-count');let page=Math.max(0,Math.min(pages.length-1,index));dialog.setAttribute('aria-label',`${title} full screen`);const prev=button('←',()=>step(-1)),next=button('→',()=>step(1)),exit=button('',()=>dialog.close(),'card-fullscreen-exit');prev.setAttribute('aria-label','Previous card');next.setAttribute('aria-label','Next card');setExpandButton(exit,true);exit.setAttribute('aria-label','Exit full screen card');heading.append(el('h2',title));if(pages.length>1)heading.append(prev,count,next);heading.append(exit);dialog.append(heading,body);
  function render(){body.replaceChildren();count.textContent=`${page+1} / ${pages.length}`;if(pages.length){const image=el('img');image.src=pages[page].src;image.alt=`${title}, card ${page+1}`;body.append(image);}else body.append(el('div',text,'fullscreen-stat-text'));body.scrollTop=0;}
  function step(delta){page=(page+delta+pages.length)%pages.length;render();}
+ installCardWheel(body,pages.length,step);
  dialog.addEventListener('keydown',e=>{if(pages.length>1&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();e.stopPropagation();step(e.key==='ArrowLeft'?-1:1);}});dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);showDialog(dialog);render();return dialog;
 }

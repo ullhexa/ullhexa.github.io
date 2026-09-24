@@ -1,7 +1,7 @@
 import {button,el,label} from './editor-dom.js?v=62';
 import {FOG_TEXTURES,fogSize,fogAssetId,removeFogImage} from './fog-state.js?v=83';
 import {IMAGE_ACCEPT,imageTypeNote} from './image-import.js?v=62';
-import {prepareFogPreview,uploadFogImage} from './fog-previews.js?v=84';
+import {prepareFogPreview,uploadFogImage} from './fog-previews.js?v=97';
 import {numberStepper} from './number-stepper.js?v=76';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
 

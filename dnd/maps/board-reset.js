@@ -1,5 +1,5 @@
 import {clearSessionMemory} from './session-storage.js?v=62';
-import {clearAssets} from './local-assets.js?v=83';
+import {clearAssets} from './local-assets.js?v=97';
 import {showDialog} from './dialogs.js?v=62';
 import {el,button} from './editor-dom.js?v=62';
 export const isBoardStorageKey=key=>key.startsWith('lanternford:')||['ullhexa:initiative-width','ullhexa:dm-sidebar-width'].includes(key);

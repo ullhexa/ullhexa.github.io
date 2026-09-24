@@ -1,8 +1,9 @@
+import {placeMarkersVisible} from './place-markers.js?v=97';
 import {placeName} from './board-state.js?v=62';
 import {buildingParts,effectLevels} from './building-state.js?v=62';
 import {createFloorControl} from './floor-controls.js?v=62';
 import {selectedFloor} from './floors.js?v=62';
-import {icon} from './control-icons.js?v=81';
+import {icon,visibilityIcon} from './control-icons.js?v=81';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
 
 function symbol(kind,on){
@@ -11,10 +12,10 @@ function symbol(kind,on){
   on?'M3 21h18M4 18l3-5 4 4 3-6 6 7M6 9l5-6 3 4 4-1 3 5M12 6l-2 5 4 2':'M3 10 12 3l9 7M5 10v11h14V10M10 21v-7h4v7';
  return icon([{d:paths,fill:'none',stroke:'currentColor','stroke-width':1.7,'stroke-linecap':'round','stroke-linejoin':'round'}]);
 }
-export function createBuildingControls({map,getState,getSelected,rename,getFocused,select,focus,toggle,setFloor,beginPreview,endPreview,prepare,getGeometry}){
+export function createBuildingControls({map,getState,getSelected,setMarkersVisible,rename,getFocused,select,focus,toggle,setFloor,beginPreview,endPreview,prepare,getGeometry}){
  const stage=document.getElementById('map-stage'),section=document.querySelector('.selected-place'),globals=document.getElementById('place-global-controls'),effects=document.getElementById('selected-actions'),title=document.getElementById('selected-title');
  const popup=document.createElement('div');popup.className='building-popup';popup.hidden=true;popup.setAttribute('role','group');stage.append(popup);
- let mode=null,current=null,signature='',floorControl=null;
+ let mode=null,current=null,signature='',floorControl=null,visibilityControl=null;
  function button(kind,place,compact=false){
   const b=document.createElement('button');b.type='button';b.className=`building-action${compact?' icon-only':''}`;b.dataset.buildingAction=kind;
   b.addEventListener('click',()=>{if(kind==='focus')focus(place);else{const parts=buildingParts(map,place),item=kind==='cover'?parts.roof:parts.collapsed;if(item)toggle(item.id);}});return b;
@@ -29,9 +30,9 @@ export function createBuildingControls({map,getState,getSelected,rename,getFocus
  }
  function group(label,body){const s=document.createElement('section'),h=document.createElement('h3');h.textContent=label;s.append(h,body);return s;}
  function buildPopup(place){
-  popup.replaceChildren();floorControl=null;popup.classList.toggle('building-quick',mode==='quick');popup.classList.toggle('building-editor',mode==='editor');popup.setAttribute('aria-label',mode==='editor'?`Prepare ${place.name}`:`${place.name} quick actions`);
+  popup.replaceChildren();floorControl=null;visibilityControl=null;popup.classList.toggle('building-quick',mode==='quick');popup.classList.toggle('building-editor',mode==='editor');popup.setAttribute('aria-label',mode==='editor'?`Prepare ${place.name}`:`${place.name} quick actions`);
   if(mode==='editor'){
-   const header=document.createElement('header'),name=document.createElement('input'),close=document.createElement('button');name.value=placeName(place,getState());name.maxLength=64;name.setAttribute('aria-label','Place name');name.addEventListener('input',()=>rename(place,name.value));close.type='button';close.className='building-close';close.textContent='×';close.setAttribute('aria-label','Close building preparation');close.addEventListener('click',()=>hide());header.append(name,close);popup.append(header);
+   const header=document.createElement('header'),name=document.createElement('input'),close=document.createElement('button');name.value=placeName(place,getState());name.maxLength=64;name.setAttribute('aria-label','Place name');name.addEventListener('input',()=>rename(place,name.value));close.type='button';close.className='building-close';close.textContent='×';close.setAttribute('aria-label','Close building preparation');close.addEventListener('click',()=>hide());visibilityControl=document.createElement('button');visibilityControl.type='button';visibilityControl.className='place-marker-visibility';visibilityControl.addEventListener('click',()=>setMarkersVisible(!placeMarkersVisible(getState())));header.append(name,visibilityControl,close);popup.append(header);
    if(place.floors?.length>1){floorControl=createFloorControl(place,{getFloor:()=>selectedFloor(place,getState()),onSelect:(floor,level)=>setFloor(place,floor,level)});popup.append(group('Floor',floorControl.root));}
   }
   const row=document.createElement('div');row.className='building-global';for(const kind of (place.focusOnly?['focus']:['focus','cover','collapse']))row.append(button(kind,place,mode==='quick'));popup.append(mode==='quick'?row:group('Building',row));
@@ -40,12 +41,12 @@ export function createBuildingControls({map,getState,getSelected,rename,getFocus
  function render(){
   const place=map.places.find(p=>p.id===getSelected());if(!place){section.hidden=true;return;}section.hidden=false;section.classList.toggle('focus-only',place.focusOnly===true);
   if(current!==place.id){current=place.id;globals.replaceChildren();for(const kind of (place.focusOnly?['focus']:['focus','cover','collapse'])){const b=button(kind,place);if(kind==='focus')b.id='focus-place';globals.append(b);}title.textContent=`${map.places.indexOf(place)+1}. ${placeName(place,getState())}`;populateEffects(effects,place);if(mode)buildPopup(place);signature='';}
-  title.textContent=`${map.places.indexOf(place)+1}. ${placeName(place,getState())}`;const next=JSON.stringify([current,mode,getState().placeNames,getState().active,getState().floors,getFocused()]);if(next!==signature){signature=next;for(const b of [...globals.querySelectorAll('[data-building-action]'),...popup.querySelectorAll('[data-building-action]')])updateButton(b,place);for(const b of [...effects.querySelectorAll('[data-effect]'),...popup.querySelectorAll('[data-effect]')])b.setAttribute('aria-pressed',String(getState().active.includes(b.dataset.effect)));floorControl?.render();}
+  title.textContent=`${map.places.indexOf(place)+1}. ${placeName(place,getState())}`;const next=JSON.stringify([current,mode,getState().placeNames,getState().active,getState().floors,placeMarkersVisible(getState()),getFocused()]);if(next!==signature){signature=next;for(const b of [...globals.querySelectorAll('[data-building-action]'),...popup.querySelectorAll('[data-building-action]')])updateButton(b,place);for(const b of [...effects.querySelectorAll('[data-effect]'),...popup.querySelectorAll('[data-effect]')])b.setAttribute('aria-pressed',String(getState().active.includes(b.dataset.effect)));floorControl?.render();if(visibilityControl){const visible=placeMarkersVisible(getState());visibilityControl.replaceChildren(visibilityIcon(visible));visibilityControl.setAttribute('aria-pressed',String(visible));visibilityControl.setAttribute('aria-label',`${visible?'Hide':'Show'} all Place markers and titles ${visible?'from':'to'} players`);}}
   position();
  }
  function position(){if(!mode||popup.hidden)return;const place=map.places.find(p=>p.id===getSelected()),g=getGeometry();if(!place||!g)return;const width=stage.clientWidth,height=stage.clientHeight;popup.style.maxHeight=`${Math.max(80,height-16)}px`;const x=g.x+place.point[0]*map.width*g.scale,y=g.y+place.point[1]*map.height*g.scale,w=popup.offsetWidth,h=popup.offsetHeight;const left=Math.max(8,Math.min(width-w-8,x-w/2));let top=y-h-27;if(top<8)top=y+49;top=Math.max(8,Math.min(height-h-8,top));popup.style.transform=`translate3d(${left}px,${top}px,0)`;}
  function show(place,editor=false){if(!editor&&mode==='quick'&&getSelected()===place.id){hide();return;}editor=editor||mode==='editor';prepare();select(place.id);if(editor&&mode!=='editor')beginPreview();mode=editor?'editor':'quick';popup.hidden=false;buildPopup(place);signature='';render();}
- function hide(){if(!mode)return;const preview=mode==='editor';mode=null;popup.hidden=true;popup.replaceChildren();floorControl=null;signature='';if(preview)endPreview();render();}
+ function hide(){if(!mode)return;const preview=mode==='editor';mode=null;popup.hidden=true;popup.replaceChildren();floorControl=null;visibilityControl=null;signature='';if(preview)endPreview();render();}
  document.addEventListener('pointerdown',e=>{if(!mode||popup.contains(e.target))return;if(mode==='quick'){if(e.target.closest('.hotspot'))return;hide();if(stage.contains(e.target))consumeMapDismissal(e,stage);return;}if(stage.contains(e.target)){hide();consumeMapDismissal(e,stage);}},true);
  document.addEventListener('keydown',e=>{if(!mode||e.key!=='Escape'||e.defaultPrevented)return;e.preventDefault();e.stopImmediatePropagation();hide();},true);
  document.addEventListener('library-opening',hide);
