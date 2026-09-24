@@ -29,6 +29,16 @@
       "subtitle": "Cavern crossing",
       "thumbnail": "./maps/blighted-cavern/cavern-lit.png",
       "manifest": "./maps/blighted-cavern/map.json"
+    },
+    {
+      "id": "blighted-homestead",
+      "title": "The Blighted Homestead",
+      "identity": "BLIGHTED HOMESTEAD",
+      "edition": "FIELD TEST 04",
+      "category": "Abandoned farmstead",
+      "subtitle": "Farmstead and basement",
+      "thumbnail": "./maps/blighted-homestead/thumbnail-v2.webp",
+      "manifest": "./maps/blighted-homestead/map.json"
     }
   ]
 }

@@ -36,7 +36,7 @@ import {createCombatUI,createLibraries} from './combat-ui.js?v=100';
 import {createFogTools} from './fog-tools.js?v=97';
 import {normalizeFog} from './fog-state.js?v=83';
 import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=97';
-import {createSessionBundle} from './session-bundle.js?v=97';
+import {createSessionBundle} from './session-bundle.js?v=108';
 import { startDMShell } from './dm-shell.js?v=62';
 import { openPlayerWindow } from './display-window.js?v=62';
 import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=97';
@@ -46,11 +46,11 @@ import {placeRulerLabel} from './ruler-label.js?v=85';
 import {createMapPings} from './map-pings.js?v=105';
 import {createModifierZoom} from './modifier-zoom.js?v=87';
 import { createMapMenu } from './map-menu.js?v=97';
-import { createSaveControls } from './save-controls.js?v=97';
-import { parseSave, restoreSave } from './save-file.js?v=97';
+import { createSaveControls } from './save-controls.js?v=108';
+import { parseSave, restoreSave } from './save-file.js?v=108';
 import { createLighting } from './lighting.js?v=97';
 import { setupFullscreen } from './fullscreen.js?v=76';
-import { startPlayerDisplay } from './player-display.js?v=97';
+import { startPlayerDisplay } from './player-display.js?v=108';
 import { createDirector } from './director.js?v=100';
 import { normalizeProject } from './presentation-state.js?v=97';
 
@@ -87,7 +87,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=81')).maps;
+  const catalog = (await fetchJSON('./maps/catalog.json?v=108')).maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
