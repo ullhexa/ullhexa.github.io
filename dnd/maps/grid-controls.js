@@ -2,7 +2,7 @@ import {boardIcon} from './control-icons.js?v=81';
 import {button,el} from './combat-ui.js?v=100';
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
 
-import {GRID_COLORS,MAX_GRID_THICKNESS,gridColor} from './grid-state.js?v=112';
+import {GRID_COLORS,MAX_GRID_THICKNESS,gridColor} from './grid-state.js?v=114';
 
 export function createGridControls({map,getState,commit}){
   const grid=document.getElementById('show-grid'),lock=document.getElementById('snap-grid'),swatch=document.getElementById('grid-options-toggle'),stage=document.getElementById('map-stage');
@@ -15,7 +15,7 @@ export function createGridControls({map,getState,commit}){
   function open(){
     document.dispatchEvent(new Event('map-menu-opening'));
     popup=el('div',null,'grid-options');popup.id='grid-options';popup.setAttribute('role','dialog');popup.setAttribute('aria-label','Grid options');
-    const palette=el('div',null,'grid-options-colors'),names=['Map color','Black','White','Blue','Brown','Red','Orange','Green','Purple'];
+    const palette=el('div',null,'grid-options-colors'),names=['Map color','Black','White','Gray','Red','Orange','Gold','Brown','Green','Lime','Teal','Cyan','Blue','Indigo','Purple','Pink'];
     colors=GRID_COLORS.map((color,i)=>{const b=button('',()=>apply({gridColor:color}),'color-swatch');b.dataset.gridColor=color;b.style.backgroundColor=gridColor(map,color);b.setAttribute('aria-label',`${names[i]} grid`);palette.append(b);return b;});
     const stepper=el('div',null,'grid-thickness');stepper.setAttribute('role','group');stepper.setAttribute('aria-label','Grid line thickness');
     minus=button('−',()=>apply({gridThickness:Math.max(1,getState().gridThickness-1)}));minus.setAttribute('aria-label','Thinner grid');

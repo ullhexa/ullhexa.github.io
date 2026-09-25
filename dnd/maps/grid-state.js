@@ -1,4 +1,4 @@
-export const GRID_COLORS=['map','black','white','#58a9e0','#9a6d47','#e76660','#eea348','#6fb980','#ad83df'];
+export const GRID_COLORS=['map','black','white','#9aa3a4','#e76660','#eea348','#e8cc60','#9a6d47','#6fb980','#a8cf62','#48b6ab','#78dce8','#58a9e0','#6971c9','#ad83df','#df8bba'];
 export const MAX_GRID_THICKNESS=3;
 export const validGridColor=value=>GRID_COLORS.includes(value);
 export const validGridThickness=value=>Number.isInteger(value)&&value>=1&&value<=MAX_GRID_THICKNESS;

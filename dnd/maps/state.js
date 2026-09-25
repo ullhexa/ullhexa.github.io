@@ -4,9 +4,9 @@ import {buildingCollapsed} from './building-state.js?v=62';
 import {normalizeFog,normalizeFogSettings,defaultFogSettings} from './fog-state.js?v=83';
 import {assetId} from './combat-state.js?v=97';
 import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=97';
-import {validGridColor,normalizeGridThickness,normalizeGridOpacity} from './grid-state.js?v=112';
+import {validGridColor,normalizeGridThickness,normalizeGridOpacity} from './grid-state.js?v=114';
 import {migrateMapState,validCoordinateMigrations} from './map-space.js?v=109';
-export {GRID_COLORS} from './grid-state.js?v=112';
+export {GRID_COLORS} from './grid-state.js?v=114';
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {
   if(!value || !Number.isInteger(value.darkness))return false;

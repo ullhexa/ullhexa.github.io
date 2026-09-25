@@ -587,8 +587,10 @@ body:not(.player-mode) .map-topline{padding-block:0;min-height:0;margin-bottom:0
 .map-controls #grid-options-toggle{width:22px;height:22px;min-height:22px;border:1px solid #89937d;background:var(--grid-color);outline:none}
 .map-controls #grid-options-toggle[aria-expanded=true]{border-color:var(--gold);outline:1px solid var(--gold);outline-offset:2px}
 .grid-options{position:fixed;z-index:100;padding:12px;border:1px solid #9b9271;border-radius:8px;background:#14221a;box-shadow:0 4px 14px #0006}
-.grid-options-colors{display:grid;grid-template-columns:repeat(3,28px);gap:9px}
-.grid-options .color-swatch{width:28px;height:28px;border:1px solid #ffffff55;border-radius:3px}
+#grid-options{width:156px}
+.grid-options-colors{display:grid;grid-template-columns:repeat(4,24px);justify-content:center;gap:9px;overflow:visible}
+.grid-options .color-swatch{width:24px;height:24px;min-width:24px;min-height:24px;padding:0;border:1px solid #ffffff55;border-radius:3px;filter:none}
+.grid-options .color-swatch:is(:hover,:focus-visible){filter:none;border-color:#fff}
 .grid-thickness{display:flex;align-items:center;justify-content:space-between;margin-top:12px;border-top:1px solid #465a49;padding-top:7px}
 .grid-thickness button{display:grid;place-items:center;width:30px;height:30px;min-height:30px;padding:0;border:0;background:transparent;font-size:19px}
 .grid-thickness output{min-width:28px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}
