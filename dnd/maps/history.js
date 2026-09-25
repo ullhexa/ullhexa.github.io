@@ -6,7 +6,7 @@ export function createHistory(limit=40){
   function travel(from,to,current,currentView){
     if(!from.length)return null;
     const entry=from.pop();push(to,snapshot(current,entry.view?currentView:undefined));
-    return {state:{...entry.state,...(!entry.view?{camera:current.camera,grid:current.grid,gridColor:current.gridColor,...(current.gridThickness===undefined?{}:{gridThickness:current.gridThickness})}:{})},view:entry.view};
+    return {state:{...entry.state,...(!entry.view?{camera:current.camera,grid:current.grid,gridColor:current.gridColor,...(current.gridThickness===undefined?{}:{gridThickness:current.gridThickness}),...(current.gridOpacity===undefined?{}:{gridOpacity:current.gridOpacity})}:{})},view:entry.view};
   }
   return {
     get canUndo(){return past.length>0;},get canRedo(){return future.length>0;},

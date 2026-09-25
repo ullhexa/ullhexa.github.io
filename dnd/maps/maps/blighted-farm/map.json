@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "blighted-farm",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "title": "The Blighted Farm",
   "width": 3840,
   "height": 2160,
@@ -12,13 +12,13 @@
     "color": "#dcd5bb"
   },
   "art": {
-    "base": "./maps/blighted-farm/interior-v29.png",
-    "roofs": "./maps/blighted-farm/roofs-v29.png",
-    "upper": "./maps/blighted-farm/upper-v29.png",
-    "basement": "./maps/blighted-farm/basement-v29.png",
-    "trashed": "./maps/blighted-farm/trashed-v29.png",
-    "collapsed": "./maps/blighted-farm/collapsed-v29.png",
-    "blockedApproach": "./maps/blighted-farm/blocked-v29.png"
+    "base": "./maps/blighted-farm/interior-v109.webp",
+    "roofs": "./maps/blighted-farm/roofs-v109.webp",
+    "upper": "./maps/blighted-farm/upper-v109.webp",
+    "basement": "./maps/blighted-farm/basement-v109.webp",
+    "trashed": "./maps/blighted-farm/trashed-v109.webp",
+    "collapsed": "./maps/blighted-farm/collapsed-v109.webp",
+    "blockedApproach": "./maps/blighted-farm/blocked-approach-v109.webp"
   },
   "places": [
     {
@@ -742,20 +742,20 @@
       "asset": "blockedApproach",
       "polygon": [
         [
-          0.365,
-          0.83
+          0.38,
+          0.71
         ],
         [
-          0.655,
-          0.83
+          0.68,
+          0.71
         ],
         [
-          0.655,
-          1.0
+          0.68,
+          0.96
         ],
         [
-          0.365,
-          1.0
+          0.38,
+          0.96
         ]
       ]
     }
@@ -1021,7 +1021,8 @@
     "0.1.0",
     "0.2.0",
     "0.3.0",
-    "0.4.0"
+    "0.4.0",
+    "0.4.1"
   ],
   "retiredInteractions": [
     "barn-cellar"

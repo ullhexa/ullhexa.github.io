@@ -592,6 +592,11 @@ body:not(.player-mode) .map-topline{padding-block:0;min-height:0;margin-bottom:0
 .grid-thickness{display:flex;align-items:center;justify-content:space-between;margin-top:12px;border-top:1px solid #465a49;padding-top:7px}
 .grid-thickness button{display:grid;place-items:center;width:30px;height:30px;min-height:30px;padding:0;border:0;background:transparent;font-size:19px}
 .grid-thickness output{min-width:28px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}
+.grid-options .grid-opacity{display:block;width:100%;min-width:0;height:20px;margin:8px 0 0;padding:0;appearance:none;-webkit-appearance:none;background:transparent;border:0;box-shadow:none;cursor:pointer}
+.grid-options .grid-opacity::-webkit-slider-runnable-track{height:5px;background:var(--gold);border:0;border-radius:3px}
+.grid-options .grid-opacity::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:14px;height:14px;margin-top:-4.5px;border:0;border-radius:50%;background:#fff;opacity:1;box-shadow:none}
+.grid-options .grid-opacity::-moz-range-track{height:5px;background:var(--gold);border:0;border-radius:3px}
+.grid-options .grid-opacity::-moz-range-thumb{width:14px;height:14px;border:0;border-radius:50%;background:#fff;opacity:1;box-shadow:none}
 .shape-choice[aria-pressed=true]{background:transparent}
 .shape-choice.shape-selected,.shape-choice.shape-selected:hover:not(:disabled){background:#ffffff12}
 .shape-hidden-overlay{display:none;position:absolute;inset:2px;border-radius:5px;place-items:center;background:#0009;color:#f0f3ed;pointer-events:none}
