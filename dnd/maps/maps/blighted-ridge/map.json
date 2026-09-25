@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "blighted-ridge",
+  "version": "0.1.0",
+  "title": "The Blighted Ridge",
+  "width": 3840,
+  "height": 2160,
+  "grid": {"size": 80, "distance": 5, "unit": "ft", "color": "#e2d8b9"},
+  "art": {
+    "base": "./maps/blighted-ridge/ridge-v1.webp",
+    "roofs": "./maps/blighted-ridge/ridge-v1.webp"
+  },
+  "places": [
+    {
+      "id": "hanging-bridge",
+      "name": "Hanging bridge",
+      "point": [0.281, 0.425],
+      "focusZoom": 3,
+      "focusOnly": true,
+      "footprint": [[0.197, 0.348], [0.367, 0.348], [0.367, 0.513], [0.197, 0.513]],
+      "actions": []
+    },
+    {
+      "id": "cave-entrance",
+      "name": "Cave entrance",
+      "point": [0.827, 0.236],
+      "focusZoom": 3,
+      "focusOnly": true,
+      "footprint": [[0.746, 0.041], [0.923, 0.041], [0.923, 0.385], [0.746, 0.385]],
+      "actions": []
+    }
+  ],
+  "interactions": [],
+  "partyStart": [0.045, 0.282],
+  "lighting": {"occluders": [], "lights": []},
+  "decorations": []
+}

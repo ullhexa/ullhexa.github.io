@@ -3,6 +3,8 @@ export const MAX_GRID_THICKNESS=3;
 export const validGridColor=value=>GRID_COLORS.includes(value);
 export const validGridThickness=value=>Number.isInteger(value)&&value>=1&&value<=MAX_GRID_THICKNESS;
 export const gridColor=(map,value)=>({map:map.grid.color||'#eff4d2',black:'#000000',white:'#ffffff'}[value]||value);
+export const validGridOpacity=value=>Number.isFinite(value)&&value>=0&&value<=1;
+export const normalizeGridOpacity=(value,color='map')=>validGridOpacity(value)?value:color==='map'?.3:.55;
 
 
 // Earlier 1–8 px saves remain importable, clamped to the current 1–3 range.

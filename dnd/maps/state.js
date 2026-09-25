@@ -4,8 +4,9 @@ import {buildingCollapsed} from './building-state.js?v=62';
 import {normalizeFog,normalizeFogSettings,defaultFogSettings} from './fog-state.js?v=83';
 import {assetId} from './combat-state.js?v=97';
 import { defaultRoster, normalizeEncounter } from './encounter-state.js?v=97';
-import {validGridColor,normalizeGridThickness} from './grid-state.js?v=62';
-export {GRID_COLORS} from './grid-state.js?v=62';
+import {validGridColor,normalizeGridThickness,normalizeGridOpacity} from './grid-state.js?v=112';
+import {migrateMapState,validCoordinateMigrations} from './map-space.js?v=109';
+export {GRID_COLORS} from './grid-state.js?v=112';
 export const defaultEnvironment = () => ({darkness:0});
 export const validEnvironment = value => {
   if(!value || !Number.isInteger(value.darkness))return false;
@@ -25,6 +26,7 @@ export function validateMap(map) {
   if (![map.id,map.version,map.title,map.grid?.unit].every(s=>typeof s==='string'&&s.length>0)) throw new Error('Missing map identity or units.');
   if (![map.art?.base,map.art?.roofs].every(s=>typeof s==='string'&&((s.startsWith('./')&&!s.includes('..'))||(map.userMap===true&&assetId(s))))) throw new Error('Artwork must use relative asset paths.');
   if (![map.width,map.height,map.grid?.size,map.grid?.distance].every(n=>Number.isFinite(n)&&n>0)) throw new Error('Invalid map dimensions or scale.');
+  if(!validCoordinateMigrations(map))throw new Error('Invalid map coordinate migration.');
   if(map.grid.offset!==undefined&&(!Array.isArray(map.grid.offset)||map.grid.offset.length!==2||!map.grid.offset.every(n=>Number.isFinite(n)&&n>=0&&n<map.grid.size)))throw new Error('Invalid map grid offset.');
   if (map.grid.color !== undefined && (typeof map.grid.color !== 'string' || !/^#[0-9a-f]{6}$/i.test(map.grid.color))) throw new Error('Invalid map grid color.');
   if(!Array.isArray(map.places)||!Array.isArray(map.interactions)) throw new Error('Missing map objects.');
@@ -69,10 +71,11 @@ export function validateMap(map) {
   return map;
 }
 export function validPoint(point){return Array.isArray(point)&&point.length===2&&point.every(n=>Number.isFinite(n)&&n>=0&&n<=1);}
-export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],placeNames:{},floors:normalizeFloors(map),itemSchema:2,items:[],party:[...map.partyStart],grid:true,snap:false,shapeSnap:false,fog:[],fogSettings:defaultFogSettings(),monsters:[],turnId:null,initiativeOverlay:{x:.02,y:.08,visible:true},gridColor:'map',gridThickness:1,environment:defaultEnvironment(),tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
+export function initialState(map){return {format:1,mapId:map.id,mapVersion:map.version,active:[],placeNames:{},floors:normalizeFloors(map),itemSchema:2,items:[],party:[...map.partyStart],grid:true,snap:false,shapeSnap:false,fog:[],fogSettings:defaultFogSettings(),monsters:[],turnId:null,initiativeOverlay:{x:.02,y:.08,visible:true},gridColor:'map',gridThickness:1,gridOpacity:.3,environment:defaultEnvironment(),tokenMode:'party',regroupPlayers:false,roster:defaultRoster(map),shapes:[],camera:{x:0.5,y:0.5,zoom:1},revision:0};}
 export function sanitizeState(map,input){
   const fresh=initialState(map);
   if(!input||input.format!==1||input.mapId!==map.id||(input.mapVersion!==map.version&&!(map.previousVersions||[]).includes(input.mapVersion)))return fresh;
+  input=migrateMapState(map,input);
   const ids=new Set(map.interactions.map(item=>item.id));
   fresh.floors=normalizeFloors(map,input.floors);
   fresh.active=Array.isArray(input.active)?[...new Set(input.active.filter(id=>ids.has(id)))]:[];
@@ -83,6 +86,7 @@ export function sanitizeState(map,input){
   fresh.grid=typeof input.grid==='boolean'?input.grid:true;
   fresh.gridColor=validGridColor(input.gridColor)?input.gridColor:'map';
   fresh.gridThickness=normalizeGridThickness(input.gridThickness);
+  fresh.gridOpacity=normalizeGridOpacity(input.gridOpacity,fresh.gridColor);
   fresh.environment=sanitizeEnvironment(input.environment);
   if(input.camera&&validPoint([input.camera.x,input.camera.y])&&Number.isFinite(input.camera.zoom))fresh.camera={x:input.camera.x,y:input.camera.y,zoom:Math.max(1,Math.min(20,input.camera.zoom))};
   fresh.revision=Number.isSafeInteger(input.revision)&&input.revision>=0?input.revision:0;

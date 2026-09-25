@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "blighted-cavern",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "title": "The Blighted Cavern",
   "width": 3840,
   "height": 2160,
@@ -12,9 +12,9 @@
     "color": "#d6cadf"
   },
   "art": {
-    "base": "./maps/blighted-cavern/cavern-lit.png",
-    "roofs": "./maps/blighted-cavern/cavern-lit.png",
-    "brokenCrossing": "./maps/blighted-cavern/crossing-broken-lit.png"
+    "base": "./maps/blighted-cavern/cavern-v109.webp",
+    "roofs": "./maps/blighted-cavern/cavern-v109.webp",
+    "brokenCrossing": "./maps/blighted-cavern/broken-crossing-v109.webp"
   },
   "places": [
     {
@@ -209,6 +209,7 @@
   },
   "decorations": [],
   "previousVersions": [
-    "0.1.0"
+    "0.1.0",
+    "0.2.0"
   ]
 }
