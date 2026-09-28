@@ -1,4 +1,4 @@
-import {isTextEntry} from './keyboard.js?v=62';
+import {isTextEntry} from './keyboard.js?v=116';
 
 export function installBoardGestures(){
   // Keep real editors native. The surrounding control board is not a document

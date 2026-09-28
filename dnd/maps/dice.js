@@ -3,7 +3,7 @@ import {diceFaceBank,faceReveal,blendDieFace} from './dice-faces.js?v=84';
 import {drawDie,landingMesh,percentileFaces,rollDuration,dieContainsPoint,DICE_COLORS} from './dice-geometry.js?v=84';
 import {boardIcon} from './control-icons.js?v=81';
 import {el,button} from './editor-dom.js?v=62';
-import {isTextEntry} from './keyboard.js?v=62';
+import {isTextEntry} from './keyboard.js?v=116';
 export const DICE=[4,6,8,10,12,20,100];
 export function dieValue(sides,random=()=>crypto.getRandomValues(new Uint32Array(1))[0]){
   if(!DICE.includes(sides))throw new Error('Unsupported die.');

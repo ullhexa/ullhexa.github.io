@@ -19,6 +19,16 @@ export function startDMShell(){
     openPlayer(url){playerWindow=openPlayerWindow(url);return playerWindow;}
   };
   document.addEventListener('fullscreenchange',updateFullscreen);
+  // Keyboard events do not cross iframe boundaries. Chrome can return focus to
+  // this outer fullscreen host after a popup or window switch; keep board keys working.
+  document.addEventListener('keydown',event=>{
+    if(event.defaultPrevented||event.isComposing||![' ','Spacebar','ArrowUp','ArrowDown'].includes(event.key)&&event.code!=='Space')return;
+    const doc=frame.contentDocument,target=doc?.activeElement;
+    if(!target||doc.querySelector('#access-gate'))return;
+    const forwarded=new KeyboardEvent('keydown',{key:event.key,code:event.code,ctrlKey:event.ctrlKey,metaKey:event.metaKey,altKey:event.altKey,shiftKey:event.shiftKey,repeat:event.repeat,bubbles:true,cancelable:true});
+    if(!target.dispatchEvent(forwarded))event.preventDefault();
+    frame.contentWindow.focus();
+  });
   window.addEventListener('message',event=>{
     if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
     if(event.data?.type==='dm-ready'){
