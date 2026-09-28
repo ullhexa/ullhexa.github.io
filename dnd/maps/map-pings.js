@@ -1,4 +1,6 @@
+import {createPingSound} from './ping-sound.js?v=116';
 const NS='http://www.w3.org/2000/svg';
+export const PING_DIAMETER=36;
 export const PING_DURATION=1700,PING_LIMIT=10,PING_HOLD_LEASE=8000;
 export const PING_ATTACK=150,PING_DECAY=700,PING_TRAIL_DURATION=180,PING_TRAIL_LIMIT=6;
 const clamp=n=>Math.max(0,Math.min(1,n));
@@ -23,7 +25,7 @@ export function createMapPings({map,stage,player,pointAt,send}){
  const plane=node('svg',{id:'map-pings','aria-hidden':'true',preserveAspectRatio:'xMidYMid meet'});stage.append(plane);
  const defs=node('defs',{}),filter=node('filter',{id:'ping-trail-blur',filterUnits:'userSpaceOnUse',x:-32,y:-32,width:64,height:64});
  filter.append(node('feGaussianBlur',{stdDeviation:.8}));defs.append(filter);plane.append(defs);
- const active=new Map(),diameter=12; // CSS pixels at the envelope's resting size.
+ const active=new Map(),diameter=PING_DIAMETER,sound=player?null:createPingSound(); // CSS pixels at rest.
  let screenScale=1,animationFrame=0;
  function positionEntry(entry){entry.node.setAttribute('transform',`translate(${entry.ping.point[0]*map.width} ${entry.ping.point[1]*map.height}) scale(${1/screenScale})`);}
  function positionTrail(trail){
@@ -45,7 +47,7 @@ export function createMapPings({map,stage,player,pointAt,send}){
   const distance=Math.hypot((ping.point[0]-previous.point[0])*map.width,(ping.point[1]-previous.point[1])*map.height)*screenScale;
   const elapsed=Math.max(8,ping.started-previous.started),speed=distance/elapsed;
   if(distance<2||elapsed>150||speed<.08)return;
-  const g=node('g',{'data-ping-trail':ping.id}),line=node('line',{x1:0,y1:0,stroke:'#ffd786','stroke-width':2.2,'stroke-linecap':'round',filter:'url(#ping-trail-blur)'});
+  const g=node('g',{'data-ping-trail':ping.id}),line=node('line',{x1:0,y1:0,stroke:'#ffffff','stroke-width':4,'stroke-linecap':'round',filter:'url(#ping-trail-blur)'});
   g.append(line);entry.trailNode.append(g);const trail={node:g,line,from:previous.point,to:ping.point,started:ping.started,opacity:.18*clamp(speed/1.2)};
   entry.trails.push(trail);positionTrail(trail);while(entry.trails.length>PING_TRAIL_LIMIT)entry.trails.shift().node.remove();
  }
@@ -54,7 +56,7 @@ export function createMapPings({map,stage,player,pointAt,send}){
   if(entry?ping.revision<=entry.ping.revision:active.size>=PING_LIMIT)return false;
   if(!entry){
    const g=node('g',{'data-ping':ping.id}),glyph=node('g',{class:'ping-glyph'}),trailNode=node('g',{});
-   glyph.append(node('circle',{r:diameter*.36,fill:'none',stroke:'#0a110e','stroke-width':diameter*.28}),node('circle',{r:diameter*.36,fill:'none',stroke:'#ffd786','stroke-width':diameter*.13}),node('circle',{r:diameter*.095,fill:'#fff4cf'}));
+   glyph.append(node('circle',{r:diameter/2-4,fill:'none',stroke:'#000000','stroke-width':8}),node('circle',{r:diameter/2-4,fill:'none',stroke:'#ffffff','stroke-width':6}),node('circle',{r:diameter*.095,fill:'#ffffff',stroke:'#000000','stroke-width':1}));
    g.append(glyph);plane.append(trailNode,g);entry={node:g,glyph,trailNode,trails:[]};active.set(ping.id,entry);
   }
   clearTimeout(entry.timer);addTrail(entry,ping,now);entry.ping={...ping,created:ping.created??entry.ping?.created??ping.started,point:[...ping.point]};entry.node.dataset.held=String(ping.held);positionEntry(entry);paint(entry,now);wake();
@@ -78,7 +80,7 @@ export function createMapPings({map,stage,player,pointAt,send}){
    if(previous&&now-previous.time<=500&&Math.hypot(event.clientX-previous.x,event.clientY-previous.y)<=6){
     press=null;const created=Date.now(),ping={id:crypto.randomUUID(),point:pointAt(event),held:true,revision:0,started:created,created};
     event.preventDefault();event.stopImmediatePropagation();suppressContextUntil=now+700;
-    if(add(ping)){held={ping,pointer:event.pointerId};stage.setPointerCapture(event.pointerId);send(ping);heartbeat=setInterval(()=>{if(held)updateHeld(held.ping.point);},1000);}
+    if(add(ping)){void sound.play();held={ping,pointer:event.pointerId};stage.setPointerCapture(event.pointerId);send(ping);heartbeat=setInterval(()=>{if(held)updateHeld(held.ping.point);},1000);}
     return;
    }
    press={id:event.pointerId,x:event.clientX,y:event.clientY,time:now,moved:false};
@@ -92,6 +94,7 @@ export function createMapPings({map,stage,player,pointAt,send}){
    if(held&&event.pointerId===held.pointer){event.preventDefault();event.stopImmediatePropagation();release();last=null;return;}
    if(!press||press.id!==event.pointerId)return;const click=press;press=null;const now=performance.now();
    last=click.moved||now-click.time>500?null:{x:event.clientX,y:event.clientY,time:now};
+   if(last)sound.prepare(); // Warm audio on the first click, before the visible ping begins.
   },true);
   stage.addEventListener('contextmenu',event=>{if(held||event.target===stage&&performance.now()<suppressContextUntil)event.preventDefault();});
   stage.addEventListener('pointercancel',cancel,true);
@@ -99,6 +102,6 @@ export function createMapPings({map,stage,player,pointAt,send}){
   window.addEventListener('blur',cancel);
  }
  document.addEventListener('visibilitychange',()=>{cancel();prune();});
- window.addEventListener('pagehide',()=>{cancel();for(const id of [...active.keys()])remove(id);cancelAnimationFrame(animationFrame);animationFrame=0;});
+ window.addEventListener('pagehide',event=>{cancel();if(!event.persisted)sound?.dispose();for(const id of [...active.keys()])remove(id);cancelAnimationFrame(animationFrame);animationFrame=0;});
  return {add,cancelGesture:cancel,isHolding:()=>!!held,current(){prune();return [...active.values()].map(entry=>entry.ping);},position(viewBox,scale){plane.setAttribute('viewBox',viewBox);screenScale=scale;for(const entry of active.values()){positionEntry(entry);for(const trail of entry.trails)positionTrail(trail);}}};
 }

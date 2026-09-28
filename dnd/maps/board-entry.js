@@ -64,4 +64,4 @@ async function waitForPIN(){
 }
 
 await waitForPIN();
-await import('./app.js?v=114');
+await import('./app.js?v=116');

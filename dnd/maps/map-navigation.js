@@ -1,5 +1,5 @@
 import {cameraGeometry,boundedCamera} from './camera.js?v=91';
-import {isTextEntry} from './keyboard.js?v=62';
+import {isTextEntry} from './keyboard.js?v=116';
 import {button} from './editor-dom.js?v=62';
 import {icon} from './control-icons.js?v=81';
 const directions={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
