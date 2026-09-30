@@ -21,10 +21,10 @@ export async function startPlayerDisplay(){
   const canvas=document.createElement('div');canvas.id='story-screen';canvas.className='story-screen';canvas.setAttribute('aria-label','Story scene');stage.append(canvas);
   const animation=createStoryPlayer(canvas,{onError:error=>{send({type:'display-error',message:error.message});$('live-message').textContent=error.message;}});
   const fullscreen=setupFullscreen({player:true,announce:text=>$('live-message').textContent=text});
-  const catalog=(await fetchJSON('./maps/catalog.json?v=111')).maps;
+  const catalogData=await fetchJSON('./maps/catalog.json?v=117'),catalog=catalogData.maps;
   catalog.push(...customCatalog(sessionKey));
   const stored=read(`${sessionKey}:presentation`);
-  const initialMap=catalog.find(entry=>entry.id===query.get('map'))||catalog[0];
+  const initialMap=catalog.find(entry=>entry.id===query.get('map'))||catalog.find(entry=>entry.id===catalogData.defaultMap)||catalog[0];
   let presentation=validPresentation(stored,catalog)?stored:{mode:'battle',vibe:'embers',mapId:initialMap.id,revision:0,sceneRevision:0};
   let current=null,pending=null,lastDM=0,closing=false,showingStory=true,hideMapTimer=0,retiringMap=null,retireMapTimer=0;
   let channel;try{channel=new BroadcastChannel(sessionKey);}catch{}

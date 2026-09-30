@@ -50,7 +50,7 @@ import { createSaveControls } from './save-controls.js?v=114';
 import { parseSave, restoreSave } from './save-file.js?v=114';
 import { createLighting } from './lighting.js?v=114';
 import { setupFullscreen } from './fullscreen.js?v=76';
-import { startPlayerDisplay } from './player-display.js?v=111';
+import { startPlayerDisplay } from './player-display.js?v=117';
 import { createDirector } from './director.js?v=100';
 import { normalizeProject } from './presentation-state.js?v=97';
 
@@ -87,7 +87,8 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalog = (await fetchJSON('./maps/catalog.json?v=111')).maps;
+  const catalogData = await fetchJSON('./maps/catalog.json?v=117');
+  const catalog = catalogData.maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
   if (!session || !/^[a-zA-Z0-9-]{1,80}$/.test(session)) throw new Error('Open this player display using the button in the DM window.');
@@ -100,7 +101,7 @@ async function start() {
   catalog.push(...customCatalog(sessionKey));
   const pendingLoadKey = `${sessionKey}:pending-load`;
   const selectedMap = query.get('map') || readStored(`${sessionKey}:map`);
-  const entry = catalog.find(item => item.id === selectedMap) || catalog[0];
+  const entry = catalog.find(item => item.id === selectedMap) || catalog.find(item => item.id === catalogData.defaultMap) || catalog[0];
   const loadMap = async item => {
     const content=validateMap(item.map||await fetchJSON(`${item.manifest}?v=109`));
     if(content.id!==item.id)throw new Error('The map catalog and content do not match.');
