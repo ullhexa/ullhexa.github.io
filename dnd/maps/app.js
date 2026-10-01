@@ -6,15 +6,15 @@ import {boardIcon} from './control-icons.js?v=81';
 import {installBoardGestures} from './board-gestures.js?v=116';
 import {createBoardLayout} from './board-layout.js?v=93';
 import {featureEnabled,placeName} from './board-state.js?v=62';
-import {createGridControls} from './grid-controls.js?v=116';
+import {createGridControls} from './grid-controls.js?v=118';
 import {gridColor} from './grid-state.js?v=114';
 import {createBuildingControls} from './building-controls.js?v=97';
 import {buildingCollapsed} from './building-state.js?v=62';
 import {createCameraAnimation,zoomCameraAt,validZoomPath} from './camera-animation.js?v=93';
 import {createMapNavigation} from './map-navigation.js?v=116';
 import {createFloorControl} from './floor-controls.js?v=62';
-import {createUserManual} from './user-manual.js?v=116';
-import {createSpellLibrary} from './spell-library.js?v=97';
+import {createUserManual} from './user-manual.js?v=118';
+import {createSpellLibrary} from './spell-library.js?v=118';
 import {createReferenceViewers} from './reference-viewers.js?v=97';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
 import {persistAssets} from './local-assets.js?v=97';
@@ -27,12 +27,12 @@ import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard
 import {createDiceTools} from './dice.js?v=116';
 import {fetchJSON} from './resource-loading.js?v=84';
 import {storyCatalog,nextStory} from './story-assets.js?v=97';
-import {createItemsUI} from './items-ui.js?v=116';
+import {createItemsUI} from './items-ui.js?v=118';
 import {floorList,selectedFloor,selectFloor,interactionOnFloor,itemOnSelectedFloor} from './floors.js?v=62';
 import {createHistory} from './history.js?v=112';
 import {setupSidebarResize} from './sidebar-resize.js?v=76';
 import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=97';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=116';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=118';
 import {createFogTools} from './fog-tools.js?v=97';
 import {normalizeFog} from './fog-state.js?v=83';
 import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=97';
@@ -40,18 +40,18 @@ import {createSessionBundle} from './session-bundle.js?v=114';
 import { startDMShell } from './dm-shell.js?v=116';
 import { openPlayerWindow } from './display-window.js?v=62';
 import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=114';
-import { createEncounterTools } from './encounter-tools.js?v=116';
+import { createEncounterTools } from './encounter-tools.js?v=118';
 import { playerProjection, formation, moveParty, feetToWorld } from './encounter-state.js?v=97';
 import {placeRulerLabel} from './ruler-label.js?v=85';
 import {createMapPings} from './map-pings.js?v=116';
 import {createModifierZoom} from './modifier-zoom.js?v=87';
-import { createMapMenu } from './map-menu.js?v=97';
+import { createMapMenu } from './map-menu.js?v=118';
 import { createSaveControls } from './save-controls.js?v=114';
 import { parseSave, restoreSave } from './save-file.js?v=114';
 import { createLighting } from './lighting.js?v=114';
 import { setupFullscreen } from './fullscreen.js?v=76';
 import { startPlayerDisplay } from './player-display.js?v=117';
-import { createDirector } from './director.js?v=100';
+import { createDirector } from './director.js?v=118';
 import { normalizeProject } from './presentation-state.js?v=97';
 
 listenForBoardReset();
@@ -149,7 +149,7 @@ async function start() {
   document.querySelector('.map-name').textContent = map.title;
   $('map').setAttribute('aria-label', `${player ? 'Player' : 'Interactive'} map of ${map.title}`);
   if(!player) {
-    mapMenu=createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,getEnvironment:target=>target.id===map.id?state.environment:readMapState(target).environment,getProject:()=>project,setProject,deleteMap:removeCustomMap,editMap:applyMapEdit,applyMap:(target,environment)=>prepareMap(target.id,environment).catch(error=>announce(error.message))});
+    mapMenu=createMapMenu({catalog,activeId:map.id,activeMap:map,loadMap,getProject:()=>project,setProject,deleteMap:removeCustomMap,editMap:applyMapEdit,applyMap:target=>prepareMap(target.id).catch(error=>announce(error.message))});
   }
   const key = `lanternford:${map.id}:${map.version}:${session}`;
   function readMapState(content){
