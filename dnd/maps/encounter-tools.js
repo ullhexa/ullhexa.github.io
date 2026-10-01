@@ -15,7 +15,7 @@ import {shortcutAction,isTextEntry} from './keyboard.js?v=116';
 import {setFace} from './token-portraits.js?v=97';
 import {SHAPE_COLORS,clamp,feetToWorld,activePartyName,setTokenMode,newShape,resizeShape,rotateShape} from './encounter-state.js?v=97';
 import {CONDITIONS,mapTokens as combatants,patchToken as patchMember,snapPoint,initiativeOrder,bringTokenToFront as bringToFront} from './combat-state.js?v=97';
-import {el,button,badgeNodes} from './combat-ui.js?v=116';
+import {el,button,badgeNodes} from './combat-ui.js?v=118';
 const NS='http://www.w3.org/2000/svg',$=id=>document.getElementById(id);
 const node=(tag,attrs={},text)=>{const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(text!==undefined)e.textContent=text;return e;};
 const names=['Blue','Brown','Red','Orange','Black','White','Green','Purple'];

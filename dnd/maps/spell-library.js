@@ -1,3 +1,4 @@
+import {groupPanel} from './group-panel.js?v=118';
 import {fitSpellTitles} from './spell-title-fit.js?v=94';
 import {installCardWheel} from './card-wheel.js?v=94';
 import {showSpellCredits} from './spell-license.js?v=92';
@@ -33,8 +34,8 @@ export function createSpellLibrary({getState,commit,announce}){
  }
  function render(){
   const s=getState(),decks=s.campaign.spellDecks;if(!decks.some(d=>d.id===selected))selected=s.campaign.activeSpellDeck||decks[0]?.id||null;selection.prune(decks.map(d=>d.id),selected);const deck=decks.find(d=>d.id===selected);
-  groups.replaceChildren(featureHeading({kind:'spells',title:'Spell decks',groups,main,footer,getState,commit,render}),button('+ New spell deck',()=>{if(decks.length>=20){announce('Up to 20 spell decks.');return;}selected=crypto.randomUUID();selection.reset(selected);const s=getState();commit({...s,campaign:{...s.campaign,spellDecks:[...s.campaign.spellDecks,{id:selected,name:'Spell deck',spells:[]}]}},'Spell deck created.');render();}));
-  for(const d of decks){const b=button(d.name,e=>{selected=selection.click(d.id,e,decks.map(g=>g.id));render();},'library-group');b.dataset.spellDeck=d.id;b.setAttribute('aria-pressed',selection.has(d.id));b.classList.toggle('editing-group',d.id===selected);b.setAttribute('aria-current',d.id===s.campaign.activeSpellDeck);groups.append(b);}
+  const groupList=groupPanel(groups,featureHeading({kind:'spells',title:'Spell decks',groups,main,footer,getState,commit,render}),button('+ New spell deck',()=>{if(decks.length>=20){announce('Up to 20 spell decks.');return;}selected=crypto.randomUUID();selection.reset(selected);const s=getState();commit({...s,campaign:{...s.campaign,spellDecks:[...s.campaign.spellDecks,{id:selected,name:'Spell deck',spells:[]}]}},'Spell deck created.');render();}));
+  for(const d of decks){const b=button(d.name,e=>{selected=selection.click(d.id,e,decks.map(g=>g.id));render();},'library-group');b.dataset.spellDeck=d.id;b.setAttribute('aria-pressed',selection.has(d.id));b.classList.toggle('editing-group',d.id===selected);b.setAttribute('aria-current',d.id===s.campaign.activeSpellDeck);groupList.append(b);}
   print.disabled=!findSpells(catalog,'',deck?.spells||[]).length;remove.disabled=!selection.ids.length;remove.textContent=selection.ids.length>1?`Delete ${selection.ids.length} spell decks`:'Delete spell deck';activate.textContent=!deck||deck.id===s.campaign.activeSpellDeck?'Done':'Activate deck';titleFit?.destroy();main.replaceChildren();
   const currentDeck=()=>getState().campaign.spellDecks.find(d=>d.id===selected),applied=el('div',undefined,'applied-spells');applied.setAttribute('aria-label','Spells in this deck');
   function renderApplied(){
@@ -44,7 +45,7 @@ export function createSpellLibrary({getState,commit,announce}){
   function membership(button,spell){const deck=currentDeck(),included=deck?.spells.includes(spell.id);button.textContent=included?'Added':'＋ Add';button.disabled=!deck;button.setAttribute('aria-pressed',String(!!included));button.setAttribute('aria-label',included?`Remove ${spell.title} from deck`:`Add ${spell.title} to deck`);}
   function toggleSpell(id){
    if(!currentDeck())return;
-   const scroller=panel.closest('.main-menu-body')||main,keepPosition=scroller.scrollTop>0,top=grid.getBoundingClientRect().top;
+   const scroller=main,keepPosition=scroller.scrollTop>0,top=grid.getBoundingClientRect().top;
    edit(d=>({...d,spells:d.spells.includes(id)?d.spells.filter(s=>s!==id):[...d.spells,id]}),false);renderApplied();
    for(const b of grid.querySelectorAll('.add-spell'))membership(b,catalog.find(s=>s.id===b.dataset.spell));
    if(keepPosition)scroller.scrollTop+=grid.getBoundingClientRect().top-top;
