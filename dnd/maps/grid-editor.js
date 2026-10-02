@@ -1,4 +1,4 @@
-import {createGridPlaces} from './grid-places.js?v=82';
+import {createGridPlaces} from './grid-places.js?v=119';
 import {orientationIcon} from './control-icons.js?v=81';
 import {showDialog} from './dialogs.js?v=62';
 import {imageTypeNote} from './image-import.js?v=62';

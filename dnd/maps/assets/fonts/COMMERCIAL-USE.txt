@@ -1,0 +1,35 @@
+ULL HEXA DISPLAY — PRIVATE COMMERCIAL ASSET
+Version 0.1.1 / 2 October 2026
+
+This package contains Ull Hexa Display Regular and Bold, created for the owner
+of Ull Hexa. Their intended uses include
+commercial websites, plugins and other software, product graphics, merchandise,
+print, promotional material and rendered text in audiovisual work.
+
+The Ull Hexa owner may use, modify, convert, subset and embed these font files
+for their own commercial and noncommercial work. No fee, royalty, attribution
+requirement, seat limit or open-source release condition is imposed by this
+package on that owner. Contractors working on the owner's behalf may use the
+files for that work. This note does not grant the public permission to sell or
+redistribute the standalone font files. No OFL or other public font licence has
+been applied; any future public licensing decision remains with the owner.
+
+The font outlines were newly constructed in this project, using procedural
+vector geometry with Codex assistance. No third-party font files or glyph
+outlines were imported, traced or modified. The build tools are dependencies,
+not source typefaces. Their separate licences are recorded in PROVENANCE.md.
+
+Under OpenAI's Europe Terms of Use, the user receives any rights OpenAI holds
+in generated output, within the limits of applicable law. The terms caution
+that similar output can be supplied to others, and require users to respect
+third-party rights.
+Source checked 2 October 2026:
+https://openai.com/policies/eu-terms-of-use/
+
+This package is structured for commercial use; this note is not a guarantee of
+copyright protection, exclusivity, trademark availability, or freedom from all
+third-party claims. It cannot create rights that do not exist under applicable
+law. No formal name or design clearance has been performed.
+
+The font is a review build supplied as-is. Embedded font permissions are set to
+allow installation and embedding; those technical bits are not a public licence.

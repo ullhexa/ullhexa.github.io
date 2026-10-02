@@ -1,0 +1,4 @@
+@font-face{font-family:'Ull Hexa Display';src:url('./assets/fonts/UllHexaDisplay-Regular.woff2?v=0.101') format('woff2');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:'Ull Hexa Display';src:url('./assets/fonts/UllHexaDisplay-Bold.woff2?v=0.101') format('woff2');font-style:normal;font-weight:700;font-display:swap}
+:root{--font-ui:'Ull Hexa Display',sans-serif;font-family:var(--font-ui)}
+button,input,select,textarea{font-family:inherit}

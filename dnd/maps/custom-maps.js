@@ -3,7 +3,7 @@ import {IMAGE_ACCEPT,imageTypeNote,validImageDimensions} from './image-import.js
 import {readSessionValue,writeSessionValue} from './session-storage.js?v=62';
 import {uploadImage,assetURL,assetRecord,putAssets} from './local-assets.js?v=97';
 import {el} from './editor-dom.js?v=62';
-import {editMapGrid} from './grid-editor.js?v=82';
+import {editMapGrid} from './grid-editor.js?v=119';
 import {assetId,safeId} from './combat-state.js?v=97';
 export function customCatalog(sessionKey){try{const entries=readSessionValue(`${sessionKey}:custom-maps`)||[];return entries.filter(validCustomEntry);}catch{return [];}}
 export function validCustomEntry(e){const m=e?.map;return !!(e&&safeId(e.id)&&e.id.startsWith('custom-')&&m&&m.id===e.id&&m.schemaVersion===1&&m.version==='1'&&e.thumbnail===m.art?.base&&e.title===m.title&&Object.keys(m.art||{}).every(k=>['base','roofs'].includes(k))&&m.lighting===undefined&&m.userMap===true&&typeof m.title==='string'&&m.title.length<=80&&m.width>=100&&m.height>=100&&validImageDimensions(m.width,m.height)&&Number.isFinite(m.grid?.size)&&m.grid.size>=1&&Number.isInteger(m.grid.distance)&&m.grid.distance>=1&&m.grid.distance<=1000&&m.grid.unit==='ft'&&(m.grid.offset===undefined||(Array.isArray(m.grid.offset)&&m.grid.offset.length===2&&m.grid.offset.every(n=>Number.isFinite(n)&&n>=0&&n<m.grid.size)))&&assetId(m.art?.base)&&m.art.base===m.art.roofs&&validCustomPlaces(m.places)&&Array.isArray(m.interactions)&&m.interactions.length===0);}

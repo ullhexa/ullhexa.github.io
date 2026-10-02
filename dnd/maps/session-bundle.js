@@ -1,7 +1,7 @@
 import {writeSessionValue} from './session-storage.js?v=62';
 import {projectMapIds} from './presentation-state.js?v=97';
 import {exportAssets,referencedAssets,validAsset,putAssets} from './local-assets.js?v=97';
-import {validCustomEntry,customCatalog,saveCustomCatalog} from './custom-maps.js?v=97';
+import {validCustomEntry,customCatalog,saveCustomCatalog} from './custom-maps.js?v=119';
 import {restoreSave,MAX_SAVE_BYTES} from './save-file.js?v=114';
 import {validateMap} from './state.js?v=114';
 export function createSessionBundle({sessionKey,catalog,loadMap,getState,readMapState,saveCurrent}){

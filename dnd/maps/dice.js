@@ -1,6 +1,7 @@
 import {consumeMapDismissal} from './map-dismissal.js?v=62';
-import {diceFaceBank,faceReveal,blendDieFace} from './dice-faces.js?v=84';
-import {drawDie,landingMesh,percentileFaces,rollDuration,dieContainsPoint,DICE_COLORS} from './dice-geometry.js?v=84';
+import {diceFaceBank,faceReveal,blendDieFace,clearDiceFaceBanks} from './dice-faces.js?v=119';
+import {uiFontsReady} from './typography.js?v=119';
+import {drawDie,landingMesh,percentileFaces,rollDuration,dieContainsPoint,DICE_COLORS} from './dice-geometry.js?v=119';
 import {boardIcon} from './control-icons.js?v=81';
 import {el,button} from './editor-dom.js?v=62';
 import {isTextEntry} from './keyboard.js?v=116';
@@ -16,7 +17,7 @@ function drawChoice(canvas,sides){
   // Center the visible silhouette, keeping the D6's centerline and every die's size.
   const pixels=source.getContext('2d').getImageData(0,0,source.width,source.height).data;let left=source.width,right=0,top=source.height,bottom=0;
   for(let y=0;y<source.height;y++)for(let x=0;x<source.width;x++)if(pixels[(y*source.width+x)*4+3]>20){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
-  drawDie(source,shape,sides,[0,0,0],true,[0,0],false,0,{button:true});canvas.getContext('2d').drawImage(source,(canvas.width-left-right-1)/2,(canvas.height-top-bottom-1)/2);
+  drawDie(source,shape,sides,[0,0,0],true,[0,0],false,0,{button:true});const paint=canvas.getContext('2d');paint.clearRect(0,0,canvas.width,canvas.height);paint.drawImage(source,(canvas.width-left-right-1)/2,(canvas.height-top-bottom-1)/2);
 }
 export function createDiceTools(preferences){
   const stage=document.getElementById('map-stage'),toggle=button('',()=>panel.hidden?open():close(),'toolbar-icon dice-toggle');toggle.id='open-dice';toggle.setAttribute('aria-label','Dice');toggle.setAttribute('aria-pressed','false');toggle.append(boardIcon('dice'));const toolbar=el('div',undefined,'dice-toolbar'),quick=el('div',undefined,'quick-dice');quick.setAttribute('aria-label','Quick dice');toolbar.append(toggle,quick);document.querySelector('.fog-controls').after(toolbar);
@@ -45,7 +46,7 @@ export function createDiceTools(preferences){
     pool.push(die);pool.sort((a,b)=>DICE.indexOf(a.sides)-DICE.indexOf(b.sides));const next=pool[pool.indexOf(die)+1];tray.insertBefore(group,next?.group||null);refresh();if(!animation)animation=requestAnimationFrame(frame);
   }
   for(const sides of DICE){const b=button('',()=>{selectChoice(sides,false);add(sides);},'die-choice');b.dataset.die=sides;const canvas=el('canvas',undefined,'die-choice-face');canvas.width=canvas.height=208;canvas.setAttribute('aria-hidden','true');drawChoice(canvas,sides);b.append(el('span','','die-count'),canvas,el('output',''));controls.append(b);buttons.set(sides,b);}
-  for(const sides of DICE){const b=button('',()=>{if(panel.hidden)open();selectChoice(sides,false);add(sides);},'quick-die');b.dataset.quickDie=sides;const [hue,saturation]=DICE_COLORS[sides];b.style.setProperty('--die-color',`hsl(${hue} ${saturation}% 50%)`);b.setAttribute('aria-label',`Roll D${sides}`);const silhouettes={4:'12,2 22,21 2,21',6:'3,3 21,3 21,21 3,21',8:'12,1 22,12 12,23 2,12',10:'12,1 22,8 22,17 12,23 2,17 2,8',12:'8,1 17,2 23,10 19,20 10,23 2,17 1,8',20:'12,1 22,6 22,18 12,23 2,18 2,6',100:'12,1 22,8 22,17 12,23 2,17 2,8'};b.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${silhouettes[sides]}" fill="#17221b" stroke="#000000" stroke-width=".6"/><text x="12" y="${sides===4?16:15}" text-anchor="middle" fill="white" font-family="system-ui,sans-serif" font-weight="700" font-size="${sides===100?8:10}">${sides}</text></svg>`;quick.append(b);}
+  for(const sides of DICE){const b=button('',()=>{if(panel.hidden)open();selectChoice(sides,false);add(sides);},'quick-die');b.dataset.quickDie=sides;const [hue,saturation]=DICE_COLORS[sides];b.style.setProperty('--die-color',`hsl(${hue} ${saturation}% 50%)`);b.setAttribute('aria-label',`Roll D${sides}`);const silhouettes={4:'12,2 22,21 2,21',6:'3,3 21,3 21,21 3,21',8:'12,1 22,12 12,23 2,12',10:'12,1 22,8 22,17 12,23 2,17 2,8',12:'8,1 17,2 23,10 19,20 10,23 2,17 1,8',20:'12,1 22,6 22,18 12,23 2,18 2,6',100:'12,1 22,8 22,17 12,23 2,17 2,8'};b.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${silhouettes[sides]}" fill="#17221b" stroke="#000000" stroke-width=".6"/><text x="12" y="${sides===4?16:15}" text-anchor="middle" fill="white" font-family="'Ull Hexa Display',sans-serif" font-weight="700" font-size="${sides===100?8:10}">${sides}</text></svg>`;quick.append(b);}
   display.addEventListener('click',e=>{if(e.target.closest('.dice-summary'))return;if(!e.target.closest('.dice-result'))reset();});panel.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();reset();});
   function open(){document.dispatchEvent(new Event('map-menu-opening'));reset();panel.hidden=false;toggle.setAttribute('aria-pressed','true');position();}function close(){reset();panel.hidden=true;toggle.setAttribute('aria-pressed','false');}
   document.addEventListener('pointerdown',e=>{if(panel.hidden||panel.contains(e.target)||toolbar.contains(e.target)||e.target.closest('#combat-roster .initiative-input,#combat-roster .roster-name'))return;close();consumeMapDismissal(e,stage);},true);
@@ -58,5 +59,13 @@ export function createDiceTools(preferences){
     if(e.key===' '){if(!e.repeat){const sides=choice??20;selectChoice(sides);add(sides);}return;}
     if(choice!==null){selectChoice(choice);if(e.key==='ArrowUp')add(choice);else{const die=pool.findLast(d=>d.sides===choice);if(die)remove(die);}}
   },true);
+  // Rebuild cached number plates once if the local font arrives after startup.
+  // Keep each die's value and animation clock; no font work occurs per frame.
+  uiFontsReady().then(()=>{
+    if(!panel.isConnected)return;
+    clearDiceFaceBanks();
+    for(const [sides,b] of buttons)drawChoice(b.querySelector('canvas'),sides);
+    for(const die of pool){const bank=diceFaceBank(die.sides,die.parts[0].canvas.width/104);for(const part of die.parts){part.plate=bank.faces.get(String(part.value));part.canvas.style.marginTop=`${bank.offsetY}px`;if(part.settled)blendDieFace(part.canvas,part.plate,{alpha:1,scale:1});}}
+  });
   refresh();return{close};
 }
