@@ -1,6 +1,7 @@
-import {drawDie,landingMesh,DICE_COLORS} from './dice-geometry.js?v=84';
+import {drawDie,landingMesh,DICE_COLORS} from './dice-geometry.js?v=119';
 
 const banks=new Map(),scratch=new Map();
+export function clearDiceFaceBanks(){banks.clear();}
 const numberLift={4:6,6:2,8:2,10:4,12:2,20:2,100:0};
 const numberRowCenter=52;
 const canvasAt=ratio=>{const c=document.createElement('canvas');c.width=c.height=104*ratio;return c;};

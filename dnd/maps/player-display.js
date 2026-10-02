@@ -1,5 +1,5 @@
 import {configureSession,readSessionValue} from './session-storage.js?v=62';
-import {customCatalog} from './custom-maps.js?v=97';
+import {customCatalog} from './custom-maps.js?v=119';
 import { setupFullscreen } from './fullscreen.js?v=76';
 import {storyCatalog} from './story-assets.js?v=97';
 import {createStoryPlayer,MODE_FADE_MS} from './story-player.js?v=97';

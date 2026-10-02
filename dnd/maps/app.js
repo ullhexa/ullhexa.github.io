@@ -1,3 +1,4 @@
+import {UI_FONT,uiFontsReady} from './typography.js?v=119';
 import {applyAreaPreview} from './area-preview.js?v=98';
 import {placeMarkersVisible} from './place-markers.js?v=97';
 import {createZoomControls} from './zoom-controls.js?v=82';
@@ -14,7 +15,7 @@ import {createCameraAnimation,zoomCameraAt,validZoomPath} from './camera-animati
 import {createMapNavigation} from './map-navigation.js?v=116';
 import {createFloorControl} from './floor-controls.js?v=62';
 import {createUserManual} from './user-manual.js?v=118';
-import {createSpellLibrary} from './spell-library.js?v=118';
+import {createSpellLibrary} from './spell-library.js?v=119';
 import {createReferenceViewers} from './reference-viewers.js?v=97';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
 import {persistAssets} from './local-assets.js?v=97';
@@ -24,7 +25,7 @@ import {buildingFocusCamera} from './building-focus.js?v=91';
 import {createDisplayPresence} from './display-presence.js?v=62';
 import {boundedCamera,cameraViewBox,cameraGeometry} from './camera.js?v=91';
 import {listenForBoardReset,confirmInitializeControlBoard,initializeControlBoard} from './board-reset.js?v=97';
-import {createDiceTools} from './dice.js?v=116';
+import {createDiceTools} from './dice.js?v=119';
 import {fetchJSON} from './resource-loading.js?v=84';
 import {storyCatalog,nextStory} from './story-assets.js?v=97';
 import {createItemsUI} from './items-ui.js?v=118';
@@ -35,8 +36,8 @@ import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './c
 import {createCombatUI,createLibraries} from './combat-ui.js?v=118';
 import {createFogTools} from './fog-tools.js?v=97';
 import {normalizeFog} from './fog-state.js?v=83';
-import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=97';
-import {createSessionBundle} from './session-bundle.js?v=114';
+import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=119';
+import {createSessionBundle} from './session-bundle.js?v=119';
 import { startDMShell } from './dm-shell.js?v=116';
 import { openPlayerWindow } from './display-window.js?v=62';
 import { validateMap, initialState, sanitizeState, isVisible, toggleInteraction, distanceBetween } from './state.js?v=114';
@@ -45,12 +46,12 @@ import { playerProjection, formation, moveParty, feetToWorld } from './encounter
 import {placeRulerLabel} from './ruler-label.js?v=85';
 import {createMapPings} from './map-pings.js?v=116';
 import {createModifierZoom} from './modifier-zoom.js?v=87';
-import { createMapMenu } from './map-menu.js?v=118';
+import { createMapMenu } from './map-menu.js?v=119';
 import { createSaveControls } from './save-controls.js?v=114';
 import { parseSave, restoreSave } from './save-file.js?v=114';
 import { createLighting } from './lighting.js?v=114';
 import { setupFullscreen } from './fullscreen.js?v=76';
-import { startPlayerDisplay } from './player-display.js?v=117';
+import { startPlayerDisplay } from './player-display.js?v=119';
 import { createDirector } from './director.js?v=118';
 import { normalizeProject } from './presentation-state.js?v=97';
 
@@ -259,7 +260,7 @@ async function start() {
   $('party-layer').append(party);
   const measurementOverlay=svgNode('svg',{id:'measurement-overlay','aria-hidden':'true',preserveAspectRatio:'xMidYMid meet'});
   measurementOverlay.append($('measurement'));$('map-stage').append(measurementOverlay);
-  const rulerTextMetrics=document.createElement('canvas').getContext('2d');rulerTextMetrics.font='700 18px "DM Sans",sans-serif';
+  const rulerTextMetrics=document.createElement('canvas').getContext('2d');rulerTextMetrics.font=`700 18px ${UI_FONT}`;
   const pings=createMapPings({map,stage:$('map-stage'),player,pointAt,send:ping=>send({type:'ping',mapId:map.id,ping})});
   if(!player)createModifierZoom({stage:$('map-stage'),busy:()=>!!drag||encounter.isDragging()||fog?.isDrawing()||pings.isHolding(),prepare:()=>pings.cancelGesture(),pointAt,zoomStep:(direction,point)=>{focusedPlace=null;clearTimeout(zoomSave);state={...state,revision:state.revision+1};cameraAnimation.zoomStep(direction,controls.getZoom().maximum,point);}});
   function finishDrag(before,message){currentHistory().record(before);state=syncCampaign({...state,revision:state.revision+1});render();save();announce(message);}
@@ -462,7 +463,7 @@ async function start() {
   }
 
   for(const [index,place] of map.places.entries()){const node=makeHotspot(place,place.point,String(index+1));$('dm-hotspots').append(node);hotspots.set(place.id,node);}
-  document.fonts.ready.then(()=>{for(const node of hotspots.values())delete node.querySelector('.place-name-tag')._width;sizeHotspots();});
+  uiFontsReady().then(()=>{for(const node of hotspots.values())delete node.querySelector('.place-name-tag')._width;sizeHotspots();});
   const setPlaceMarkers=visible=>commit({...state,campaign:{...state.campaign,placeMarkers:visible}},'Place marker visibility updated.');
   if (!player) {
     $('show-place-markers').addEventListener('change',e=>setPlaceMarkers(e.target.checked));

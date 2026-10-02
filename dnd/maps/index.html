@@ -6,8 +6,11 @@
   <meta name="description" content="A ready-to-play interactive encounter map for an in-person tabletop session.">
   <title>Ull Hexa D&amp;D</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141b1a'/%3E%3Cpath d='M16 5 26 16 16 27 6 16Z' fill='%23e8ba71'/%3E%3Cpath d='M16 11v10M11 16h10' stroke='%23141b1a' stroke-width='2'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./styles.css?v=118">
-  <style>
+  <link rel="stylesheet" href="./styles.css?v=119">
+  <link rel="preload" href="./assets/fonts/UllHexaDisplay-Regular.woff2?v=0.101" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./assets/fonts/UllHexaDisplay-Bold.woff2?v=0.101" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="./fonts.css?v=119">
+<style>
     html.access-locked{overflow:hidden}
     .access-locked body>:not(#access-gate){filter:blur(10px);pointer-events:none;user-select:none}
     .access-locked #map-stage{background:center/cover no-repeat url('./maps/blighted-citadel/thumbnail-v1.webp')}
@@ -16,7 +19,7 @@
     #access-gate[open]{display:grid;place-items:center}
     #access-gate::backdrop{background:transparent}
     #access-gate form{display:flex;align-items:center;gap:10px;padding:22px;background:#19211f;border:1px solid #485247;border-radius:12px;box-shadow:0 12px 44px #0006;max-width:100%;box-sizing:border-box}
-    #access-pin{box-sizing:border-box;min-width:0;width:154px;height:46px;margin:0;padding:0 10px 0 18px;border:1px solid #485247;border-radius:6px;background:#101716;color:#f0f1e7;font:24px/1 system-ui,sans-serif;letter-spacing:8px;text-align:center;outline:none;box-shadow:none}
+    #access-pin{box-sizing:border-box;min-width:0;width:154px;height:46px;margin:0;padding:0 10px 0 18px;border:1px solid #485247;border-radius:6px;background:#101716;color:#f0f1e7;font:24px/1 'Ull Hexa Display',sans-serif;letter-spacing:8px;text-align:center;outline:none;box-shadow:none}
     #access-pin::placeholder{color:#748079;opacity:1}
     #access-pin[aria-invalid=true]{border-color:#d98479}
     #access-enter{display:grid;place-items:center;box-sizing:border-box;flex:0 0 46px;width:46px;min-width:46px;height:46px;min-height:46px;padding:0;border:0;border-radius:6px;background:#e8ba71;color:#252219;cursor:pointer}
@@ -25,7 +28,7 @@
     #access-enter:focus-visible{outline:2px solid #e8ba71;outline-offset:3px}
     #access-enter svg{display:block;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   </style>
-  <script type="module" src="./board-entry.js?v=118"></script>
+  <script type="module" src="./board-entry.js?v=119"></script>
 </head>
 <body>
   <dialog id="access-gate" open aria-modal="true" aria-label="PIN access"><form id="access-form" method="dialog" novalidate><input id="access-pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off" placeholder="••••" aria-label="PIN" required disabled><button id="access-enter" type="submit" aria-label="Unlock control board" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></form></dialog>
