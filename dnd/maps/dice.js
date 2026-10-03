@@ -17,7 +17,9 @@ function drawChoice(canvas,sides){
   // Center the visible silhouette, keeping the D6's centerline and every die's size.
   const pixels=source.getContext('2d').getImageData(0,0,source.width,source.height).data;let left=source.width,right=0,top=source.height,bottom=0;
   for(let y=0;y<source.height;y++)for(let x=0;x<source.width;x++)if(pixels[(y*source.width+x)*4+3]>20){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
-  drawDie(source,shape,sides,[0,0,0],true,[0,0],false,0,{button:true});const paint=canvas.getContext('2d');paint.clearRect(0,0,canvas.width,canvas.height);paint.drawImage(source,(canvas.width-left-right-1)/2,(canvas.height-top-bottom-1)/2);
+  // Lift the chooser's 4 optically inside its narrow triangle (4.8 screen px).
+  // Rolled face plates keep their separately tuned number positions.
+  drawDie(source,shape,sides,[0,0,0],true,[0,0],false,sides===4?8:0,{button:true});const paint=canvas.getContext('2d');paint.clearRect(0,0,canvas.width,canvas.height);paint.drawImage(source,(canvas.width-left-right-1)/2,(canvas.height-top-bottom-1)/2);
 }
 export function createDiceTools(preferences){
   const stage=document.getElementById('map-stage'),toggle=button('',()=>panel.hidden?open():close(),'toolbar-icon dice-toggle');toggle.id='open-dice';toggle.setAttribute('aria-label','Dice');toggle.setAttribute('aria-pressed','false');toggle.append(boardIcon('dice'));const toolbar=el('div',undefined,'dice-toolbar'),quick=el('div',undefined,'quick-dice');quick.setAttribute('aria-label','Quick dice');toolbar.append(toggle,quick);document.querySelector('.fog-controls').after(toolbar);
