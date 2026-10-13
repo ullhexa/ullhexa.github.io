@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
+
   <title>Audio Visualizers (Virtual Audio)</title>
+  <link rel="preload" href="./assets/fonts/ull-hexa-display/UllHexaDisplay-Regular.woff2?v=0.1.1" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="./assets/fonts/ull-hexa-display/UllHexaDisplay-Bold.woff2?v=0.1.1" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="./app/typography.css?v=20261002-font" />
   <style>
     body { background: black; margin: 0; overflow: hidden; }
     canvas { display: block; }
@@ -11,7 +15,7 @@
       left: 10px;
       z-index: 10;
       color: white;
-      font-family: sans-serif;
+      font-family: var(--site-font);
       font-size: 14px;
       display: flex;
       align-items: center;
@@ -21,7 +25,7 @@
     }
     #sourceSelect, #modeSelect, #activateBtn, #deactivateBtn, #refreshBtn {
       padding: 4px 8px;
-      border-radius: 8px;
+      border-radius: 0;
       border: 1px solid #666;
       background: #111;
       color: #fff;
@@ -347,7 +351,7 @@ function drawDefault() {
   }
 
   ctx.fillStyle = "rgba(255,255,255,0.75)";
-  ctx.font = "12px monospace";
+  ctx.font = '12px "Ull Hexa Display", sans-serif';
   ctx.fillText(`state:${audioReady ? 'on' : 'off'} dev:${currentDeviceLabel} vol:${vol.toFixed(2)} peak:${features.peak.toFixed(2)} cen:${centroid.toFixed(2)} bass:${bass.toFixed(2)} mid:${mid.toFixed(2)} high:${high.toFixed(2)} flux:${features.spectralFlux.toFixed(2)} zcr:${zcr.toFixed(2)}`, 12, h - 12);
 }
 

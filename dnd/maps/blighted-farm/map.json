@@ -1,0 +1,1030 @@
+{
+  "schemaVersion": 1,
+  "id": "blighted-farm",
+  "version": "0.5.0",
+  "title": "The Blighted Farm",
+  "width": 3840,
+  "height": 2160,
+  "grid": {
+    "size": 60,
+    "distance": 5,
+    "unit": "ft",
+    "color": "#dcd5bb"
+  },
+  "art": {
+    "base": "./maps/blighted-farm/interior-v109.webp",
+    "roofs": "./maps/blighted-farm/roofs-v109.webp",
+    "upper": "./maps/blighted-farm/upper-v109.webp",
+    "basement": "./maps/blighted-farm/basement-v109.webp",
+    "trashed": "./maps/blighted-farm/trashed-v109.webp",
+    "collapsed": "./maps/blighted-farm/collapsed-v109.webp",
+    "blockedApproach": "./maps/blighted-farm/blocked-approach-v109.webp"
+  },
+  "places": [
+    {
+      "id": "barn",
+      "name": "The big barn",
+      "point": [
+        0.294,
+        0.235
+      ],
+      "focusZoom": 2.65,
+      "actions": [
+        "barn-roof",
+        "barn-trashed",
+        "barn-collapsed"
+      ],
+      "sequence": [
+        {
+          "label": "Roof on",
+          "active": []
+        },
+        {
+          "label": "Roof off",
+          "active": [
+            "barn-roof"
+          ]
+        },
+        {
+          "label": "Trashed",
+          "active": [
+            "barn-roof",
+            "barn-trashed"
+          ]
+        },
+        {
+          "label": "Collapsed",
+          "active": [
+            "barn-roof",
+            "barn-collapsed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "farmhouse",
+      "name": "The farmhouse",
+      "point": [
+        0.709,
+        0.274
+      ],
+      "focusZoom": 3,
+      "actions": [
+        "farmhouse-roof",
+        "farmhouse-trashed",
+        "farmhouse-collapsed"
+      ],
+      "sequence": [
+        {
+          "label": "Roof on",
+          "active": []
+        },
+        {
+          "label": "Roof off",
+          "active": [
+            "farmhouse-roof"
+          ]
+        },
+        {
+          "label": "Trashed",
+          "active": [
+            "farmhouse-roof",
+            "farmhouse-trashed"
+          ]
+        },
+        {
+          "label": "Collapsed",
+          "active": [
+            "farmhouse-roof",
+            "farmhouse-collapsed"
+          ]
+        }
+      ],
+      "footprint": [
+        [
+          0.582,
+          0.111
+        ],
+        [
+          0.84,
+          0.111
+        ],
+        [
+          0.84,
+          0.448
+        ],
+        [
+          0.582,
+          0.448
+        ]
+      ],
+      "floors": [
+        {
+          "id": "ground",
+          "level": 0,
+          "label": "Ground floor",
+          "polygon": [
+            [
+              0.582,
+              0.111
+            ],
+            [
+              0.84,
+              0.111
+            ],
+            [
+              0.84,
+              0.448
+            ],
+            [
+              0.582,
+              0.448
+            ]
+          ],
+          "actions": [
+            "farmhouse-roof",
+            "farmhouse-trashed",
+            "farmhouse-collapsed"
+          ],
+          "sequence": [
+            {
+              "label": "Roof on",
+              "active": []
+            },
+            {
+              "label": "Roof off",
+              "active": [
+                "farmhouse-roof"
+              ]
+            },
+            {
+              "label": "Trashed",
+              "active": [
+                "farmhouse-roof",
+                "farmhouse-trashed"
+              ]
+            },
+            {
+              "label": "Collapsed",
+              "active": [
+                "farmhouse-roof",
+                "farmhouse-collapsed"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "upper",
+          "level": 1,
+          "label": "Upper floor",
+          "asset": "upper",
+          "polygon": [
+            [
+              0.582,
+              0.111
+            ],
+            [
+              0.84,
+              0.111
+            ],
+            [
+              0.84,
+              0.448
+            ],
+            [
+              0.582,
+              0.448
+            ]
+          ],
+          "actions": [
+            "farmhouse-roof"
+          ],
+          "sequence": [
+            {
+              "label": "Roof on",
+              "active": []
+            },
+            {
+              "label": "Roof off",
+              "active": [
+                "farmhouse-roof"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "basement",
+          "level": -1,
+          "label": "Basement",
+          "asset": "basement",
+          "polygon": [
+            [
+              0.582,
+              0.111
+            ],
+            [
+              0.84,
+              0.111
+            ],
+            [
+              0.84,
+              0.448
+            ],
+            [
+              0.582,
+              0.448
+            ]
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "id": "workshop",
+      "name": "Windmill workshop",
+      "point": [
+        0.3,
+        0.747
+      ],
+      "focusZoom": 3,
+      "actions": [
+        "workshop-roof",
+        "workshop-trashed",
+        "workshop-collapsed"
+      ],
+      "sequence": [
+        {
+          "label": "Roof on",
+          "active": []
+        },
+        {
+          "label": "Roof off",
+          "active": [
+            "workshop-roof"
+          ]
+        },
+        {
+          "label": "Trashed",
+          "active": [
+            "workshop-roof",
+            "workshop-trashed"
+          ]
+        },
+        {
+          "label": "Collapsed",
+          "active": [
+            "workshop-roof",
+            "workshop-collapsed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "store",
+      "name": "The food store",
+      "point": [
+        0.745,
+        0.753
+      ],
+      "focusZoom": 3,
+      "actions": [
+        "store-roof",
+        "store-trashed",
+        "store-collapsed"
+      ],
+      "sequence": [
+        {
+          "label": "Roof on",
+          "active": []
+        },
+        {
+          "label": "Roof off",
+          "active": [
+            "store-roof"
+          ]
+        },
+        {
+          "label": "Trashed",
+          "active": [
+            "store-roof",
+            "store-trashed"
+          ]
+        },
+        {
+          "label": "Collapsed",
+          "active": [
+            "store-roof",
+            "store-collapsed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "approach",
+      "name": "The approach",
+      "point": [
+        0.535,
+        0.909
+      ],
+      "focusZoom": 3,
+      "actions": [
+        "approach-blocked"
+      ],
+      "sequence": [
+        {
+          "label": "Clear",
+          "active": []
+        },
+        {
+          "label": "Blocked",
+          "active": [
+            "approach-blocked"
+          ]
+        }
+      ]
+    }
+  ],
+  "interactions": [
+    {
+      "id": "barn-roof",
+      "type": "roof",
+      "label": "Remove barn roof",
+      "activeLabel": "Replace barn roof",
+      "placeId": "barn",
+      "polygon": [
+        [
+          0.13,
+          0.091
+        ],
+        [
+          0.464,
+          0.091
+        ],
+        [
+          0.464,
+          0.391
+        ],
+        [
+          0.13,
+          0.391
+        ]
+      ]
+    },
+    {
+      "id": "farmhouse-roof",
+      "type": "roof",
+      "label": "Remove farmhouse roof",
+      "activeLabel": "Replace farmhouse roof",
+      "placeId": "farmhouse",
+      "polygon": [
+        [
+          0.573,
+          0.091
+        ],
+        [
+          0.845,
+          0.091
+        ],
+        [
+          0.845,
+          0.45499999999999996
+        ],
+        [
+          0.573,
+          0.45499999999999996
+        ]
+      ]
+    },
+    {
+      "id": "workshop-roof",
+      "type": "roof",
+      "label": "Remove work garage roof",
+      "activeLabel": "Replace work garage roof",
+      "placeId": "workshop",
+      "polygon": [
+        [
+          0.158,
+          0.626
+        ],
+        [
+          0.187,
+          0.615
+        ],
+        [
+          0.246,
+          0.659
+        ],
+        [
+          0.393,
+          0.66
+        ],
+        [
+          0.393,
+          0.827
+        ],
+        [
+          0.245,
+          0.831
+        ],
+        [
+          0.21,
+          0.851
+        ],
+        [
+          0.158,
+          0.805
+        ]
+      ]
+    },
+    {
+      "id": "store-roof",
+      "type": "roof",
+      "label": "Remove food store roof",
+      "activeLabel": "Replace food store roof",
+      "placeId": "store",
+      "polygon": [
+        [
+          0.678,
+          0.67
+        ],
+        [
+          0.811,
+          0.67
+        ],
+        [
+          0.811,
+          0.8420000000000001
+        ],
+        [
+          0.678,
+          0.8420000000000001
+        ]
+      ]
+    },
+    {
+      "id": "barn-trashed",
+      "type": "terrain",
+      "variant": "trashed",
+      "label": "Trashed interior",
+      "activeLabel": "Restore building",
+      "placeId": "barn",
+      "asset": "trashed",
+      "polygon": [
+        [
+          0.13,
+          0.091
+        ],
+        [
+          0.464,
+          0.091
+        ],
+        [
+          0.464,
+          0.391
+        ],
+        [
+          0.13,
+          0.391
+        ]
+      ],
+      "requires": [
+        "barn-roof"
+      ]
+    },
+    {
+      "id": "barn-collapsed",
+      "type": "terrain",
+      "variant": "collapsed",
+      "label": "Collapsed building",
+      "activeLabel": "Restore building",
+      "placeId": "barn",
+      "asset": "collapsed",
+      "polygon": [
+        [
+          0.13,
+          0.091
+        ],
+        [
+          0.464,
+          0.091
+        ],
+        [
+          0.464,
+          0.391
+        ],
+        [
+          0.13,
+          0.391
+        ]
+      ],
+      "requires": [
+        "barn-roof"
+      ]
+    },
+    {
+      "id": "farmhouse-trashed",
+      "type": "terrain",
+      "variant": "trashed",
+      "label": "Trashed interior",
+      "activeLabel": "Restore building",
+      "placeId": "farmhouse",
+      "asset": "trashed",
+      "polygon": [
+        [
+          0.573,
+          0.091
+        ],
+        [
+          0.845,
+          0.091
+        ],
+        [
+          0.845,
+          0.45499999999999996
+        ],
+        [
+          0.573,
+          0.45499999999999996
+        ]
+      ],
+      "requires": [
+        "farmhouse-roof"
+      ]
+    },
+    {
+      "id": "farmhouse-collapsed",
+      "type": "terrain",
+      "variant": "collapsed",
+      "label": "Collapsed building",
+      "activeLabel": "Restore building",
+      "placeId": "farmhouse",
+      "asset": "collapsed",
+      "polygon": [
+        [
+          0.573,
+          0.091
+        ],
+        [
+          0.845,
+          0.091
+        ],
+        [
+          0.845,
+          0.45499999999999996
+        ],
+        [
+          0.573,
+          0.45499999999999996
+        ]
+      ],
+      "requires": [
+        "farmhouse-roof"
+      ]
+    },
+    {
+      "id": "workshop-trashed",
+      "type": "terrain",
+      "variant": "trashed",
+      "label": "Trashed interior",
+      "activeLabel": "Restore building",
+      "placeId": "workshop",
+      "asset": "trashed",
+      "polygon": [
+        [
+          0.158,
+          0.626
+        ],
+        [
+          0.187,
+          0.615
+        ],
+        [
+          0.246,
+          0.659
+        ],
+        [
+          0.393,
+          0.66
+        ],
+        [
+          0.393,
+          0.827
+        ],
+        [
+          0.245,
+          0.831
+        ],
+        [
+          0.21,
+          0.851
+        ],
+        [
+          0.158,
+          0.805
+        ]
+      ],
+      "requires": [
+        "workshop-roof"
+      ]
+    },
+    {
+      "id": "workshop-collapsed",
+      "type": "terrain",
+      "variant": "collapsed",
+      "label": "Collapsed building",
+      "activeLabel": "Restore building",
+      "placeId": "workshop",
+      "asset": "collapsed",
+      "polygon": [
+        [
+          0.158,
+          0.626
+        ],
+        [
+          0.187,
+          0.615
+        ],
+        [
+          0.246,
+          0.659
+        ],
+        [
+          0.393,
+          0.66
+        ],
+        [
+          0.393,
+          0.827
+        ],
+        [
+          0.245,
+          0.831
+        ],
+        [
+          0.21,
+          0.851
+        ],
+        [
+          0.158,
+          0.805
+        ]
+      ],
+      "requires": [
+        "workshop-roof"
+      ]
+    },
+    {
+      "id": "store-trashed",
+      "type": "terrain",
+      "variant": "trashed",
+      "label": "Trashed interior",
+      "activeLabel": "Restore building",
+      "placeId": "store",
+      "asset": "trashed",
+      "polygon": [
+        [
+          0.678,
+          0.67
+        ],
+        [
+          0.811,
+          0.67
+        ],
+        [
+          0.811,
+          0.8420000000000001
+        ],
+        [
+          0.678,
+          0.8420000000000001
+        ]
+      ],
+      "requires": [
+        "store-roof"
+      ]
+    },
+    {
+      "id": "store-collapsed",
+      "type": "terrain",
+      "variant": "collapsed",
+      "label": "Collapsed building",
+      "activeLabel": "Restore building",
+      "placeId": "store",
+      "asset": "collapsed",
+      "polygon": [
+        [
+          0.678,
+          0.67
+        ],
+        [
+          0.811,
+          0.67
+        ],
+        [
+          0.811,
+          0.8420000000000001
+        ],
+        [
+          0.678,
+          0.8420000000000001
+        ]
+      ],
+      "requires": [
+        "store-roof"
+      ]
+    },
+    {
+      "id": "approach-blocked",
+      "type": "terrain",
+      "label": "Block approach",
+      "activeLabel": "Clear approach",
+      "placeId": "approach",
+      "asset": "blockedApproach",
+      "polygon": [
+        [
+          0.38,
+          0.71
+        ],
+        [
+          0.68,
+          0.71
+        ],
+        [
+          0.68,
+          0.96
+        ],
+        [
+          0.38,
+          0.96
+        ]
+      ]
+    }
+  ],
+  "partyStart": [
+    0.533,
+    0.952
+  ],
+  "lighting": {
+    "occluders": [
+      [
+        [
+          0.13,
+          0.091
+        ],
+        [
+          0.464,
+          0.091
+        ],
+        [
+          0.464,
+          0.391
+        ],
+        [
+          0.13,
+          0.391
+        ]
+      ],
+      [
+        [
+          0.573,
+          0.091
+        ],
+        [
+          0.845,
+          0.091
+        ],
+        [
+          0.845,
+          0.45499999999999996
+        ],
+        [
+          0.573,
+          0.45499999999999996
+        ]
+      ],
+      [
+        [
+          0.158,
+          0.626
+        ],
+        [
+          0.187,
+          0.615
+        ],
+        [
+          0.246,
+          0.659
+        ],
+        [
+          0.393,
+          0.66
+        ],
+        [
+          0.393,
+          0.827
+        ],
+        [
+          0.245,
+          0.831
+        ],
+        [
+          0.21,
+          0.851
+        ],
+        [
+          0.158,
+          0.805
+        ]
+      ],
+      [
+        [
+          0.678,
+          0.67
+        ],
+        [
+          0.811,
+          0.67
+        ],
+        [
+          0.811,
+          0.8420000000000001
+        ],
+        [
+          0.678,
+          0.8420000000000001
+        ]
+      ]
+    ],
+    "lights": [
+      {
+        "id": "farmhouse-door",
+        "point": [
+          0.678,
+          0.471
+        ],
+        "radius": 12,
+        "requires": [],
+        "excludes": [
+          "farmhouse-collapsed"
+        ]
+      },
+      {
+        "id": "store-door",
+        "point": [
+          0.745,
+          0.832
+        ],
+        "radius": 8,
+        "requires": [],
+        "excludes": [
+          "store-collapsed"
+        ]
+      },
+      {
+        "id": "farmhouse-hearth",
+        "point": [
+          0.75,
+          0.145
+        ],
+        "radius": 14,
+        "requires": [
+          "farmhouse-roof"
+        ],
+        "excludes": [
+          "farmhouse-collapsed"
+        ],
+        "floor": {
+          "placeId": "farmhouse",
+          "floorId": "ground"
+        },
+        "clip": [
+          [
+            0.706,
+            0.119
+          ],
+          [
+            0.7869999999999999,
+            0.119
+          ],
+          [
+            0.7869999999999999,
+            0.22899999999999998
+          ],
+          [
+            0.706,
+            0.22899999999999998
+          ]
+        ]
+      },
+      {
+        "id": "upper-candle",
+        "point": [
+          0.688,
+          0.179
+        ],
+        "radius": 10,
+        "requires": [
+          "farmhouse-roof"
+        ],
+        "excludes": [],
+        "floor": {
+          "placeId": "farmhouse",
+          "floorId": "upper"
+        },
+        "clip": [
+          [
+            0.673,
+            0.124
+          ],
+          [
+            0.7070000000000001,
+            0.124
+          ],
+          [
+            0.7070000000000001,
+            0.431
+          ],
+          [
+            0.673,
+            0.431
+          ]
+        ]
+      },
+      {
+        "id": "cellar-candle",
+        "point": [
+          0.663,
+          0.266
+        ],
+        "radius": 12,
+        "requires": [],
+        "excludes": [],
+        "floor": {
+          "placeId": "farmhouse",
+          "floorId": "basement"
+        },
+        "clip": [
+          [
+            0.65,
+            0.127
+          ],
+          [
+            0.71,
+            0.127
+          ],
+          [
+            0.71,
+            0.426
+          ],
+          [
+            0.65,
+            0.426
+          ]
+        ]
+      },
+      {
+        "id": "store-candle",
+        "point": [
+          0.773,
+          0.732
+        ],
+        "radius": 8,
+        "requires": [
+          "store-roof"
+        ],
+        "excludes": [
+          "store-collapsed"
+        ],
+        "clip": [
+          [
+            0.692,
+            0.702
+          ],
+          [
+            0.7949999999999999,
+            0.702
+          ],
+          [
+            0.7949999999999999,
+            0.817
+          ],
+          [
+            0.692,
+            0.817
+          ]
+        ]
+      }
+    ]
+  },
+  "previousVersions": [
+    "0.1.1",
+    "0.1.0",
+    "0.2.0",
+    "0.3.0",
+    "0.4.0",
+    "0.4.1"
+  ],
+  "retiredInteractions": [
+    "barn-cellar"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "defaultMap": "blighted-citadel",
+  "maps": [
+    {
+      "id": "last-lantern",
+      "title": "The Last Lantern",
+      "category": "Riverside encounter",
+      "subtitle": "River crossing",
+      "thumbnail": "./maps/last-lantern/thumbnail-v109.webp",
+      "manifest": "./maps/last-lantern/map.json",
+      "identity": "LANTERNFORD",
+      "edition": "FIELD TEST 01"
+    },
+    {
+      "id": "blighted-farm",
+      "title": "The Blighted Farm",
+      "identity": "BLIGHTED FARM",
+      "edition": "FIELD TEST 02",
+      "category": "Blighted farmstead",
+      "subtitle": "Purple blight",
+      "thumbnail": "./maps/blighted-farm/thumbnail-v109.webp",
+      "manifest": "./maps/blighted-farm/map.json"
+    },
+    {
+      "id": "blighted-cavern",
+      "title": "The Blighted Cavern",
+      "identity": "BLIGHTED CAVERN",
+      "edition": "FIELD TEST 03",
+      "category": "Fungal cave",
+      "subtitle": "Cavern crossing",
+      "thumbnail": "./maps/blighted-cavern/thumbnail-v109.webp",
+      "manifest": "./maps/blighted-cavern/map.json"
+    },
+    {
+      "id": "blighted-homestead",
+      "title": "The Blighted Homestead",
+      "identity": "BLIGHTED HOMESTEAD",
+      "edition": "FIELD TEST 04",
+      "category": "Abandoned farmstead",
+      "subtitle": "Farmstead and basement",
+      "thumbnail": "./maps/blighted-homestead/thumbnail-v2.webp",
+      "manifest": "./maps/blighted-homestead/map.json"
+    },
+    {
+      "id": "blighted-ridge",
+      "title": "The Blighted Ridge",
+      "identity": "BLIGHTED RIDGE",
+      "edition": "FIELD TEST 05",
+      "category": "Mountain pass",
+      "subtitle": "Cliffside crossing",
+      "thumbnail": "./maps/blighted-ridge/thumbnail-v1.webp",
+      "manifest": "./maps/blighted-ridge/map.json"
+    },
+    {
+      "id": "blighted-citadel",
+      "title": "The Blighted Citadel",
+      "identity": "BLIGHTED CITADEL",
+      "edition": "FIELD TEST 06",
+      "category": "Fortified castle town",
+      "subtitle": "Castle, prison and sewers",
+      "thumbnail": "./maps/blighted-citadel/thumbnail-v1.webp",
+      "manifest": "./maps/blighted-citadel/map.json"
+    }
+  ]
+}

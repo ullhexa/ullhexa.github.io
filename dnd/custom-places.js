@@ -1,0 +1,14 @@
+// Editor geometry stays in source-image pixels. Export uses normalized map coordinates.
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+export function boxCorners(box){const c=Math.cos(box.angle),s=Math.sin(box.angle);return [[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>[box.center[0]+x*box.width/2*c-y*box.height/2*s,box.center[1]+x*box.width/2*s+y*box.height/2*c]);}
+export function fitBox(box,dimensions){let next={...box,center:[...box.center]};const points=boxCorners(next),span=[0,1].map(i=>Math.max(...points.map(p=>p[i]))-Math.min(...points.map(p=>p[i]))),factor=Math.min(1,...dimensions.map((n,i)=>n/span[i]));next.width*=factor;next.height*=factor;const half=span.map(n=>n*factor/2);next.center=next.center.map((n,i)=>clamp(n,half[i],dimensions[i]-half[i]));return next;}
+export function resizeBox(box,index,point,{square=false,ratio=false}={}){
+ const opposite=boxCorners(box)[(index+2)%4],c=Math.cos(box.angle),s=Math.sin(box.angle),d=point.map((n,i)=>n-opposite[i]),signs=[[-1,-1],[1,-1],[1,1],[-1,1]][index];
+ let width=Math.max(4,signs[0]*(d[0]*c+d[1]*s)),height=Math.max(4,signs[1]*(-d[0]*s+d[1]*c));
+ if(square||ratio){const aspect=square?1:box.width/box.height;if(width/height>aspect)height=width/aspect;else width=height*aspect;}
+ const x=signs[0]*width/2,y=signs[1]*height/2;return {...box,width,height,center:[opposite[0]+x*c-y*s,opposite[1]+x*s+y*c]};
+}
+export function containsBox(box,point){const d=point.map((n,i)=>n-box.center[i]),c=Math.cos(box.angle),s=Math.sin(box.angle);return Math.abs(d[0]*c+d[1]*s)<=box.width/2&&Math.abs(-d[0]*s+d[1]*c)<=box.height/2;}
+export function placeBox(place,dimensions){const points=place.footprint.map(p=>p.map((n,i)=>n*dimensions[i])),edge=points[1].map((n,i)=>n-points[0][i]);return {center:[0,1].map(i=>points.reduce((sum,p)=>sum+p[i],0)/4),width:Math.hypot(...edge),height:Math.hypot(...points[2].map((n,i)=>n-points[1][i])),angle:Math.atan2(edge[1],edge[0])};}
+export function boxPlace(place,dimensions){const box=fitBox(place.box,dimensions);return {id:place.id,name:place.name.trim()||'Place',point:box.center.map((n,i)=>n/dimensions[i]),footprint:boxCorners(box).map(p=>p.map((n,i)=>clamp(n/dimensions[i],0,1))),focusZoom:3,focusOnly:true,actions:[]};}
+export function validCustomPlaces(places){return Array.isArray(places)&&places.length<=80&&new Set(places.map(p=>p?.id)).size===places.length&&places.every(p=>p&&typeof p.id==='string'&&/^[-a-zA-Z0-9]{1,90}$/.test(p.id)&&typeof p.name==='string'&&p.name.trim().length>0&&p.name.length<=64&&p.focusOnly===true&&p.focusZoom>=1&&p.focusZoom<=4&&Array.isArray(p.actions)&&!p.actions.length&&Array.isArray(p.point)&&p.point.length===2&&p.point.every(n=>Number.isFinite(n)&&n>=0&&n<=1)&&Array.isArray(p.footprint)&&p.footprint.length===4&&p.footprint.every(q=>Array.isArray(q)&&q.length===2&&q.every(n=>Number.isFinite(n)&&n>=0&&n<=1))&&Math.abs(p.footprint.reduce((sum,q,i)=>{const r=p.footprint[(i+1)%4];return sum+q[0]*r[1]-r[0]*q[1];},0))>1e-10);}

@@ -1,0 +1,73 @@
+import {consumeMapDismissal} from './map-dismissal.js?v=62';
+import {diceFaceBank,faceReveal,blendDieFace,clearDiceFaceBanks} from './dice-faces.js?v=119';
+import {uiFontsReady} from './typography.js?v=119';
+import {drawDie,landingMesh,percentileFaces,rollDuration,dieContainsPoint,DICE_COLORS} from './dice-geometry.js?v=119';
+import {boardIcon} from './control-icons.js?v=81';
+import {el,button} from './editor-dom.js?v=62';
+import {isTextEntry} from './keyboard.js?v=116';
+export const DICE=[4,6,8,10,12,20,100];
+export function dieValue(sides,random=()=>crypto.getRandomValues(new Uint32Array(1))[0]){
+  if(!DICE.includes(sides))throw new Error('Unsupported die.');
+  const limit=2**32-(2**32%sides);let n;do{n=random();}while(n>=limit);return n%sides+1;
+}
+export function rollDice(counts,random){return DICE.flatMap(sides=>Array.from({length:Math.max(0,Math.min(20,Math.floor(counts[sides]||0)))},()=>({sides,value:dieValue(sides,random)})));}
+function drawChoice(canvas,sides){
+  const source=el('canvas'),shape=landingMesh(sides===100?10:sides);source.width=canvas.width;source.height=canvas.height;
+  drawDie(source,shape,sides,[0,0,0],false,[0,0]);
+  // Center the visible silhouette, keeping the D6's centerline and every die's size.
+  const pixels=source.getContext('2d').getImageData(0,0,source.width,source.height).data;let left=source.width,right=0,top=source.height,bottom=0;
+  for(let y=0;y<source.height;y++)for(let x=0;x<source.width;x++)if(pixels[(y*source.width+x)*4+3]>20){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
+  // Lift the chooser's 4 optically inside its narrow triangle (4.8 screen px).
+  // Rolled face plates keep their separately tuned number positions.
+  drawDie(source,shape,sides,[0,0,0],true,[0,0],false,sides===4?8:0,{button:true});const paint=canvas.getContext('2d');paint.clearRect(0,0,canvas.width,canvas.height);paint.drawImage(source,(canvas.width-left-right-1)/2,(canvas.height-top-bottom-1)/2);
+}
+export function createDiceTools(preferences){
+  const stage=document.getElementById('map-stage'),toggle=button('',()=>panel.hidden?open():close(),'toolbar-icon dice-toggle');toggle.id='open-dice';toggle.setAttribute('aria-label','Dice');toggle.setAttribute('aria-pressed','false');toggle.append(boardIcon('dice'));const toolbar=el('div',undefined,'dice-toolbar'),quick=el('div',undefined,'quick-dice');quick.setAttribute('aria-label','Quick dice');toolbar.append(toggle,quick);document.querySelector('.fog-controls').after(toolbar);
+  const panel=el('section',undefined,'dice-panel instant-dice'),controls=el('div',undefined,'dice-controls'),display=el('div',undefined,'dice-display'),tray=el('div',undefined,'dice-results'),total=el('output','0','dice-total');panel.hidden=true;panel.setAttribute('aria-label','Dice throw');panel.setAttribute('role','dialog');total.setAttribute('aria-label','Dice total');total.setAttribute('aria-live','polite');const summary=el('div',undefined,'dice-summary'),quickLabel=el('label',undefined,'quick-dice-toggle'),quickToggle=el('input');quickToggle.type='checkbox';quickToggle.checked=preferences.get('quickDice');quickLabel.append(quickToggle,el('span','Quick dice'));summary.append(total,quickLabel);display.append(tray,summary);quick.hidden=!quickToggle.checked;quickToggle.addEventListener('change',()=>{preferences.set('quickDice',quickToggle.checked);quick.hidden=!quickToggle.checked;position();});panel.append(controls,display);stage.append(panel);
+  const buttons=new Map();let pool=[],animation=0,sequence=0,choice=null,choiceTimer=0;
+  function position(){if(panel.hidden)return;const r=toggle.getBoundingClientRect(),s=stage.getBoundingClientRect();panel.style.left=`${Math.max(0,Math.min(stage.clientWidth-panel.offsetWidth,r.left+r.width/2-s.left-panel.offsetWidth/2))}px`;panel.style.top='0px';}
+  function selectChoice(sides,keyboard=true){clearTimeout(choiceTimer);choice=sides;if(keyboard&&choice!==null&&controls.contains(document.activeElement))document.activeElement.blur();for(const[value,b]of buttons)b.classList.toggle('keyboard-selected',keyboard&&value===choice);if(choice!==null)choiceTimer=setTimeout(()=>selectChoice(null),5000);}
+  function refresh(){
+    for(const[sides,b]of buttons){const dice=pool.filter(d=>d.sides===sides),moving=dice.some(d=>d.parts.some(p=>!p.settled)),sum=dice.reduce((s,d)=>s+d.value,0);b.querySelector('.die-count').textContent=dice.length||'';b.querySelector('output').textContent=dice.length?(moving?'…':String(sum)):'';b.setAttribute('aria-label',dice.length?`Roll D${sides}, ${dice.length} dice, total ${moving?'rolling':sum}`:`Roll D${sides}`);b.disabled=dice.length>=20;}
+    const moving=pool.some(d=>d.parts.some(p=>!p.settled));panel.classList.toggle('rolling',moving);total.textContent=moving?'…':String(pool.reduce((s,d)=>s+d.value,0));
+  }
+  function reset(){cancelAnimationFrame(animation);animation=0;pool=[];tray.replaceChildren();selectChoice(null);refresh();}
+  function remove(die){pool=pool.filter(d=>d!==die);die.group.replaceChildren();die.group.disabled=true;die.group.classList.remove('die-hovered');die.group.classList.add('dice-empty-slot');die.group.removeAttribute('aria-label');die.group.setAttribute('aria-hidden','true');refresh();if(!pool.some(d=>d.parts.some(p=>!p.settled))){cancelAnimationFrame(animation);animation=0;}}
+  function hitsDie(die,event){
+    return die.parts.some(part=>{
+      const r=part.canvas.getBoundingClientRect(),point=[(event.clientX-r.left)*104/r.width,(event.clientY-r.top)*104/r.height];
+      if(point.some(n=>n<0||n>104))return false;
+      return (part.reveal<1&&dieContainsPoint(part.shape,part.angles,point))||(part.reveal>0&&dieContainsPoint(part.shape,[0,0,0],point));
+    });
+  }
+  function frame(now){animation=0;let moving=false,changed=false;for(const die of pool)for(const part of die.parts){if(part.settled)continue;const elapsed=now-part.start,progress=part.duration?Math.min(1,elapsed/part.duration):1,remaining=(1-progress)**3,axes=[[4,1,.5],[3,3,1.5],[.7,4,2]][part.index%3],angles=axes.map(turns=>remaining*(turns+(part.index%5)*.17)*Math.PI*2);drawDie(part.canvas,part.shape,part.value,angles,false,part.color);const reveal=faceReveal(elapsed,part.duration);part.angles=angles;part.reveal=reveal.alpha;blendDieFace(part.canvas,part.plate,reveal);if(progress===1){part.settled=true;part.canvas.dataset.settled='true';changed=true;if(die.parts.every(p=>p.settled))die.group.setAttribute('aria-label',`Remove D${die.sides}: ${die.value}`);}else moving=true;}if(changed)refresh();if(moving)animation=requestAnimationFrame(frame);}
+  function add(sides){
+    if(pool.filter(d=>d.sides===sides).length>=20)return;const value=dieValue(sides),bank=diceFaceBank(sides),die={sides,value,parts:[]},group=button('',e=>{e.stopPropagation();if(e.detail===0||hitsDie(die,e))remove(die);else reset();},`dice-result${sides===100?' percentile-pair':''}`);die.group=group;group.style.width=`${sides===100?208:104}px`;group.style.flex='0 0 auto';group.dataset.sides=sides;group.dataset.value=value;group.setAttribute('aria-label',`Remove D${sides}: rolling`);group.addEventListener('pointermove',e=>group.classList.toggle('die-hovered',hitsDie(die,e)));group.addEventListener('pointerleave',()=>group.classList.remove('die-hovered'));
+    const values=sides===100?percentileFaces(value):[value],reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
+    for(const v of values){const canvas=el('canvas',undefined,'rolled-die');canvas.width=canvas.height=104*bank.ratio;canvas.style.marginTop=`${bank.offsetY}px`;canvas.setAttribute('aria-hidden','true');const part={canvas,shape:bank.shape,plate:bank.faces.get(String(v)),value:v,index:sequence++,color:bank.color,duration:reduced?0:rollDuration(),start:performance.now(),settled:false,angles:[0,0,0],reveal:0};canvas.dataset.duration=part.duration;die.parts.push(part);group.append(canvas);}
+    pool.push(die);pool.sort((a,b)=>DICE.indexOf(a.sides)-DICE.indexOf(b.sides));const next=pool[pool.indexOf(die)+1];tray.insertBefore(group,next?.group||null);refresh();if(!animation)animation=requestAnimationFrame(frame);
+  }
+  for(const sides of DICE){const b=button('',()=>{selectChoice(sides,false);add(sides);},'die-choice');b.dataset.die=sides;const canvas=el('canvas',undefined,'die-choice-face');canvas.width=canvas.height=208;canvas.setAttribute('aria-hidden','true');drawChoice(canvas,sides);b.append(el('span','','die-count'),canvas,el('output',''));controls.append(b);buttons.set(sides,b);}
+  for(const sides of DICE){const b=button('',()=>{if(panel.hidden)open();selectChoice(sides,false);add(sides);},'quick-die');b.dataset.quickDie=sides;const [hue,saturation]=DICE_COLORS[sides];b.style.setProperty('--die-color',`hsl(${hue} ${saturation}% 50%)`);b.setAttribute('aria-label',`Roll D${sides}`);const silhouettes={4:'12,2 22,21 2,21',6:'3,3 21,3 21,21 3,21',8:'12,1 22,12 12,23 2,12',10:'12,1 22,8 22,17 12,23 2,17 2,8',12:'8,1 17,2 23,10 19,20 10,23 2,17 1,8',20:'12,1 22,6 22,18 12,23 2,18 2,6',100:'12,1 22,8 22,17 12,23 2,17 2,8'};b.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${silhouettes[sides]}" fill="#17221b" stroke="#000000" stroke-width=".6"/><text x="12" y="${sides===4?16:15}" text-anchor="middle" fill="white" font-family="'Ull Hexa Display',sans-serif" font-weight="700" font-size="${sides===100?8:10}">${sides}</text></svg>`;quick.append(b);}
+  display.addEventListener('click',e=>{if(e.target.closest('.dice-summary'))return;if(!e.target.closest('.dice-result'))reset();});panel.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();reset();});
+  function open(){document.dispatchEvent(new Event('map-menu-opening'));reset();panel.hidden=false;toggle.setAttribute('aria-pressed','true');position();}function close(){reset();panel.hidden=true;toggle.setAttribute('aria-pressed','false');}
+  document.addEventListener('pointerdown',e=>{if(panel.hidden||panel.contains(e.target)||toolbar.contains(e.target)||e.target.closest('#combat-roster .initiative-input,#combat-roster .roster-name'))return;close();consumeMapDismissal(e,stage);},true);
+  document.addEventListener('library-opening',close);new ResizeObserver(position).observe(stage);window.addEventListener('resize',position);document.addEventListener('scroll',position,true);
+  document.addEventListener('keydown',e=>{
+    if(panel.hidden||e.defaultPrevented||e.isComposing||e.metaKey||e.ctrlKey||e.altKey||isTextEntry(e.target)||e.target.closest('select,.reference-suite')||document.querySelector('dialog[open],.token-status-editor,.item-comment'))return;
+    if(![' ','Backspace','Delete','Escape','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();e.stopImmediatePropagation();
+    if(e.key==='Delete'||e.key==='Escape'){close();return;}if(e.key==='Backspace'){reset();return;}
+    if(e.key==='ArrowLeft'||e.key==='ArrowRight'){const delta=e.key==='ArrowRight'?1:-1,index=choice===null?(delta===1?-1:0):DICE.indexOf(choice);selectChoice(DICE[(index+delta+DICE.length)%DICE.length]);return;}
+    if(e.key===' '){if(!e.repeat){const sides=choice??20;selectChoice(sides);add(sides);}return;}
+    if(choice!==null){selectChoice(choice);if(e.key==='ArrowUp')add(choice);else{const die=pool.findLast(d=>d.sides===choice);if(die)remove(die);}}
+  },true);
+  // Rebuild cached number plates once if the local font arrives after startup.
+  // Keep each die's value and animation clock; no font work occurs per frame.
+  uiFontsReady().then(()=>{
+    if(!panel.isConnected)return;
+    clearDiceFaceBanks();
+    for(const [sides,b] of buttons)drawChoice(b.querySelector('canvas'),sides);
+    for(const die of pool){const bank=diceFaceBank(die.sides,die.parts[0].canvas.width/104);for(const part of die.parts){part.plate=bank.faces.get(String(part.value));part.canvas.style.marginTop=`${bank.offsetY}px`;if(part.settled)blendDieFace(part.canvas,part.plate,{alpha:1,scale:1});}}
+  });
+  refresh();return{close};
+}

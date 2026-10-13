@@ -1,69 +1,203 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Visualizers — ullhexa</title>
-    <style>
-      body {
-        margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        background: #070709;
-        color: #fff;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      }
-      .wrap {
-        width: min(760px, 92vw);
-        border: 1px solid #2a2a32;
-        border-radius: 16px;
-        padding: 28px;
-        background: rgba(255,255,255,0.03);
-      }
-      h1 {
-        margin: 0 0 8px;
-        font-size: 28px;
-      }
-      p {
-        margin: 0 0 18px;
-        color: #cfd3df;
-      }
-      .buttons {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 12px;
-      }
-      a.btn {
-        display: inline-block;
-        text-align: center;
-        text-decoration: none;
-        color: #fff;
-        border: 1px solid #3d3d49;
-        border-radius: 12px;
-        padding: 14px 16px;
-        background: rgba(255,255,255,0.05);
-      }
-      a.btn:hover {
-        background: rgba(255,255,255,0.14);
-      }
-      .back {
-        margin-top: 14px;
-        display: inline-block;
-        color: #bbb;
-        text-decoration: none;
-      }
-    </style>
-  </head>
-  <body>
-    <main class="wrap">
-      <h1>Visualizers</h1>
-      <p>Choose input type:</p>
-      <div class="buttons">
-        <a class="btn" href="./midi-visualizers.html" target="_blank" rel="noreferrer">MIDI Visualizers</a>
-        <a class="btn" href="./audio-visualizers.html" target="_blank" rel="noreferrer">Audio Visualizers</a>
+<head>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Visualizers — Ull Hexa</title>
+  <link rel="preload" href="./assets/fonts/ull-hexa-display/UllHexaDisplay-Regular.woff2?v=0.1.1" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="./assets/fonts/ull-hexa-display/UllHexaDisplay-Bold.woff2?v=0.1.1" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="./app/typography.css?v=20261002-font" />
+  <link rel="stylesheet" href="./app/audio-visualizers.css?v=20261002-font" />
+  <link rel="stylesheet" href="./app/visualizers.css?v=20261002-font" />
+</head>
+<body data-family="audio" data-audio-capture="off">
+<div id="controls">
+  <nav id="modeMenus" aria-label="Visualizer modes">
+    <div class="modeMenu" data-family="midi">
+      <button class="modeMenuToggle" type="button" aria-expanded="false" aria-controls="midiModes">MIDI<span aria-hidden="true" class="menuChevron"></span></button>
+      <div class="modeDropdown" id="midiModes" hidden>
+        <button type="button" data-mode="squares">City</button>
+        <button type="button" data-mode="plane">3D Plane</button>
+        <button type="button" data-mode="plasma">Plasma Sphere</button>
+        <button type="button" data-mode="rubik">Rubik's Cube</button>
       </div>
-      <a class="back" href="./index.html">← Back to site</a>
-    </main>
-  </body>
+    </div>
+    <div class="modeMenu" data-family="audio">
+      <button class="modeMenuToggle" type="button" aria-expanded="false" aria-controls="audioModes">Audio<span aria-hidden="true" class="menuChevron"></span></button>
+      <div class="modeDropdown" id="audioModes" hidden>
+        <button type="button" data-mode="stereo-osc">Quantum string</button>
+        <button type="button" data-mode="fractals">Alien trees</button>
+        <button type="button" data-mode="cat">Space cat</button>
+      </div>
+    </div>
+  </nav>
+  <button id="viewBtn" class="inputBtn">View</button>
+  <button id="micBtn" class="inputBtn">Mic: off</button>
+  <button id="speakerBtn" class="inputBtn">Web Audio: off</button>
+  <div id="settingsMenu">
+  <div id="settingsHeader">
+  <button id="settingsToggle" class="inputBtn" aria-expanded="false">Settings</button>
+  </div>
+  <div id="settingsPanel" class="collapsed">
+    <div id="sliderStack">
+    <div class="sliderRow" data-control="energy">
+      <label for="energySlider">Energy:</label>
+      <input id="energySlider" class="controlSlider" type="range" min="0" max="200" value="100" step="1" />
+      <span id="energyValue" class="sliderValue">100%</span>
+    </div>
+    <div class="sliderRow" data-control="catFragmentSets">
+      <label>Disco:</label>
+      <div id="catSetToggleGrid" class="setToggleGrid">
+        <button type="button" class="catSetBtn active" data-disco-group="Metals">Metals</button>
+        <button type="button" class="catSetBtn active" data-disco-group="Pulses">Pulses</button>
+      </div>
+      <span class="sliderValue"></span>
+    </div>
+    <div class="sliderRow" data-control="zoom">
+      <label for="zoomSlider">Zoom:</label>
+      <input id="zoomSlider" class="controlSlider" type="range" min="15" max="300" value="100" step="1" />
+      <span id="zoomValue" class="sliderValue">100%</span>
+    </div>
+    <div class="sliderRow" data-control="speed">
+      <label for="speedSlider">Strength:</label>
+      <input id="speedSlider" class="controlSlider" type="range" min="0.1" max="10" value="5.45" step="0.01" />
+      <span id="speedValue" class="sliderValue">5.45Hz</span>
+    </div>
+    <div class="sliderRow" data-control="phase">
+      <label for="phaseSlider">Phase:</label>
+      <input id="phaseSlider" class="controlSlider" type="range" min="0" max="100" value="66" step="1" />
+      <span id="phaseValue" class="sliderValue">6.60c/s</span>
+    </div>
+    <div class="sliderRow" data-control="phaseResponse">
+      <label for="phaseResponseSlider">Phase response:</label>
+      <input id="phaseResponseSlider" class="controlSlider" type="range" min="0" max="100" value="74" step="1" />
+      <span id="phaseResponseValue" class="sliderValue">74%</span>
+    </div>
+    <div class="sliderRow" data-control="bassEmphasis">
+      <label for="bassEmphasisSlider">Bass emphasis:</label>
+      <input id="bassEmphasisSlider" class="controlSlider" type="range" min="0" max="100" value="89" step="1" />
+      <span id="bassEmphasisValue" class="sliderValue">89%</span>
+    </div>
+    <div class="sliderRow" data-control="shape">
+      <label for="shapeSlider">Shape:</label>
+      <div id="shapeControl" class="shapeControl">
+        <input id="shapeSlider" class="controlSlider" type="range" min="0" max="100" value="50" step="1" />
+        <div id="shapeLfoIndicator">
+          <div id="shapeLfoRange"></div>
+          <div id="shapeLfoLine"></div>
+          <div id="shapeLfoDot"></div>
+        </div>
+      </div>
+      <span id="shapeValue" class="sliderValue">50%</span>
+    </div>
+    <div class="sliderRow" data-control="shapeLfo">
+      <label for="shapeLfoSlider">Shape LFO:</label>
+      <input id="shapeLfoSlider" class="controlSlider lfoSlider inactive" type="range" min="0" max="500" value="0" step="1" />
+      <span id="shapeLfoValue" class="sliderValue">0.00Hz</span>
+    </div>
+    <div class="sliderRow" data-control="fruits">
+      <label for="fruitsSlider">Fruits:</label>
+      <div id="fruitControl" class="fruitControl">
+        <input id="fruitsSlider" class="controlSlider" type="range" min="0" max="100" value="50" step="1" />
+        <div id="fruitLfoIndicator">
+          <div id="fruitLfoRange"></div>
+          <div id="fruitLfoLine"></div>
+          <div id="fruitLfoDot"></div>
+        </div>
+      </div>
+      <span id="fruitsValue" class="sliderValue">50%</span>
+    </div>
+    <div class="sliderRow" data-control="fruitsLfo">
+      <label for="fruitsLfoSlider">Fruit LFO:</label>
+      <input id="fruitsLfoSlider" class="controlSlider lfoSlider inactive" type="range" min="0" max="500" value="0" step="1" />
+      <span id="fruitsLfoValue" class="sliderValue">0.00Hz</span>
+    </div>
+    <div class="sliderRow" data-control="rain">
+      <label for="rainSlider">Rain:</label>
+      <input id="rainSlider" class="controlSlider" type="range" min="0" max="100" value="0" step="1" />
+      <span id="rainValue" class="sliderValue">0%</span>
+    </div>
+    <div class="sliderRow" data-control="dropSize">
+      <label for="dropSizeSlider">Drop Size:</label>
+      <input id="dropSizeSlider" class="controlSlider" type="range" min="0" max="100" value="0" step="1" />
+      <span id="dropSizeValue" class="sliderValue">1.0x</span>
+    </div>
+    <div class="sliderRow" data-control="strobe">
+      <label for="strobeSlider">Strobe:</label>
+      <div class="strobeControl">
+        <input id="strobeSlider" class="controlSlider" type="range" min="0" max="100" value="48" step="1" />
+        <div id="strobeLfoIndicator">
+          <div id="strobeLfoLine"></div>
+          <div id="strobeLfoDot"></div>
+        </div>
+      </div>
+      <span id="strobeValue" class="sliderValue">48%</span>
+    </div>
+    <div class="sliderRow" data-control="strobeLfo">
+      <label for="strobeLfoSlider">Strobe LFO:</label>
+      <input id="strobeLfoSlider" class="controlSlider lfoSlider" type="range" min="0" max="300" value="102" step="1" />
+      <span id="strobeLfoValue" class="sliderValue">0.07Hz</span>
+    </div>
+    <div class="sliderRow" data-control="warp">
+      <label for="warpSlider">Warp:</label>
+      <input id="warpSlider" class="controlSlider" type="range" min="0" max="100" value="100" step="1" />
+      <span id="warpValue" class="sliderValue">100%</span>
+    </div>
+    <div class="sliderRow" data-control="fold">
+      <label for="foldSlider">Fold:</label>
+      <input id="foldSlider" class="controlSlider" type="range" min="0" max="100" value="68" step="1" />
+      <span id="foldValue" class="sliderValue">68%</span>
+    </div>
+    <div class="sliderRow" data-control="foldResponse">
+      <label for="foldResponseSlider">Fold response:</label>
+      <input id="foldResponseSlider" class="controlSlider" type="range" min="0" max="100" value="0" step="1" />
+      <span id="foldResponseValue" class="sliderValue">Low 100%</span>
+    </div>
+    </div>
+    <div id="panelActions">
+      <button id="helpToggleBtn" class="inputBtn" aria-expanded="false" aria-controls="helpBubble">?</button>
+      <span class="spacer"></span>
+      <button id="settingsReset" class="inputBtn">Reset</button>
+      <button id="settingsRandomize" class="inputBtn">Randomize</button>
+    </div>
+    <div id="helpBubble" aria-live="polite">
+      <p data-help-control="energy"><strong>Energy:</strong> Global input gain for all visualizers (0-200%).</p>
+      <p data-help-control="catFragmentSets">Tap the space bar five or more times to set the tempo.</p>
+      <p data-help-control="zoom"><strong>Zoom:</strong> Makes the oscilloscope drawing smaller or larger.</p>
+      <p data-help-control="speed"><strong>Strength:</strong> Sets the base frequency for both X and Y axes.</p>
+      <p data-help-control="phase"><strong>Phase:</strong> Sets how fast the shape rotates over time.</p>
+      <p data-help-control="phaseResponse"><strong>Phase response:</strong> Lets bass and kick temporarily slow/stop phase rotation.</p>
+      <p data-help-control="bassEmphasis"><strong>Bass emphasis:</strong> Strengthens low-end influence on retune and triangle-like shaping.</p>
+      <p data-help-control="shape"><strong>Shape:</strong> Shapes fractal branching and low-end influence.</p>
+      <p data-help-control="shapeLfo"><strong>Shape LFO:</strong> Modulates Shape around center; Shape sets LFO depth amount.</p>
+      <p data-help-control="fruits"><strong>Fruits:</strong> Controls how strongly image 3 appears from high-band activity.</p>
+      <p data-help-control="fruitsLfo"><strong>Fruit LFO:</strong> Modulates Fruits around center; Fruits sets LFO depth amount.</p>
+      <p data-help-control="rain"><strong>Rain:</strong> Adds slow falling pixel droplets with color morphing and volume dynamics.</p>
+      <p data-help-control="dropSize"><strong>Drop Size:</strong> Increases rain droplet size from minimum up to around 5x.</p>
+      <p data-help-control="strobe"><strong>Strobe:</strong> Sets how much X-axis detune is applied.</p>
+      <p data-help-control="strobeLfo"><strong>Strobe LFO:</strong> Adds a repeating modulation to Strobe (slow to fast).</p>
+      <p data-help-control="warp"><strong>Warp:</strong> Pulls the shape toward saw-like behavior from high-frequency detail.</p>
+      <p data-help-control="fold"><strong>Fold:</strong> Adds wave-folding on X and Y; louder moments fold more.</p>
+      <p data-help-control="foldResponse"><strong>Fold response:</strong> 50% is neutral. Left makes low-end reduce fold, right makes high-end reduce fold.</p>
+    </div>
+  </div>
+  </div>
+</div>
+<div id="xMultControls">
+  <button class="xMultBtn active" data-mult="1">1x</button>
+  <button class="xMultBtn" data-mult="2">2x</button>
+  <button class="xMultBtn" data-mult="3">3x</button>
+  <button class="xMultBtn" data-mult="4">4x</button>
+</div>
+<button id="viewExitBtn" aria-label="Exit view" hidden>X</button>
+<canvas id="canvas" aria-label="Audio visualizer" tabindex="-1" hidden></canvas>
+<canvas id="midiCanvas" aria-label="MIDI visualizer" tabindex="-1" hidden></canvas>
+<p id="midiHelp">Play MIDI or use A–Z.</p>
+<div id="bottomInfo">
+  <span id="status">input: none</span>
+  <span id="inputHelp">Mic uses microphone input. Web Audio uses shared browser-tab audio.</span>
+</div>
+<script type="module" src="./app/visualizers.js?v=20261002-font"></script>
+</body>
 </html>

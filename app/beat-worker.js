@@ -1,18 +1,33 @@
-import { GrooveTracker } from '../bpm-detector.js?v=groove-2';
+import { GrooveTracker } from '../bpm-detector.js?v=groove-4';
 let tracker = null;
 let dataPort = null;
-let taps = [];
+let timer = null;
 
 function publish(includeHistory = false) {
-  const state = { ...tracker.snapshot(), tapCount: taps.length };
+  const state = tracker.snapshot();
   if (includeHistory) state.history = tracker.orderedHistory();
   self.postMessage(state);
 }
-
+function stopTimer() { if (timer != null) clearInterval(timer); timer = null; }
 self.onmessage = event => {
   const message = event.data;
+  if (message.type === 'init') {
+    tracker = new GrooveTracker({ rate: message.rate || 100 });
+    tracker.clock.advance(message.time || 0);
+    // Tapping also works before audio is chosen. Audio packets take over the
+    // scheduling as soon as capture connects; there is still only one clock.
+    if (typeof setInterval === 'function') {
+      const offset = (message.time || 0) - performance.now() / 1000;
+      stopTimer();
+      timer = setInterval(() => { tracker.clock.advance(performance.now() / 1000 + offset); publish(); }, 100);
+    }
+    publish();
+    return;
+  }
   if (message.type === 'connect') {
-    tracker = new GrooveTracker({ rate: message.rate });
+    stopTimer();
+    if (!tracker) tracker = new GrooveTracker({ rate: message.rate });
+    dataPort?.close?.();
     dataPort = message.port;
     dataPort.onmessage = packet => {
       const frames = new Float64Array(packet.data);
@@ -25,27 +40,9 @@ self.onmessage = event => {
   }
   if (!tracker) return;
   const time = Number.isFinite(message.time) ? message.time : tracker.lastFrame || 0;
-  if (message.type !== 'tap') taps = [];
-  if (message.type === 'relearn') { tracker.reset(); taps = []; }
-  if (message.type === 'hold') tracker.clock.setManual(message.value);
-  if (message.type === 'multiply' && tracker.clock.bpm) {
-    tracker.clock.setTempo(tracker.clock.targetBpm * message.value, time);
-    tracker.clock.setManual(true);
-  }
-  if (message.type === 'tap') {
-    if (taps.length && (time - taps.at(-1) > 2 || time - taps.at(-1) < 0.2)) taps = [];
-    taps.push(time);
-    if (taps.length > 7) taps.shift();
-    if (taps.length >= 4) {
-      const intervals = taps.slice(1).map((tap, i) => tap - taps[i]).sort((a, b) => a - b);
-      const median = intervals[Math.floor(intervals.length / 2)];
-      const consistent = intervals.filter(interval => Math.abs(interval - median) < median * 0.2);
-      if (consistent.length >= 3) {
-        const period = consistent.reduce((sum, value) => sum + value, 0) / consistent.length;
-        tracker.clock.setTempo(60 / period, time, true);
-        tracker.clock.setManual(true);
-      }
-    }
-  }
+  if (message.type === 'rebase') { stopTimer(); tracker.rebase(message.delta, message.rate); }
+  if (message.type === 'relearn') tracker.reset();
+  if (message.type === 'multiply') tracker.multiply(message.value, time);
+  if (message.type === 'tap') tracker.tap(time);
   publish();
 };

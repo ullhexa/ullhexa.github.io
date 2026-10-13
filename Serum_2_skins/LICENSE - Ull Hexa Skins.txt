@@ -1,0 +1,103 @@
+ULL HEXA SKINS - FREE USE AND SHARING LICENCE
+Version 1.2 | 13 October 2026
+Copyright (c) 2026 Ull Hexa. Rights reserved except as granted below.
+
+1. WHAT THIS LICENCE COVERS
+
+This licence covers the Ull Hexa skin supplied with this document, including
+its artwork, textures, icons, bundled fonts and documentation (the "Skin").
+It grants permission to use and share the Skin; it does not transfer ownership
+or grant exclusive rights. Ull Hexa and any applicable rights holders retain
+their respective rights. Nothing here claims rights beyond those available
+under applicable law.
+
+2. FREE USE
+
+You may install and use the Skin with your lawfully licensed copy of Serum 2
+on computers you own or control, and make installation and backup copies.
+Personal and professional use is permitted, including commercial music,
+presets, performances and recordings. No royalty or credit is required on
+your music, recordings or presets, and Ull Hexa acquires no rights in them.
+Distributing a preset does not permit including Skin files with it.
+
+You may show the Skin running in Serum 2 in screenshots, tutorials, reviews,
+demonstrations and videos, including monetised content. Do not present the
+Skin as your own product or imply endorsement by Ull Hexa or Xfer Records.
+
+3. FREE SHARING
+
+You may give or distribute copies of the complete, unchanged download package
+for free, including to friends or through a free mirror. Keep the skin files,
+Ull Hexa branding, installation instructions, this licence and other notices
+intact. Include the official source, https://www.ullhexa.com, with your copy
+or download listing. Recipients receive the same permissions under this licence.
+
+Do not charge for access to the Skin or include it in a paid product, paid
+bundle or paid subscription. This restriction concerns distribution of Skin
+files, not the commercial music and demonstration uses permitted above.
+
+4. NO RESALE, REBRANDING OR CLAIMS OF OWNERSHIP
+
+Unless Ull Hexa gives separate written permission, you may not:
+
+- Sell, resell, rent or commercially repackage the Skin or its assets.
+- Remove, replace or obscure the Ull Hexa logo, credits or ownership notices
+  in copies you distribute, or distribute modified or rebranded versions.
+- Claim that you created or own the Skin, or assert exclusive rights over
+  Ull Hexa's original material to restrict its use or distribution by Ull Hexa
+  or others acting within this licence.
+- Extract or reuse the artwork, textures, icons or bundled fonts in other
+  skins, applications, websites, asset libraries, merchandise or products.
+
+Serum's normal display scaling and rendering are permitted. Applicable
+statutory exceptions and rights that cannot lawfully be restricted remain
+unaffected. No permission to distribute modified versions is granted here.
+
+5. FONTS, SERUM AND THIRD-PARTY RIGHTS
+
+Bundled Ull Hexa fonts may be used in Serum 2 as part of the Skin and shared
+with the complete package under section 3. They are not licensed for separate
+distribution, sale, desktop use or web use. Keep the supplied licence and notices.
+Owner-only permissions in those notices do not extend to recipients.
+
+Separately identified third-party material remains subject to its own licence.
+This licence grants no rights to Serum 2 software or third-party trademarks.
+Serum 2 is not included; a separately licensed copy is required. Serum and
+Xfer Records names are used only to identify compatibility and the software's
+owner. This independent Ull Hexa product is not affiliated with, sponsored
+by or endorsed by Xfer Records.
+
+6. NO PROMISED SUPPORT, FIXES OR UPDATES
+
+Except where applicable law requires otherwise, Ull Hexa has no obligation
+to provide support, answer requests, fix defects, modify the Skin, release
+updates, maintain compatibility or keep downloads available. Any voluntary
+help or update does not create a promise of future service. Compatibility
+with every Serum version, DAW, operating system or future update is not promised.
+
+7. INSTALLATION, WARRANTY AND LIABILITY
+
+Read the included instructions before installation. Keep backups of your own
+files and settings. Install only the supplied skin folder in Serum's Skins
+directory; do not overwrite the factory Default skin, plugin or program files.
+
+To the fullest extent permitted by applicable law, the Skin is supplied
+free of charge, "as is" and "as available", without additional express or
+implied warranties. You are responsible for deciding whether to install it
+and for following the instructions.
+
+To the fullest extent permitted by applicable law, Ull Hexa is not liable
+for loss or damage arising from downloading, extracting, installing,
+misinstalling, using or being unable to use the Skin. This includes damage
+to or loss of files, presets, settings or projects; disruption of Serum,
+a DAW or a computer; lost income; and indirect or consequential loss.
+
+These exclusions do not remove any liability, warranty, remedy, consumer
+protection or other right that cannot lawfully be excluded or limited.
+Mandatory law takes priority over this licence. If a provision cannot be
+enforced, the remaining provisions apply to the extent permitted by law.
+
+8. OTHER PERMISSIONS
+
+For permission beyond these terms, contact Ull Hexa through
+https://www.ullhexa.com. Such permission must be obtained in writing.

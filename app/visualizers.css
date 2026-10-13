@@ -1,0 +1,83 @@
+:root { color-scheme: dark; }
+body { font-family: var(--site-font); }
+[hidden] { display: none !important; }
+canvas { position: fixed; inset: 0; outline: none; }
+#controls { align-items: center; gap: 8px; font-family: inherit; }
+#modeMenus { display: flex; gap: 8px; }
+.modeMenu { position: relative; }
+.modeMenuToggle, .inputBtn, .modeDropdown button {
+  box-sizing: border-box;
+  border-radius: 0;
+  color: #eee;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.modeMenuToggle, #controls > .inputBtn, #settingsToggle {
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #5a5a5e;
+  background: rgba(35, 35, 38, .94);
+}
+.modeMenuToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  min-width: 96px;
+  font-weight: 600;
+  letter-spacing: .025em;
+}
+.modeMenu.is-current > .modeMenuToggle { border-color: #aaa; }
+.menuChevron { width: 6px; height: 6px; border: solid #aaa; border-width: 0 1px 1px 0; transform: translateY(-2px) rotate(45deg); }
+.modeMenuToggle[aria-expanded="true"] .menuChevron { transform: translateY(2px) rotate(225deg); }
+.modeMenuToggle:hover, .modeMenuToggle[aria-expanded="true"], #controls .inputBtn:hover {
+  background: #414145;
+  border-color: #aaa;
+}
+button:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+.modeDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  width: 204px;
+  padding: 5px;
+  box-sizing: border-box;
+  border: 1px solid #666;
+  background: #18181b;
+  box-shadow: 0 12px 30px #000a;
+}
+.modeDropdown button {
+  display: block;
+  position: relative;
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 30px 10px 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+}
+.modeDropdown button:hover, .modeDropdown button:focus-visible { background: #36363b; }
+.modeDropdown button[aria-current="true"] { background: #dddde1; color: #141417; font-weight: 600; }
+.modeDropdown button[aria-current="true"]::after { content: "✓"; position: absolute; right: 10px; }
+#settingsPanel { position: absolute; top: calc(100% + 8px); left: 0; border-radius: 0; background: #141416f5; }
+#xMultControls { border-radius: 0; }
+#controls > .inputBtn.active { background: #24362b; border-color: #7eb18c; }
+#midiHelp { position: fixed; bottom: 12px; left: 12px; margin: 0; color: #bbb; font-size: 12px; pointer-events: none; }
+body[data-family="audio"] #midiHelp,
+body[data-family="midi"] #settingsMenu,
+body[data-family="midi"] #xMultControls,
+body[data-family="midi"][data-audio-capture="off"] #micBtn,
+body[data-family="midi"][data-audio-capture="off"] #speakerBtn,
+body[data-family="midi"][data-audio-capture="off"] #bottomInfo,
+body.view-only #midiHelp { display: none !important; }
+body[data-family="midi"] #bottomInfo { bottom: 36px; }
+@media (min-width: 901px) {
+  body[data-family="audio"] #controls { max-width: calc(100vw - 224px); }
+}
+@media (max-width: 900px) { #xMultControls { top: auto; bottom: 90px; } }
+@media (max-width: 380px) {
+  .modeMenuToggle { min-width: 84px; gap: 14px; }
+  .modeDropdown { width: 192px; }
+}
