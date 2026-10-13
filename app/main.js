@@ -1,7 +1,11 @@
 import { startBackground } from "./bg.js?v=20260404b";
+import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261013-dnd-root";
+import { createSiteNavigation } from "./site-navigation.js?v=20261013-skins";
+import { renderSerumSkins, mountSerumSkins } from "./serum-skins.js?v=20261013-publication";
 startBackground();
 
 const content = document.getElementById("content");
+const updateSiteNavigation = createSiteNavigation();
 
 const contactFormConfig = {
   "ullhexa.music@gmail.com": {
@@ -32,11 +36,30 @@ const SOCIAL_LINKS = [
 ];
 
 const TOOL_RELEASES = {
-  plugins: [],
-  skins: [],
-  nks: [],
-  visualizers: []
+  plugins: []
 };
+
+const VISUALIZERS = [
+  {
+    family: "midi",
+    title: "MIDI",
+    modes: [
+      { mode: "squares", title: "City", image: "City.webp", description: "Build a neon skyline with every note. Colourful towers rise and glow with the intensity of your playing." },
+      { mode: "plane", title: "3D Plane", image: "3D_plane.webp", description: "Shape a floating wireframe with your notes. Pitch and velocity bend the surface into shifting geometric forms." },
+      { mode: "plasma", title: "Plasma Sphere", image: "Plasma_sphere.webp", description: "Send glowing tendrils through a sphere of light. Notes spark new connections, while sustained playing keeps them moving." },
+      { mode: "rubik", title: "Rubik's Cube", image: "Rubiks_cube.webp", description: "Turn a familiar puzzle into a musical instrument. Notes twist rows, rotate the cube and pull its colours apart." }
+    ]
+  },
+  {
+    family: "audio",
+    title: "Audio",
+    modes: [
+      { mode: "stereo-osc", title: "Quantum string", image: "Quantum_string.webp", description: "Trace sound through luminous, folding curves. Bass and treble shape the motion as the music changes." },
+      { mode: "fractals", title: "Alien trees", image: "alien trees.webp", description: "Grow an otherworldly forest from sound. Branches, glowing fruit and drifting rain respond to the music." },
+      { mode: "cat", title: "Space cat", image: "Space_cat.webp", description: "A cosmic cat with a feel for the groove. It dances to the beat amid shifting colours and occasional alien encounters." }
+    ]
+  }
+];
 
 const SYNC_RELEASES = [];
 
@@ -58,21 +81,6 @@ function actionButton({ href, label, external = false, active = false, disabled 
     <a href="${disabled ? "#" : href}" class="softActionBtn${active ? " softActionBtnActive" : ""}${disabled ? " softActionBtnDisabled" : ""}" ${attrs} ${disabled ? 'aria-disabled="true" tabindex="-1"' : ""}>
       ${label}
     </a>
-  `;
-}
-
-function toolsNav(activeKey = "") {
-  const items = [
-    { key: "plugins", label: "Plugins", href: "#plugins" },
-    { key: "skins", label: "Skins", href: "#skins" },
-    { key: "nks", label: "NKS Instruments", href: "#nks" },
-    { key: "visualizers", label: "Visualizers", href: "#visualizers" }
-  ];
-
-  return `
-    <div class="toolButtonRow">
-      ${items.map(item => actionButton({ href: item.href, label: item.label, active: item.key === activeKey })).join("")}
-    </div>
   `;
 }
 
@@ -145,25 +153,46 @@ function renderReleaseFeed(items, emptyMessage, variant = "tools") {
   `;
 }
 
-function toolsSection(title, activeKey, contentHtml) {
+function toolsSection(title, contentHtml) {
   return `
-    <section class="contactShell">
-      <div class="contactIntro">
-        <p class="contactEyebrow">Tools</p>
-      </div>
-      ${toolsNav(activeKey)}
-      <div class="contactIntro">
-        <h2>${title}</h2>
-      </div>
+    <section class="contactShell" aria-labelledby="toolsPageTitle">
+      <h2 id="toolsPageTitle" class="visuallyHidden">${title}</h2>
       ${contentHtml}
     </section>
+  `;
+}
+
+function renderVisualizerBadges() {
+  return `
+    <div class="visualizerColumns">
+      ${VISUALIZERS.map(({ family, title, modes }) => `
+        <section class="visualizerColumn" aria-labelledby="${family}VisualizersTitle">
+          <h3 id="${family}VisualizersTitle">${title}</h3>
+          <div class="visualizerBadges">
+            ${modes.map(({ mode, title: modeTitle, image, description }) => {
+              const href = `./visualizers.html?family=${family}&mode=${mode}`;
+              return `
+                <article class="visualizerBadge">
+                  <a class="visualizerBadgeImage" href="${href}" target="_blank" rel="noopener noreferrer" aria-label="Open ${modeTitle} (opens in a new window)">
+                    <img src="./assets/products/visualizers/${encodeURIComponent(image)}" alt="${modeTitle} visualizer preview" width="1080" height="1080" loading="lazy" decoding="async" />
+                  </a>
+                  <div class="visualizerBadgeCopy">
+                    <h4><a href="${href}" target="_blank" rel="noopener noreferrer" title="Opens in a new window">${modeTitle}</a></h4>
+                    <p>${description}</p>
+                  </div>
+                </article>
+              `;
+            }).join("")}
+          </div>
+        </section>
+      `).join("")}
+    </div>
   `;
 }
 
 const pages = {
   home: () => `
     <div class="contactIntro">
-      <p class="contactEyebrow">Home</p>
       <h2>About Ull Hexa</h2>
     </div>
 
@@ -204,7 +233,6 @@ const pages = {
   sync: () => `
     <section class="pageStack">
       <div class="contactIntro">
-        <p class="contactEyebrow">Sync</p>
         <h2>Music for Film, TV, & Games</h2>
         <p class="contactLead">Explore the musical releases by Ull Hexa</p>
       </div>
@@ -222,7 +250,6 @@ const pages = {
 
   tools: () => toolsSection(
     "Plugins",
-    "plugins",
     renderReleaseFeed(
       TOOL_RELEASES.plugins,
       "Plugin releases will appear here with artwork, text, and download buttons for macOS and Windows."
@@ -231,62 +258,25 @@ const pages = {
 
   plugins: () => toolsSection(
     "Plugins",
-    "plugins",
     renderReleaseFeed(
       TOOL_RELEASES.plugins,
       "Plugin releases will appear here with artwork, text, and download buttons for macOS and Windows."
     )
   ),
 
-  skins: () => toolsSection(
-    "Skins",
-    "skins",
-    renderReleaseFeed(
-      TOOL_RELEASES.skins,
-      "Skin pack releases will appear here with artwork, text, and download buttons for macOS and Windows."
-    )
-  ),
-
-  nks: () => toolsSection(
-    "NKS Instruments",
-    "nks",
-    renderReleaseFeed(
-      TOOL_RELEASES.nks,
-      "NKS instrument releases will appear here with artwork, text, and download buttons for macOS and Windows."
-    )
-  ),
+  skins: () => toolsSection("Serum 2 skins", renderSerumSkins()),
 
   visualizers: () => toolsSection(
     "Visualizers",
-    "visualizers",
-    `
-      <section class="flatSection">
-        <h3>Choose visualizer type:</h3>
-        <div class="visualizerChooser">
-          ${actionButton({ href: "./midi-visualizers.html?v=20260408a", label: "MIDI Visualizer", external: true })}
-          ${actionButton({ href: "./audio-visualizers.html?v=20260408a", label: "Audio Visualizer", external: true })}
-        </div>
-      </section>
-
-      <section class="flatSection">
-        <h3>About the visualizers</h3>
-        ${renderReleaseFeed(
-          TOOL_RELEASES.visualizers,
-          "Visualizer descriptions, screenshots, and release notes will appear here."
-        )}
-      </section>
-    `
+    renderVisualizerBadges()
   ),
+
+  dnd: renderDndShowcase,
 
   contact: () => `
     <section class="contactShell">
       <div class="contactIntro">
-        <p class="contactEyebrow">Contact</p>
         <h2>Ull Hexa</h2>
-        <p class="contactLead">
-          For music, sound design, collaborations, licensing, or visualizer ideas, send a note here.
-          The form below is prepared for direct sending from the page, without opening a mail app.
-        </p>
       </div>
 
       <div class="contactGrid">
@@ -298,7 +288,8 @@ const pages = {
             <div class="contactChip">ullhexa.music@gmail.com</div>
           </div>
           <p class="contactNote">
-            Use the Ull Hexa address for music, sound design, licensing, collaboration, or visualizer inquiries.
+            For music, sound design, collaborations, licensing, or visualizer ideas, send a note here.
+            The form is prepared for direct sending from the page, without opening a mail app.
           </p>
         </div>
 
@@ -342,15 +333,19 @@ function routeFromHash() {
   return (location.hash || "#home").slice(1);
 }
 
+let cleanupPage = null;
+
 function render() {
+  cleanupPage?.();
+  cleanupPage = null;
   const route = routeFromHash();
   const page = pages[route] || pages.home;
+  content.classList.toggle("toolsPage", updateSiteNavigation(route));
+  content.classList.toggle("dndPage", route === "dnd");
+  content.classList.toggle("skinsPage", route === "skins");
   content.innerHTML = page();
-
-  document.querySelectorAll(".nav a").forEach(a => {
-    const href = a.getAttribute("href").slice(1);
-    a.classList.toggle("active", href === route);
-  });
+  if (route === "skins") cleanupPage = mountSerumSkins(content);
+  if (route === "dnd") mountDndShowcase(content);
 
   const contactForm = document.getElementById("contactForm");
   const contactRecipient = document.getElementById("contactRecipient");

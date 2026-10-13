@@ -14,11 +14,6 @@ export const MODE_DEFINITIONS = Object.freeze({
     label: "Space cat",
     defaults: { energy: 100 },
     extraControls: ["catFragmentSets"]
-  },
-  "bpm-lab": {
-    label: "BPM Lab",
-    defaults: {},
-    extraControls: []
   }
 });
 

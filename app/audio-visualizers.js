@@ -1,13 +1,16 @@
-import { ModeControls } from "./audio-controls.js?v=20260927";
+import { ModeControls } from "./audio-controls.js?v=20260930";
 import { AudioInputSession, isSafari } from "./audio-input.js";
-import { BeatSession } from "./beat-session.js?v=groove-2";
+import { BeatSession } from "./beat-session.js?v=groove-4";
+import { bindTapKeyboard } from "./beat-keyboard.js?v=groove-4";
 import { beatMotion } from "./beat-motion.js";
 import { CatBounce } from "./cat-bounce.js?v=2";
+import { CatDance, nextCombatPause } from "./cat-dance.js?v=1";
 
 // Reversible comparison: ?catBounce=previous retains the exact prior bounce.
 const catBounceVersion = new URLSearchParams(window.location.search).get("catBounce");
 const useSmoothCatBounce = catBounceVersion !== "previous";
 const catBounce = new CatBounce();
+const catDance = new CatDance();
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -36,7 +39,6 @@ const phaseResponseSlider = document.getElementById("phaseResponseSlider");
 const phaseResponseValue = document.getElementById("phaseResponseValue");
 const shapeSlider = document.getElementById("shapeSlider");
 const shapeValue = document.getElementById("shapeValue");
-const modeSelect = document.getElementById("modeSelect");
 const shapeControl = document.getElementById("shapeControl");
 const shapeLfoRange = document.getElementById("shapeLfoRange");
 const shapeLfoLine = document.getElementById("shapeLfoLine");
@@ -69,19 +71,6 @@ const foldSlider = document.getElementById("foldSlider");
 const foldValue = document.getElementById("foldValue");
 const foldResponseSlider = document.getElementById("foldResponseSlider");
 const foldResponseValue = document.getElementById("foldResponseValue");
-const settingsMenu = document.getElementById("settingsMenu");
-const bpmLabPanel = document.getElementById("bpmLabPanel");
-const bpmReadout = document.getElementById("bpmReadout");
-const bpmState = document.getElementById("bpmState");
-const bpmCandidate = document.getElementById("bpmCandidate");
-const bpmEvidence = document.getElementById("bpmEvidence");
-const bpmExplanation = document.getElementById("bpmExplanation");
-const bpmHold = document.getElementById("bpmHold");
-const bpmHalf = document.getElementById("bpmHalf");
-const bpmDouble = document.getElementById("bpmDouble");
-const bpmTap = document.getElementById("bpmTap");
-const bpmRelearn = document.getElementById("bpmRelearn");
-const bpmPhase = document.getElementById("bpmPhase");
 const beatSession = new BeatSession();
 const catSetButtons = Array.from(document.querySelectorAll(".catSetBtn[data-disco-group]"));
 const xMultButtons = Array.from(document.querySelectorAll(".xMultBtn"));
@@ -127,7 +116,6 @@ function ensureModeAssets(mode) {
 
 function setMode(mode) {
   currentMode = modeControls.select(mode);
-  modeSelect.value = currentMode;
   visibleControls = modeControls.visible;
   applyControlVisibility();
   updateModeSpecificUI();
@@ -377,6 +365,7 @@ const catV2Runtime = {
   alienCombatExiting: false,
   alienCombatTimer: 0,
   alienCombatElapsed: 0,
+  alienSceneSeconds: 0,
   alienEscapeStartSec: 30,
   alienEnterTimer: 0,
   alienEnterDuration: 0,
@@ -388,7 +377,7 @@ const catV2Runtime = {
   alienEntryTargetNY: 0,
   alienEntryTargetEX: 0,
   alienEntryTargetEY: 0,
-  alienCombatCooldown: 4 + Math.random() * 8,
+  alienCombatCooldown: 8 + Math.random() * 16,
   alienExitDirX: 1,
   alienExitDirY: 0,
   alienExitFollowDelay: 0,
@@ -443,10 +432,6 @@ const catV2Runtime = {
   quietSec: 0,
   driftX: 0,
   driftY: 0,
-  driftTargetX: 0,
-  driftTargetY: 0,
-  driftTimer: 0,
-  danceBurstSec: 0,
   tiltDeg: 0,
   tiltTargetDeg: 0,
   cuteTiltSec: 0,
@@ -957,6 +942,7 @@ function updateAndDrawCatAlienCombat(dt) {
   const missileHitImgs = catV2Textures.objects.missileHit;
   const haveActors = !!(niceImg && evilImgL && evilImgR);
 
+  if (catV2Runtime.alienCombatActive) catV2Runtime.alienSceneSeconds += dt;
   if (!catV2Runtime.alienCombatActive) {
     catV2Runtime.alienCombatCooldown -= dt;
     if (catV2Runtime.alienCombatCooldown <= 0) {
@@ -970,6 +956,7 @@ function updateAndDrawCatAlienCombat(dt) {
       catV2Runtime.alienCombatExiting = false;
       catV2Runtime.alienCombatTimer = 60; // hard 1-minute combat cycle
       catV2Runtime.alienCombatElapsed = 0;
+      catV2Runtime.alienSceneSeconds = 0;
       catV2Runtime.alienEscapeStartSec = 20 + Math.random() * 30; // trigger escape after 20..50s
       catV2Runtime.alienEnterTimer = 0;
       catV2Runtime.combatOrbitAngle = Math.random() * Math.PI * 2;
@@ -1542,7 +1529,7 @@ function updateAndDrawCatAlienCombat(dt) {
         || catV2Runtime.alienExitTimer > 14) {
         catV2Runtime.alienCombatActive = false;
         catV2Runtime.alienCombatExiting = false;
-        catV2Runtime.alienCombatCooldown = 8 + Math.random() * 14;
+        catV2Runtime.alienCombatCooldown = nextCombatPause(catV2Runtime.alienSceneSeconds);
       }
     }
   }
@@ -2059,17 +2046,16 @@ function applyControlVisibility() {
 }
 
 function updateModeSpecificUI() {
-  const isBpm = currentMode === "bpm-lab";
-  settingsMenu.style.display = isBpm ? "none" : "";
-  bpmLabPanel.hidden = !isBpm;
-  updateBpmPanel();
   xMultControls.style.display = currentMode === "stereo-osc" ? "flex" : "none";
 }
 
 function resetCurrentModeSliders() {
   modeControls.reset();
   if (currentMode === "stereo-osc") { resetQuadratureDynamics(); setXMultiplier(1); }
-  if (currentMode === "cat") catV2Runtime.activeFragmentSetFolders = new Set(CAT_FRAGMENT_SET_SPECS.map(set => set.folder));
+  if (currentMode === "cat") {
+    catV2Runtime.activeFragmentSetFolders = new Set(CAT_FRAGMENT_SET_SPECS.map(set => set.folder));
+    beatSession.command("relearn");
+  }
   updateInputUI();
 }
 
@@ -2100,12 +2086,14 @@ function showViewExitTemporarily() {
 
 function enterViewMode() {
   isViewOnly = true;
+  viewExitBtn.hidden = false;
   document.body.classList.add("view-only");
   showViewExitTemporarily();
 }
 
 function exitViewMode() {
   isViewOnly = false;
+  viewExitBtn.hidden = true;
   document.body.classList.remove("view-only");
   viewExitBtn.classList.remove("show");
   if (viewExitHideTimer) {
@@ -2405,7 +2393,7 @@ function drawFractals() {
 
   if (!isViewOnly) {
     ctx.fillStyle = "rgba(255,255,255,0.78)";
-    ctx.font = "12px monospace";
+    ctx.font = '12px "Ull Hexa Display", sans-serif';
     ctx.fillText(`Fractals  trees:${treeCount}  depth:${mainDepth}  budget:${branchBudget}  q:${quality.toFixed(2)}  trunk:${(trunkLen * mainScale).toFixed(1)}  angle:${baseAngle.toFixed(2)}  decay:${branchDecay.toFixed(2)}  vol:${vol.toFixed(2)}  bass:${bass.toFixed(2)}  low20-60:${low2060.toFixed(2)}  high4k-20k:${highAir.toFixed(2)}  imgs:${fractalTextures.readyCount}/3`, 12, h - 12);
   }
 
@@ -2572,32 +2560,16 @@ function drawCatV2() {
   catV2Runtime.catScaleEma += (catScaleTarget - catV2Runtime.catScaleEma) * catScaleK;
   const headScale = (1 + headBounce * (useSmoothCatBounce ? 0.24 : 0.35)) * catV2Runtime.catScaleEma;
   const headDipPx = Math.min(w, h) * 0.0575 * headBounce;
-  // Drift + tilt (all non-wallpaper layers): calm wandering, dance bursts, and rare cute silent tilts.
+  // Dance from the shared beat: half/normal/double-time gestures, with smaller travel.
   const minDim = Math.min(w, h);
-  if (vol > 0.62 && onset > 0.13 && Math.random() < dt * 1.8) {
-    catV2Runtime.danceBurstSec = Math.min(1.35, catV2Runtime.danceBurstSec + 0.45 + Math.random() * 0.35);
-  }
-  catV2Runtime.danceBurstSec = Math.max(0, catV2Runtime.danceBurstSec - dt);
-  const danceBurst = catV2Runtime.danceBurstSec > 0;
-  const baseDriftRadius = minDim * (0.01 + vol * 0.018);
-  const danceDriftRadius = danceBurst ? (minDim * (0.02 + vol * 0.045)) : 0;
-  const driftRadius = baseDriftRadius + danceDriftRadius;
-  catV2Runtime.driftTimer -= dt;
-  if (catV2Runtime.driftTimer <= 0) {
-    const ang = Math.random() * Math.PI * 2;
-    const rr = (0.25 + Math.random() * 0.75) * driftRadius;
-    catV2Runtime.driftTargetX = Math.cos(ang) * rr;
-    catV2Runtime.driftTargetY = Math.sin(ang) * rr * 0.8;
-    catV2Runtime.driftTimer = danceBurst ? (0.06 + Math.random() * 0.16) : (0.45 + Math.random() * 1.2);
-  }
-  const driftK = 1 - Math.exp(-(danceBurst ? 10.5 : 3.2) * dt);
-  catV2Runtime.driftX += (catV2Runtime.driftTargetX - catV2Runtime.driftX) * driftK;
-  catV2Runtime.driftY += (catV2Runtime.driftTargetY - catV2Runtime.driftY) * driftK;
+  const dance = catDance.update({ bpm: groove.bpm, position: useSmoothCatBounce ? catBounce.position : groove.position }, vol, onset, dt);
+  catV2Runtime.driftX = dance.x * minDim;
+  catV2Runtime.driftY = dance.y * minDim;
 
-  if (catV2Runtime.quietSec > 5.2 && catV2Runtime.cuteTiltSec <= 0 && Math.random() < dt * 0.16) {
+  if (catV2Runtime.quietSec > 5.2 && catV2Runtime.cuteTiltSec <= 0 && Math.random() < dt * 0.08) {
     catV2Runtime.cuteTiltTotalSec = 0.7 + Math.random() * 1.2;
     catV2Runtime.cuteTiltSec = catV2Runtime.cuteTiltTotalSec;
-    catV2Runtime.cuteTiltAmpDeg = 3.5 + Math.random() * 5.5;
+    catV2Runtime.cuteTiltAmpDeg = 0.5 * (3.5 + Math.random() * 5.5);
     catV2Runtime.cuteTiltDir = Math.random() < 0.5 ? -1 : 1;
     if (Math.random() < 0.20) catV2Runtime.queuedDoubleBlink = true;
   }
@@ -2608,9 +2580,9 @@ function drawCatV2() {
     const t = 1 - (catV2Runtime.cuteTiltSec / total);
     cuteTiltDeg = Math.sin(Math.PI * clamp01(t)) * catV2Runtime.cuteTiltAmpDeg * catV2Runtime.cuteTiltDir;
   }
-  const driftTiltDeg = clamp01(Math.abs(catV2Runtime.driftX) / Math.max(1, driftRadius)) * 4.2 * Math.sign(catV2Runtime.driftX);
+  const driftTiltDeg = clamp01(Math.abs(dance.x) / 0.0465) * 2.1 * Math.sign(catV2Runtime.driftX);
   catV2Runtime.tiltTargetDeg = driftTiltDeg + cuteTiltDeg;
-  const tiltK = 1 - Math.exp(-(danceBurst ? 9.0 : 4.2) * dt);
+  const tiltK = 1 - Math.exp(-(dance.active ? 9.0 : 4.2) * dt);
   catV2Runtime.tiltDeg += (catV2Runtime.tiltTargetDeg - catV2Runtime.tiltDeg) * tiltK;
   const tiltRad = (catV2Runtime.tiltDeg * Math.PI) / 180;
   // Let the beat define vertical motion; retain a gentler wandering background.
@@ -2886,11 +2858,7 @@ function drawCatV2() {
   // Front combat layer during scenes: above cat stack.
   updateAndDrawCatAlienCombat(dt);
 
-  if (!isViewOnly) {
-    ctx.fillStyle = "rgba(255,255,255,0.78)";
-    ctx.font = "12px monospace";
-    ctx.fillText(`BPM Lab: ${motion.bpm ? motion.bpm.toFixed(1) + " BPM" : "listening…"}`, 12, h - 12);
-  }
+
 }
 
 function drawStereoOscilloscope() {
@@ -3142,75 +3110,20 @@ function drawStereoOscilloscope() {
 
   if (!isViewOnly) {
     ctx.fillStyle = "rgba(255,255,255,0.78)";
-    ctx.font = "12px monospace";
+    ctx.font = '12px "Ull Hexa Display", sans-serif';
     ctx.fillText(`Quadrature  base:${baseHz.toFixed(2)}Hz  x:${xHzShifted.toFixed(2)}Hz  y:${yHz.toFixed(2)}Hz  xMult:${xFreqMultiplier}x  phaseOfs:${phaseOffsetCycles.toFixed(2)}cy  phaseRate:${phaseRateCyclesPerSec.toFixed(2)}c/s  rms(raw):${rmsRaw.toFixed(3)}  rms(sens):${rmsSensitive.toFixed(3)}  low20-150:${lowBandNorm.toFixed(2)}  lowTr:${lowTransient.toFixed(2)}  lowDom:${lowDominance.toFixed(2)}  lowThr:${dynamicLowThreshold.toFixed(3)}  phaseResp:${phaseResponseSlider.value}%  bass20-200:${bassBandEma.toFixed(2)}  bassEmph:${bassEmphasisSlider.value}%  bassRet:${bassRetuneFactor.toFixed(2)}  bassTriGain:${bassTriangleGain.toFixed(2)}  strobe:${strobeSlider.value}%  strobeLFO:${strobeLfoRateHz.toFixed(2)}Hz  strobeEff:${(effectiveStrobe * 100).toFixed(0)}%  warp:${warpSlider.value}%  fold:${foldSlider.value}%  foldResp:${foldResponseSlider.value}%  foldBrake:${foldBrake.toFixed(2)}  foldAmt:${foldAmount.toFixed(2)}  triPull:${trianglePull.toFixed(2)}  sawPull:${sawPull.toFixed(2)}  sqPull:${squarePull.toFixed(2)}  size:${oscSizeEma.toFixed(2)}  zoom:${zoomSlider.value}%  xDelta:${xDeltaHz.toFixed(3)}Hz`, 12, h - 12);
-  }
-}
-
-function updateBpmPanel(state = beatSession.state) {
-  if (currentMode !== "bpm-lab") return;
-  bpmReadout.textContent = state.bpm ? state.bpm.toFixed(1) : "—";
-  const names = { waiting: "Choose an audio input", starting: "Starting analysis", listening: "Listening for a groove", locked: "Following the groove", holding: "Holding the groove", adapting: "Adapting gently", manual: "Tempo held", error: "Analysis unavailable" };
-  bpmState.textContent = names[state.state] || "Listening";
-  bpmState.dataset.state = state.state;
-  bpmCandidate.textContent = state.candidateBpm ? `${state.candidateBpm.toFixed(1)} BPM` : "Listening…";
-  bpmEvidence.value = state.confidence;
-  bpmHold.textContent = state.manual ? "Resume auto" : "Hold tempo";
-  bpmHold.setAttribute("aria-pressed", String(state.manual));
-  bpmHold.disabled = !state.bpm;
-  bpmHalf.disabled = !state.bpm || state.bpm < 70;
-  bpmDouble.disabled = !state.bpm || state.bpm > 150;
-  bpmTap.disabled = bpmRelearn.disabled = !beatSession.graph;
-  bpmTap.textContent = state.tapCount > 0 && state.tapCount < 4 ? `Tap ${state.tapCount}/4` : "Tap tempo";
-  bpmExplanation.textContent = state.error || (state.manual
-    ? "Your tempo stays fixed. The background estimate keeps listening."
-    : state.state === "holding" ? "The rhythm is uncertain. The clock keeps its last established tempo."
-    : state.state === "adapting" ? "A new groove held up over time. The clock is moving into it."
-    : state.bpm ? "Keeps the established groove while a new tempo is being checked."
-    : "Give it 9–12 seconds of steady rhythm to start. Complex passages may take longer.");
-}
-
-function drawBPMLab() {
-  const w = canvas.width, h = canvas.height;
-  ctx.fillStyle = "#050810";
-  ctx.fillRect(0, 0, w, h);
-  const state = beatSession.read();
-  bpmPhase.style.transform = `scaleX(${state.bpm ? state.phase : 0})`;
-  const history = state.history;
-  const panelX = 20, panelW = Math.max(1, w - 40);
-  const panelY = Math.max(470, h - 180), panelH = 58;
-  if (h < 720 || panelY + panelH > h - 60) return;
-  ctx.fillStyle = "rgba(255,255,255,0.45)";
-  ctx.font = "11px monospace";
-  ctx.textAlign = "left";
-  ctx.fillText("Recent rhythmic attacks", panelX, panelY - 14, panelW);
-  ctx.strokeStyle = "rgba(126,228,177,0.8)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let x = 0; x < panelW; x++) {
-    const index = Math.floor(x / panelW * history.length);
-    const strength = Math.min(1, (history[index] || 0) / 5);
-    const y = panelY + panelH - strength * panelH;
-    if (x === 0) ctx.moveTo(panelX + x, y); else ctx.lineTo(panelX + x, y);
-  }
-  ctx.stroke();
-  if (state.bpm) {
-    const pulse = Math.exp(-state.phase * 12);
-    ctx.fillStyle = `rgba(126,228,177,${0.2 + pulse * 0.8})`;
-    ctx.beginPath();
-    ctx.arc(w / 2, panelY + panelH + 24, 3 + pulse * 4, 0, Math.PI * 2);
-    ctx.fill();
   }
 }
 
 const renderers = {
   "stereo-osc": drawStereoOscilloscope,
   fractals: drawFractals,
-  cat: drawCatV2,
-  "bpm-lab": drawBPMLab
+  cat: drawCatV2
 };
 let animationFrameId = 0;
+let isActive = false;
 function animate() {
+  if (!isActive) return;
   computeFeatures();
   ctx.save();
   try { renderers[currentMode](); }
@@ -3219,6 +3132,7 @@ function animate() {
 }
 
 function updateInputButtons() {
+  document.body.dataset.audioCapture = currentInputType !== "none" || audioSession.pendingType ? "on" : "off";
   for (const [button, type, label] of [[micBtn, "mic", "Mic"], [speakerBtn, "speaker", "Web Audio"]]) {
     button.classList.toggle("active", currentInputType === type);
     button.textContent = audioSession.pendingType === type ? `${label}: cancel` : currentInputType === type ? `${label}: on (click to stop)` : `${label}: off`;
@@ -3297,6 +3211,7 @@ function resetAudioReactiveState() {
   catV2Runtime.alienCombatExiting = false;
   catV2Runtime.alienCombatTimer = 0;
   catV2Runtime.alienCombatElapsed = 0;
+  catV2Runtime.alienSceneSeconds = 0;
   catV2Runtime.alienEscapeStartSec = 30;
   catV2Runtime.alienEnterTimer = 0;
   catV2Runtime.alienEnterDuration = 0;
@@ -3308,7 +3223,7 @@ function resetAudioReactiveState() {
   catV2Runtime.alienEntryTargetNY = 0;
   catV2Runtime.alienEntryTargetEX = 0;
   catV2Runtime.alienEntryTargetEY = 0;
-  catV2Runtime.alienCombatCooldown = 4 + Math.random() * 8;
+  catV2Runtime.alienCombatCooldown = 8 + Math.random() * 16;
   catV2Runtime.alienExitDirX = 1;
   catV2Runtime.alienExitDirY = 0;
   catV2Runtime.alienExitFollowDelay = 0;
@@ -3409,7 +3324,6 @@ speakerBtn.addEventListener("click", () => {
   if (currentInputType === "speaker" || audioSession.pendingType === "speaker") stopCurrentStream();
   else enableSpeaker();
 });
-modeSelect.addEventListener("change", () => setMode(modeSelect.value));
 
 settingsToggleBtn.addEventListener("click", () => {
   settingsPanel.classList.toggle("collapsed");
@@ -3465,20 +3379,32 @@ xMultButtons.forEach(btn => {
   });
 });
 
-beatSession.subscribe(updateBpmPanel);
-bpmHold.addEventListener("click", () => beatSession.command("hold", !beatSession.state.manual));
-bpmHalf.addEventListener("click", () => beatSession.command("multiply", 0.5));
-bpmDouble.addEventListener("click", () => beatSession.command("multiply", 2));
-bpmTap.addEventListener("click", () => beatSession.command("tap"));
-bpmRelearn.addEventListener("click", () => beatSession.command("relearn"));
+bindTapKeyboard(document, timeStamp => beatSession.command("tap", undefined, timeStamp));
 
 setMode(currentMode);
 updateInputUI();
 updateInputStatus();
-animate();
 window.addEventListener("pagehide", () => {
   cancelAnimationFrame(animationFrameId);
   animationFrameId = 0;
+  beatSession.stop();
   audioSession.dispose().catch(error => console.warn("Audio cleanup:", error));
 });
-window.addEventListener("pageshow", () => { if (!animationFrameId) animate(); });
+window.addEventListener("pageshow", () => { if (isActive && !animationFrameId) animate(); });
+
+// Only the visible canvas renders; capture and the shared groove worker keep running.
+function setActive(active) {
+  if (active === isActive) return;
+  isActive = active;
+  canvas.hidden = !active;
+  if (active) {
+    oscLastTimeSec = performance.now() * 0.001;
+    fractalRuntime.lastNowMs = catV2Runtime.lastMs = rainRuntime.lastMs = performance.now();
+    animate();
+  } else {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = 0;
+  }
+}
+
+export { setMode, setActive };

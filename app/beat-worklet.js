@@ -1,4 +1,4 @@
-import { BeatFeatures } from './beat-features.js?v=groove-2';
+import { BeatFeatures } from './beat-features.js?v=groove-4';
 
 class GrooveInputProcessor extends AudioWorkletProcessor {
   constructor() {
