@@ -88,7 +88,7 @@ async function start() {
     $('live-message').textContent = 'Waiting for the DM…';
     $('map').setAttribute('aria-label', 'Player encounter map');
   }
-  const catalogData = await fetchJSON('./maps/catalog.json?v=117');
+  const catalogData = await fetchJSON('./maps/catalog.json?v=121');
   const catalog = catalogData.maps;
   const remembered = readStored('lanternford:last-session');
   const session = query.get('session') || (player ? null : (typeof remembered === 'string' ? remembered : crypto.randomUUID()));
