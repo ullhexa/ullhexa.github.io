@@ -60,6 +60,16 @@
       "subtitle": "Castle, prison and sewers",
       "thumbnail": "./maps/blighted-citadel/thumbnail-v1.webp",
       "manifest": "./maps/blighted-citadel/map.json"
+    },
+    {
+      "id": "blighted-hill",
+      "title": "The Blighted Hill",
+      "identity": "BLIGHTED HILL",
+      "edition": "FIELD TEST 07",
+      "category": "Corrupted forest edge",
+      "subtitle": "Hill, river and ancient roots",
+      "thumbnail": "./maps/blighted-hill/thumbnail-v1.webp",
+      "manifest": "./maps/blighted-hill/map.json"
     }
   ]
 }
