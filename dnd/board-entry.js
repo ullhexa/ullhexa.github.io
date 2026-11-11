@@ -65,3 +65,8 @@ async function waitForPIN(){
 
 await waitForPIN();
 await import('./app.js?v=121');
+
+// Bind only the visible DM document, after the existing PIN gate.
+if (document.getElementById('donate-button') && new URLSearchParams(location.search).get('view') !== 'player') {
+  import('./donate.js?v=122').catch(error => console.warn('Initial-press enhancement unavailable; the PayPal link still works.', error));
+}
