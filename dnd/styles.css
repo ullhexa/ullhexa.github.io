@@ -144,10 +144,10 @@ body:not(.player-mode) .map-controls{align-items:center;gap:8px;padding:9px;bord
 .map-controls .lighting-control output{min-width:27px;font-size:.7rem}
 .map-controls .quick-selections{gap:5px}
 .map-controls .quick-selections select{padding-inline:7px;max-width:112px}
-.map-controls .measurement-controls{width:auto;gap:4px;padding:0;border:0;background:transparent}
-.map-controls .measurement-controls #measure{display:grid;place-items:center;flex:none;width:40px;height:40px;min-width:40px;min-height:40px;padding:0;border:1px solid #465a49;border-radius:6px;background:#203027}
-.map-controls .measurement-controls #measure[aria-pressed=true]{background:#ddc28c;color:#1b281f;border-color:#e8ce98}
-.map-controls .measurement-controls #measure:hover:not([aria-pressed=true]){background:#3b4b3a}
+.map-controls .measurement-controls{width:auto}
+.map-controls .measurement-controls :is(#auto-measure,#measure){display:grid;place-items:center;flex:none;width:32px;height:32px;min-width:32px;min-height:32px;padding:0;border:1px solid transparent;border-radius:4px;background:transparent}
+.map-controls .measurement-controls :is(#auto-measure,#measure)[aria-pressed=true]{background:#ddc28c;color:#1b281f;border-color:#e8ce98}
+.map-controls .measurement-controls :is(#auto-measure,#measure):hover:not([aria-pressed=true]){background:#3b4b3a}
 #measure svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .map-controls .measurement-controls #clear-measurement{width:24px;min-width:24px;height:32px;padding:0}
 .map-controls .fog-controls>span{font-size:.72rem;padding-inline:5px}
@@ -905,3 +905,6 @@ body:not(.player-mode) .topbar .site-identity{flex-wrap:nowrap;column-gap:0}
 .brand-home-link:is(:hover,:focus-visible) .brand-logo{filter:brightness(1.16)}
 .brand-home-link:focus-visible{outline:none;box-shadow:none}
 @media(prefers-reduced-motion:reduce){.brand-home-link .brand-logo{transition:none}}
+
+/* Solid vector modules with a transparent background and a clear dark scanning margin. */
+.player-initiative .initiative-donation{display:block;width:50%;height:auto;aspect-ratio:1;box-sizing:border-box;margin:10% auto;padding:0;border:0;outline:0;background:transparent;filter:none;mix-blend-mode:normal;image-rendering:pixelated;user-select:none;-webkit-user-drag:none}
