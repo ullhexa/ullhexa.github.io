@@ -64,7 +64,7 @@ async function waitForPIN(){
 }
 
 await waitForPIN();
-await import('./app.js?v=121');
+await import('./app.js?v=131');
 
 // Bind only the visible DM document, after the existing PIN gate.
 if (document.getElementById('donate-button') && new URLSearchParams(location.search).get('view') !== 'player') {

@@ -1,4 +1,4 @@
-import {SRD_ATTRIBUTION,SRD_CHANGES} from './spell-license.js?v=92';
+import {SRD_ATTRIBUTION,SRD_CHANGES} from './spell-license.js?v=126';
 import {el,button} from './editor-dom.js?v=62';
 import {showDialog} from './dialogs.js?v=62';
 import {findSpells} from './spell-state.js?v=79';

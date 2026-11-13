@@ -1,11 +1,12 @@
 import {UI_FONT,uiFontsReady} from './typography.js?v=119';
 import {applyAreaPreview} from './area-preview.js?v=98';
 import {placeMarkersVisible} from './place-markers.js?v=97';
-import {createZoomControls} from './zoom-controls.js?v=82';
-import {createControlPreferences} from './control-preferences.js?v=82';
+import {createZoomControls} from './zoom-controls.js?v=128';
+import {createControlPreferences} from './control-preferences.js?v=128';
+import {withStarterEncounters} from './starter-state.js?v=128';
 import {boardIcon} from './control-icons.js?v=81';
 import {installBoardGestures} from './board-gestures.js?v=116';
-import {createBoardLayout} from './board-layout.js?v=93';
+import {createBoardLayout} from './board-layout.js?v=128';
 import {featureEnabled,placeName} from './board-state.js?v=62';
 import {createGridControls} from './grid-controls.js?v=118';
 import {gridColor} from './grid-state.js?v=114';
@@ -14,8 +15,8 @@ import {buildingCollapsed} from './building-state.js?v=62';
 import {createCameraAnimation,zoomCameraAt,validZoomPath} from './camera-animation.js?v=93';
 import {createMapNavigation} from './map-navigation.js?v=116';
 import {createFloorControl} from './floor-controls.js?v=62';
-import {createUserManual} from './user-manual.js?v=118';
-import {createSpellLibrary} from './spell-library.js?v=119';
+import {createUserManual} from './user-manual.js?v=128';
+import {createSpellLibrary} from './spell-library.js?v=126';
 import {createReferenceViewers} from './reference-viewers.js?v=97';
 import {configureSession,readSessionValue,writeSessionValue,autoSaveEnabled,setAutoSave} from './session-storage.js?v=62';
 import {persistAssets} from './local-assets.js?v=97';
@@ -33,7 +34,7 @@ import {floorList,selectedFloor,selectFloor,interactionOnFloor,itemOnSelectedFlo
 import {createHistory} from './history.js?v=112';
 import {setupSidebarResize} from './sidebar-resize.js?v=76';
 import {syncCampaign,normalizeCampaign,mapTokens,combatants,snapPoint} from './combat-state.js?v=97';
-import {createCombatUI,createLibraries} from './combat-ui.js?v=118';
+import {createCombatUI,createLibraries} from './combat-ui.js?v=131';
 import {createFogTools} from './fog-tools.js?v=97';
 import {normalizeFog} from './fog-state.js?v=83';
 import {customCatalog,saveCustomCatalog,createMapUpload,resolveMapArt,mapContentKey} from './custom-maps.js?v=119';
@@ -97,7 +98,6 @@ async function start() {
   if(!player)$('auto-save').checked=autoSaveEnabled();
   if (!player && !query.has('session')) writeStored('lanternford:last-session', session);
   const sessionKey = `lanternford:session:${session}`;
-  const controls=createControlPreferences(sessionKey);
   if(!player)installBoardGestures();
   catalog.push(...customCatalog(sessionKey));
   const pendingLoadKey = `${sessionKey}:pending-load`;
@@ -109,6 +109,7 @@ async function start() {
     return content;
   };
   const map = await loadMap(entry);
+  const controls=createControlPreferences(sessionKey,map);
   const artwork=await resolveMapArt(map);
   let mapMenu,combat,itemsUI,fog,tool=null;
   let project=normalizeProject(readStored(`${sessionKey}:project`),catalog,map.id);
@@ -144,9 +145,12 @@ async function start() {
   }
   if(player){
     $('map-identity').textContent = entry.identity || map.title;
-    document.querySelector('.edition').textContent = entry.edition || 'FIELD TEST';
+    const edition = document.createElement('span');
+    edition.className = 'edition';
+    edition.textContent = entry.edition || 'FIELD TEST';
+    document.querySelector('.brand-copy').append(edition);
   }
-  document.title = player ? `${map.title} — Player display` : 'Ull Hexa D&D';
+  document.title = player ? `${map.title} — Player display` : 'Ull Hexa GM Console';
   document.querySelector('.map-name').textContent = map.title;
   $('map').setAttribute('aria-label', `${player ? 'Player' : 'Interactive'} map of ${map.title}`);
   if(!player) {
@@ -157,7 +161,9 @@ async function start() {
     const previous=readStored(`lanternford:${content.id}:${content.version}:${session}`)||[...(content.previousVersions||[])].sort((a,b)=>b.localeCompare(a,undefined,{numeric:true})).map(version=>readStored(`lanternford:${content.id}:${version}:${session}`)).find(Boolean);
     let next=sanitizeState(content,previous);
     if(!player){
-      const campaign=normalizeCampaign(readStored(`${sessionKey}:campaign`)||next.campaign,next.roster);
+      const savedCampaign=readStored(`${sessionKey}:campaign`);
+      if(!previous&&!savedCampaign)next=withStarterEncounters(content,next);
+      const campaign=normalizeCampaign(savedCampaign||next.campaign,next.roster);
       const savedMembers=[...(next.roster||[]),...(next.monsters||[]),...(next.items||[]),...(next.campaign?.parties||[]).flatMap(g=>g.members),...(next.campaign?.encounters||[]).flatMap(g=>g.members),...(next.campaign?.itemLists||[]).flatMap(g=>g.members)];
       const points=formation(content,next.party,60);
       for(const kind of ['parties','encounters'])campaign[kind]=campaign[kind].map(g=>({...g,members:g.members.map((m,i)=>({...m,position:savedMembers.find(p=>p.id===m.id)?.position||points[i]||content.partyStart}))}));

@@ -5,6 +5,7 @@ export const SRD_CHANGES='Changes: spell material reformatted and paginated as c
 export function showSpellCredits(){
  const dialog=el('dialog',undefined,'spell-credits-dialog'),heading=el('div',undefined,'reference-heading'),close=button('×',()=>dialog.close()),body=el('div',undefined,'spell-credits-body');
  close.setAttribute('aria-label','Close spell credits');heading.append(el('h2','Spell library credits'),close);
+ body.append(el('p','Ull Hexa is not affiliated with, endorsed by, or sponsored by Wizards of the Coast.'));
  body.append(el('p',SRD_ATTRIBUTION),el('p',SRD_CHANGES),el('p','These notices apply to the SRD spell content. User imports and the application code are separate. No Wizards endorsement is claimed.'));
  for(const [title,url]of [['Official SRD','https://www.dndbeyond.com/srd'],['CC BY 4.0 license','https://creativecommons.org/licenses/by/4.0/legalcode'],['Credits and reuse','./spell-credits.html']]){const a=el('a',title);a.href=url;a.target='_blank';a.rel='noopener';body.append(a);}
  dialog.append(heading,body);document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});showDialog(dialog);
