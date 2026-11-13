@@ -1,5 +1,5 @@
 import {featureEnabled} from './board-state.js?v=62';
-import {editStatCard} from './stat-card-editor.js?v=97';
+import {editStatCard} from './stat-card-editor.js?v=133';
 import {openCardFullscreen,setExpandButton,fullscreenButton} from './card-view.js?v=94';
 import {statIcon} from './control-icons.js?v=81';
 import {el,button} from './editor-dom.js?v=62';
