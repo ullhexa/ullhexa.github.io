@@ -24,7 +24,7 @@ export function startDMShell(){
   document.addEventListener('keydown',event=>{
     if(event.defaultPrevented||event.isComposing||![' ','Spacebar','ArrowUp','ArrowDown'].includes(event.key)&&event.code!=='Space')return;
     const doc=frame.contentDocument,target=doc?.activeElement;
-    if(!target||doc.querySelector('#access-gate'))return;
+    if(!target)return;
     const forwarded=new KeyboardEvent('keydown',{key:event.key,code:event.code,ctrlKey:event.ctrlKey,metaKey:event.metaKey,altKey:event.altKey,shiftKey:event.shiftKey,repeat:event.repeat,bubbles:true,cancelable:true});
     if(!target.dispatchEvent(forwarded))event.preventDefault();
     frame.contentWindow.focus();
