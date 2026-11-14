@@ -1,5 +1,5 @@
 // Start the public console directly. No access gate is required.
-await import('./app.js?v=134');
+await import('./app.js?v=137');
 
 // Bind only the visible DM document.
 if (document.getElementById('donate-button') && new URLSearchParams(location.search).get('view') !== 'player') {
