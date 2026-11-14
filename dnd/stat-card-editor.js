@@ -17,9 +17,22 @@ export function editStatCard(member){
   const upload=button('',e=>{if(e.detail&&moved)return;file.value='';file.click();},'stat-image-frame');upload.setAttribute('aria-label','Upload stat card image');upload.addEventListener('pointerdown',()=>{moved=false;});
   const uploadIcon=document.createElementNS('http://www.w3.org/2000/svg','svg');uploadIcon.setAttribute('viewBox','0 0 24 24');uploadIcon.setAttribute('aria-hidden','true');uploadIcon.innerHTML='<path d="M12 16V3m-5 5 5-5 5 5M4 16v5h16v-5"/>';
   async function load(){const ticket=++request;apply.disabled=upload.disabled=true;try{const url=await assetURL(asset),next=new Image();next.src=url;await next.decode();if(ticket!==request||!dialog.isConnected)return;image=next;zoom=1;offset=[0,0];slider.value=1;paint();}catch(e){error.textContent=e.message;}finally{if(ticket===request)apply.disabled=upload.disabled=false;}}
-  function render(){imageButton.setAttribute('aria-pressed',mode==='image');textButton.setAttribute('aria-pressed',mode==='text');content.replaceChildren();if(mode==='text'){const input=el('textarea');input.value=text;input.rows=14;input.maxLength=20000;input.setAttribute('aria-label','Stat card text');input.addEventListener('input',()=>text=input.value);content.append(input);}else{upload.classList.toggle('stat-image-empty',!asset);upload.replaceChildren(...(asset?[canvas]:[el('span','Upload image'),uploadIcon]));content.append(upload);if(asset){content.append(zoomRow);paint();}}}
+  function render(){
+    imageButton.setAttribute('aria-pressed',mode==='image');textButton.setAttribute('aria-pressed',mode==='text');
+    content.replaceChildren();
+    if(mode==='text'){
+      const input=el('textarea');input.value=text;input.maxLength=20000;input.setAttribute('aria-label','Stat card text');input.addEventListener('input',()=>{text=input.value;updateRemove();});content.append(input);
+    }else{
+      upload.classList.toggle('stat-image-empty',!asset);upload.replaceChildren(...(asset?[canvas]:[el('span','Upload image'),uploadIcon]));content.append(upload);if(asset)paint();
+    }
+    // Keep the frame and controls row fixed across both formats, including empty cards.
+    const showZoom=mode==='image'&&!!asset;zoomRow.style.visibility=showZoom?'visible':'hidden';zoomRow.inert=!showZoom;updateRemove();
+  }
   file.addEventListener('input',async()=>{if(!file.files?.[0])return;apply.disabled=upload.disabled=true;error.textContent='';try{asset=(await uploadImage(file.files[0],'stat')).id;changed=true;mode='image';await load();render();}catch(e){error.textContent=e.message;}finally{apply.disabled=upload.disabled=false;}});
-  const apply=button('Apply stat card',async()=>{apply.disabled=true;try{if(mode==='image'&&asset&&image&&changed){const record={id:`asset-${crypto.randomUUID()}`,width:900,height:1200,data:canvas.toDataURL('image/webp',.95)};await putAssets([record]);asset=record.id;}result=mode==='text'?{statText:text,statCard:null}:{statCard:asset,statText:''};dialog.close();}catch(e){error.textContent=e.message;apply.disabled=false;}},'primary');
-  dialog.append(el('h2',`${member.name} stat card`),imageTypeNote(),tabs,content,error,footer);document.body.append(dialog);
-  return new Promise(resolve=>{footer.append(button('Cancel',()=>dialog.close()),apply);dialog.addEventListener('close',()=>{request++;dialog.remove();resolve(result);},{once:true});render();showDialog(dialog);if(asset)load();});
+  const apply=button('Apply stat card',async()=>{apply.disabled=remove.disabled=true;try{if(mode==='image'&&asset&&image&&changed){const record={id:`asset-${crypto.randomUUID()}`,width:900,height:1200,data:canvas.toDataURL('image/webp',.95)};await putAssets([record]);asset=record.id;}result=mode==='text'?{statText:text,statCard:null}:{statCard:asset,statText:''};dialog.close();}catch(e){error.textContent=e.message;apply.disabled=false;updateRemove();}},'primary');
+  const remove=button('Remove stat card',()=>{result={statCard:null,statText:''};dialog.close();},'danger');
+  function updateRemove(){remove.disabled=!member.statCard&&!member.statText&&!asset&&!text.trim();}
+  const submit=el('div',undefined,'stat-card-submit');submit.append(remove,apply);
+  dialog.append(el('h2',`${member.name} stat card`),imageTypeNote(),tabs,content,zoomRow,error,footer);document.body.append(dialog);
+  return new Promise(resolve=>{footer.append(button('Cancel',()=>dialog.close()),submit);dialog.addEventListener('close',()=>{request++;dialog.remove();resolve(result);},{once:true});render();showDialog(dialog);if(asset)load();});
 }
