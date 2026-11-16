@@ -30,7 +30,7 @@ body {
   background: #0b0b0c; /* fallback if canvas fails */
 }
 
-.logoOnlyMode .site-header {
+.logoOnlyMode:not(.contactOnlyMode) .site-header {
   height: 100vh;
 }
 
@@ -40,7 +40,11 @@ body {
   display: none;
 }
 
-.logoOnlyMode .logo {
+.logoOnlyMode.contactOnlyMode #content {
+  display: block;
+}
+
+.logoOnlyMode:not(.contactOnlyMode) .logo {
   width: min(72vw, 420px);
 }
 

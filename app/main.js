@@ -168,8 +168,9 @@ const pages = {
       <div class="bio-text">
         <p>
           Hi, I’m Ull Hexa, a composer, sound sculptor and audio software developer from Norway.
-          I’ve worked with music composition, production, mixing and mastering since 2017, when I built
-          my first music studio. I now work from my third and definitely my favorite studio.
+          I’ve worked with music composition for most of my life, and more seriously in production,
+          mixing and mastering since 2017, when I built my first music studio. I now work from my third
+          and definitely my favorite studio.
         </p>
         <p>
           The music I create fuses the tribal side of human nature with modern sound synthesis. I shape it by hand
@@ -225,8 +226,7 @@ const pages = {
             <div class="contactChip">ullhexa.music@gmail.com</div>
           </div>
           <p class="contactNote">
-            For music, sound design, collaborations, licensing, or visualizer ideas, send a note here.
-            The form is prepared for direct sending from the page, without opening a mail app.
+            For music, licensing, or other inquiries, send a message through the form or directly by email.
           </p>
         </div>
 
@@ -276,12 +276,18 @@ function routeFromHash() {
 let cleanupPage = null;
 
 function render() {
-  // The publication holding page must not render or fetch the full site feed.
-  // Local previews remain complete because they do not have logoOnlyMode.
-  if (document.body.classList.contains("logoOnlyMode")) return;
+  const route = routeFromHash();
+  const holding = document.body.classList.contains("logoOnlyMode");
+  const contactOnly = holding && route === "contact";
+  document.body.classList.toggle("contactOnlyMode", contactOnly);
   cleanupPage?.();
   cleanupPage = null;
-  const route = routeFromHash();
+  // Allow the direct Contact link while the public homepage remains closed.
+  // Other routes must not render or fetch the full site feed in holding mode.
+  if (holding && !contactOnly) {
+    content.replaceChildren();
+    return;
+  }
   const page = pages[route] || pages.home;
   content.classList.toggle("homePage", page === pages.home);
   content.classList.toggle("categoryPage", updateSiteNavigation(route));
