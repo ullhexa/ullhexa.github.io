@@ -1,0 +1,252 @@
+/* Homepage: the short welcome/overview and wider news feed have separate frames. */
+.card.homePage {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 26px;
+  width: calc(100% - 24px);
+  max-width: calc(934px * 1.618);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  margin-inline: auto;
+}
+
+.homeBio {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  max-width: 934px;
+  margin: 0 auto;
+  padding: 16px;
+  border: 1px solid #222;
+  border-radius: 16px;
+}
+
+.homeBio .bio { margin-bottom: 0; }
+
+.homeNews.contactPanel {
+  box-sizing: border-box;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: var(--news-ideal-width, 100%);
+  max-width: 100%;
+  height: calc(var(--news-ideal-height, 720px) * 1.5);
+  /* Leave room for the page's bottom margin and keep the first post visible. */
+  max-height: calc(100svh - 64px);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.025), transparent 40%),
+    rgba(13, 14, 16, 0.94);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.homeNews h2 {
+  margin: 0;
+  padding: 22px 24px 16px;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.newsFeed {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 24px 24px;
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: var(--ull-accent) #353638;
+  outline: none;
+}
+
+/* WebKit fallback also gives older Safari a clearly visible orange handle. */
+.newsFeed::-webkit-scrollbar { width: 12px; }
+.newsFeed::-webkit-scrollbar-track { background: #353638; }
+.newsFeed::-webkit-scrollbar-thumb {
+  background: var(--ull-accent);
+  border: 2px solid #353638;
+  border-radius: 6px;
+  min-height: 36px;
+}
+
+.newsPost {
+  display: grid;
+  grid-template-columns: 136px minmax(0, 1fr);
+  gap: 8px 22px;
+  padding: 18px 0;
+  outline: none;
+}
+
+.newsPost + .newsPost { border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.newsPost:first-child { padding-top: 0; }
+.newsPost:last-child { padding-bottom: 0; }
+.newsVisual { display: grid; align-content: start; gap: 8px; }
+/* Date and category span the row so they do not squeeze into the badge column. */
+.newsMeta {
+  grid-column: 1 / -1;
+  color: #aaa;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.newsMeta time, .newsCategory { white-space: nowrap; }
+.newsBadge { display: block; aspect-ratio: 1; }
+/* One linked hit area; image text must not invoke Safari Live Text selection. */
+a.newsBadge { cursor: pointer; -webkit-user-select: none; user-select: none; }
+.newsBadge img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.newsBadgeLogo { display: grid; align-items: center; padding: 14px; box-sizing: border-box; }
+.newsBadgeLogo img { height: auto; }
+
+/* Parallel preview frames seen at a slight angle, with the last one in front. */
+.newsBadgeStack { position: relative; isolation: isolate; }
+.newsBadgeStack img {
+  position: absolute;
+  width: 80%;
+  height: auto;
+  left: 19%;
+  top: 7%;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: #111;
+  box-shadow: 2px 2px 0 #262729, 4px 7px 8px rgba(0, 0, 0, 0.45);
+  transform: perspective(340px) rotateY(-24deg) rotateX(6deg);
+  transform-origin: center;
+}
+.newsBadgeStack img:nth-child(2) { left: 13%; top: 16%; }
+.newsBadgeStack img:nth-child(3) { left: 7%; top: 25%; }
+.newsBadgeStack img:nth-child(4) { left: 1%; top: 34%; }
+
+.newsCopy { min-width: 0; }
+.newsCopy h3 { margin: 0 0 8px; font-size: 12pt; font-weight: 700; line-height: 1.3; }
+.newsCopy p { margin: 0 0 8px; color: #d0d0d2; font-size: 11pt; line-height: 1.45; }
+.newsCopy .newsSummary { margin-bottom: 12px; color: #eeeeef; }
+.newsCopy p:last-child { margin-bottom: 0; }
+/* Direct platform links keep music posts light and let listeners choose. */
+.newsReleaseLinks { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; }
+.newsReleaseLinks a { color: #eee; font-size: 11pt; line-height: 1.45; white-space: nowrap; text-decoration: underline; text-underline-offset: 3px; }
+.newsReleaseLinks a:hover, .newsReleaseLinks a:active { color: var(--ull-accent); }
+.newsCopy h3 a:hover { color: var(--ull-accent); }
+.newsBadge:hover { filter: brightness(1.1); }
+.homeNews a:focus-visible { outline: none; color: var(--ull-accent); }
+.newsBadge:focus-visible { filter: brightness(1.15); }
+
+@media (max-width: 700px) {
+  .homeNews h2 { padding: 18px 16px 14px; }
+  .newsFeed { padding: 0 16px 18px; }
+  .newsPost { grid-template-columns: 88px minmax(0, 1fr); column-gap: 16px; }
+}
+
+@media (max-width: 420px) {
+  .newsPost { grid-template-columns: 72px minmax(0, 1fr); column-gap: 12px; }
+  .newsMeta { font-size: 11px; }
+  .newsBadgeLogo { padding: 7px; }
+}
+
+/* Pagination sits after the last post inside the scrolling feed. */
+.newsPaging {
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  margin-top: 22px;
+  padding-top: 14px;
+}
+.newsPagination { overflow-x: auto; scrollbar-width: thin; scrollbar-color: #666 transparent; }
+.newsPageNumbers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: max-content;
+  min-width: 100%;
+  font-size: 12pt;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.newsPageNumbers button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 28px;
+  height: 36px;
+  padding: 4px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: #fff;
+  font: inherit;
+  text-shadow: none;
+  outline: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.newsPageNumbers .newsPageNumber[aria-current="page"] { color: var(--ull-accent); }
+.newsPageNumber:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
+.newsPageNumbers .newsPageArrow { min-width: 30px; }
+.newsPageArrow svg { display: block; width: 12px; height: 18px; fill: currentColor; }
+.newsPageNumbers button:disabled { cursor: default; }
+.newsPageNumbers button:not(:disabled).isPressing,
+.newsPageNumbers button:not(:disabled):active { color: var(--ull-accent); }
+@media (hover: hover) {
+  .newsPageNumbers button:not(:disabled):hover { color: var(--ull-accent); }
+}
+.newsPageGap { display: inline-block; padding: 0 2px; color: #fff; }
+.newsStatus { margin: 8px 0 0; font-size: 12px; color: #ccc; text-align: center; }
+.newsStatus:empty { display: none; }
+
+/* Short welcome and direct routes to the work. The full biography lives on About. */
+.homeIntro { padding: 24px; }
+.homeWelcome { margin: 0; font-size: 16px; line-height: 1.5; }
+.homeIntro .homeQuickLinks { margin-top: 20px; gap: 10px; }
+.homeOverview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 30px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+.homeOverviewItem {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  color: #fff;
+  -webkit-tap-highlight-color: transparent;
+}
+.homeOverviewImage { display: grid; align-items: center; height: 92px; }
+.homeOverviewImage img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: filter 130ms ease-out;
+}
+.homeOverviewCopy { min-width: 0; }
+.homeOverviewCopy h2 { margin: 0 0 7px; font-size: 17px; line-height: 1.25; }
+.homeOverviewCopy h2 span { display: inline-block; margin-left: 3px; color: var(--ull-accent); }
+.homeOverviewCopy p { margin: 0; font-size: 14px; line-height: 1.45; color: #c4c4c6; }
+.homeOverviewItem:hover, .homeOverviewItem:focus-visible, .homeOverviewItem.isPressing { color: var(--ull-accent); }
+.homeOverviewItem:focus-visible { outline: none; }
+.homeOverviewItem:hover img, .homeOverviewItem:focus-visible img { filter: brightness(1.12); }
+.aboutBio .bio { margin-bottom: 0; }
+@media (max-width: 700px) {
+  .homeIntro { padding: 20px 16px; }
+  .homeOverview { grid-template-columns: 1fr; gap: 20px; }
+  .homeOverviewItem { grid-template-columns: 112px minmax(0, 1fr); }
+  .aboutBio .bio-text { text-align: left; }
+}

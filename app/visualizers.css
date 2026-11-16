@@ -35,7 +35,7 @@ canvas { position: fixed; inset: 0; outline: none; }
   background: #414145;
   border-color: #aaa;
 }
-button:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+button:focus-visible { outline: none; }
 .modeDropdown {
   position: absolute;
   top: calc(100% + 6px);
@@ -64,6 +64,42 @@ button:focus-visible { outline: 2px solid white; outline-offset: 3px; }
 #settingsPanel { position: absolute; top: calc(100% + 8px); left: 0; border-radius: 0; background: #141416f5; }
 #xMultControls { border-radius: 0; }
 #controls > .inputBtn.active { background: #24362b; border-color: #7eb18c; }
+#midiSupportNotice {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  box-sizing: border-box;
+  width: min(540px, calc(100vw - 40px));
+  margin: 0;
+  padding: 34px 20px;
+  background: rgb(0 0 0 / 80%);
+  color: #eee;
+  font-size: 16px;
+  line-height: 1.6;
+  text-align: center;
+  pointer-events: none;
+}
+#midiSupportNotice p { margin: 0; }
+#midiSupportNotice p + p { margin-top: 1em; }
+#midiSupportClose {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #bbb;
+  cursor: pointer;
+  pointer-events: auto;
+}
+#midiSupportClose:hover, #midiSupportClose.isPressing { color: #fff; background: #ffffff14; }
 #midiHelp { position: fixed; bottom: 12px; left: 12px; margin: 0; color: #bbb; font-size: 12px; pointer-events: none; }
 body[data-family="audio"] #midiHelp,
 body[data-family="midi"] #settingsMenu,

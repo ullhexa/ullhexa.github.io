@@ -395,3 +395,6 @@ body.view-only #bottomInfo {
   #strobeLfoIndicator { width: 100%; min-width: 0; box-sizing: border-box; }
   .setToggleGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Button focus must not add an outer selection ring. Keep existing button states. */
+:where(a[href], button, summary, [role="button"], [tabindex], input[type="button"], input[type="submit"], input[type="reset"]):focus { outline: none; }

@@ -1,3 +1,5 @@
+:root { --ull-accent: #F04B32; }
+
 html {
   /* Reserve both sides so short and long pages keep the same visual centre. */
   scrollbar-gutter: stable both-edges;
@@ -33,6 +35,7 @@ body {
 }
 
 .logoOnlyMode .siteNavigation,
+.logoOnlyMode #content,
 .logoOnlyMode .card {
   display: none;
 }
@@ -43,7 +46,7 @@ body {
 
 
 .site-header {
-  height: 40vh;
+  height: clamp(260px, 34vh, 340px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,19 +59,21 @@ body {
 }
 
 .siteNavigation {
+  --nav-button-height: 44px;
   position: relative;
-  margin: -90px 0 -10px;
+  margin: -28px 0 10px;
+  font-size: 16px;
 }
 
-.siteNavigation.hasTools {
-  margin-bottom: 18px;
-}
-
-.nav {
-  display: flex;
-  justify-content: center;
+/* Each row sizes every button to its own longest label. */
+.siteNavigation nav {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  width: max-content;
+  max-width: calc(100% - 24px);
   gap: 10px;
-  margin: 0;
+  margin: 0 auto;
 }
 
 .siteNavigation nav {
@@ -76,39 +81,104 @@ body {
   z-index: 1;
 }
 
-.siteNavigation a.active {
-  background: #c5c5c57b;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.535);
-}
-
-.siteNavigation a {
-  color: inherit;
-  text-decoration: none;
-  border: 1px solid #535353;
-  padding: 10px 14px;
-  border-radius: 0;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-
-.siteNavigation a:hover {
-  background: #c5c5c57b;
-}
-
-.siteNavigation a:focus-visible {
-  outline: 2px solid white;
-  outline-offset: 3px;
-}
-
-.toolsNavigation {
+/* Blender satin-metal keycaps. The submenu camera sits a little closer to face-on. */
+.siteNavigation nav a {
+  --button-surface: url("./assets/ui/buttons/nav-synth-states.webp?v=2");
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 40px 10px 0;
+  min-width: 0;
+  min-height: var(--nav-button-height);
+  padding: 10px 22px;
+  font-size: inherit;
+  line-height: 1.25;
+  white-space: nowrap;
+  text-align: center;
+  color: #fff;
+  text-decoration: none;
+  text-shadow: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--button-surface) no-repeat 0% 50% / 300% 100%;
+  touch-action: manipulation;
 }
 
-.toolsNavigation[hidden],
+.siteNavigation .categoryNavigation a {
+  --button-surface: url("./assets/ui/buttons/submenu-synth-states.webp?v=2");
+}
+
+.siteNavigation nav a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--button-surface) no-repeat 50% 50% / 300% 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 130ms ease-out;
+}
+
+@media (hover: hover) {
+  .siteNavigation nav a:not(.active):not(.isPressing):not(:active):hover::before { opacity: 1; }
+}
+
+.siteNavigation nav a:focus { outline: none; }
+
+.siteNavigation nav a:not(.active):not(.isPressing):not(:active):focus-visible::before { opacity: 1; }
+.siteNavigation nav a.active,
+.siteNavigation nav a.isPressing,
+.siteNavigation nav a:active { background-position: 100% 50%; }
+.siteNavigation nav a.active::before,
+.siteNavigation nav a.isPressing::before,
+.siteNavigation nav a:active::before { opacity: 0; transition: none; }
+.siteNavigation nav a.active,
+.siteNavigation nav a.isPressing {
+  color: var(--ull-accent);
+  text-shadow: 0 0 3px rgba(240, 75, 50, 0.4), 0 0 8px rgba(240, 75, 50, 0.16);
+}
+.siteNavigation .navLabel { transform: translateY(-2px); }
+.siteNavigation nav a.active .navLabel,
+.siteNavigation nav a.isPressing .navLabel,
+.siteNavigation nav a:active .navLabel { transform: translateY(0); }
+
+/* Simple action buttons use a quiet, stationary highlight. */
+.simpleBoxButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  color: #fff;
+  text-decoration: none;
+  background: #252629;
+  border: 1px solid;
+  border-color: #7d8085 #3b3d41 #000;
+  border-radius: 0;
+  touch-action: manipulation;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+.simpleBoxButton:visited { color: #fff; }
+.simpleBoxButton:hover:not(:disabled),
+.simpleBoxButton:focus-visible {
+  color: #fff;
+  background: #303236;
+  border-top-color: #a0a3a8;
+}
+.simpleBoxButton:focus-visible { outline: none; }
+.simpleBoxButton:active:not(:disabled) {
+  background: #1d1e20;
+  border-top-color: #151618;
+  box-shadow: inset 0 1px 2px #000;
+  transition: none;
+}
+.categoryNavigation {
+  padding: calc(var(--nav-button-height) * 0.7) 0 0;
+}
+
+.siteNavigation .categoryNavigation[hidden],
 .menuBranches[hidden] {
   display: none;
 }
@@ -124,7 +194,11 @@ body {
   stroke-width: 1;
 }
 
-.card.toolsPage {
+.menuBranchSelected { stroke: var(--ull-accent); }
+
+/* Keep the frame 10px below the final navigation row, with or without a submenu. */
+.siteNavigation + .card,
+.card.categoryPage {
   margin-top: 0;
 }
 
@@ -222,6 +296,32 @@ body {
   color: rgba(255, 214, 170, 0.85);
 }
 
+.dndNotice {
+  padding-top: 18px;
+  border-top: 1px solid #333;
+  color: #aaa;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.dndNotice p {
+  margin: 0 0 8px;
+}
+
+.dndNotice p:last-child {
+  margin-bottom: 0;
+}
+
+.dndNotice a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dndNotice a:hover {
+  color: #fff;
+}
+
 .dndGallery {
   min-width: 0;
   border: 1px solid #333;
@@ -303,8 +403,7 @@ body {
 .dndGallery a:focus-visible,
 .dndGallery button:focus-visible,
 .dndPlay:focus-visible {
-  outline: 2px solid #e4c6a7;
-  outline-offset: 3px;
+  outline: none;
 }
 
 @media (max-width: 600px) {
@@ -375,8 +474,11 @@ a:visited {
   margin-bottom: 28px;
 }
 
+.bio-portrait { width: 140px; }
 .bio-img {
-  width: 140px;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
   height: auto;
   border-radius: 16px;
   border: 1px solid #222;
@@ -560,7 +662,7 @@ a:visited {
 .homeQuickLinks {
   display: grid;
   gap: 12px;
-  margin-top: 18px;
+  margin-top: calc(18px + 1.5em);
 }
 
 .homeQuickLinksTitle {
@@ -568,19 +670,37 @@ a:visited {
   color: rgba(255, 255, 255, 0.82);
 }
 
-.homeBrandRow {
+.homeBrandRow,
+.homeSocialIcons {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 12px;
 }
 
-.homeDiscoRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 1.5;
+.homeBrandRow { column-gap: 24px; }
+
+/* Preserve the supplied Tidal mark, cropping its padding in the display box. */
+.brandIconTidal {
+  width: 48px;
+  height: 32px;
+  object-fit: cover;
+  filter: invert(1);
+  mix-blend-mode: screen;
+}
+/* The homepage keeps a direct support link; payment panels belong to plugin downloads. */
+.bio-text .homeSupportLink { margin: 16px 0 0; }
+.homeSupportLink a,
+.homeSupportLink a:visited {
+  color: var(--ull-accent);
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 16px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.homeSupportLink a:focus-visible {
+  outline: none;
 }
 
 .titleBackLink {
@@ -686,6 +806,18 @@ a:visited {
   padding: 20px 0 8px;
 }
 
+.catalogueIntro {
+  max-width: 850px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.catalogueIntro p { margin: 0; }
+.catalogueIntro p + p { margin-top: 8px; }
+.catalogueIntro strong { color: #fff; font-weight: 700; }
+
 .visualizerColumns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -726,7 +858,7 @@ a:visited {
 .visualizerBadgeCopy h4 { margin: 0 0 9px; font-size: 20px; line-height: 1.2; }
 .visualizerBadgeCopy a { color: #fff; text-decoration: none; text-underline-offset: 4px; }
 .visualizerBadgeCopy a:hover { text-decoration: underline; }
-.visualizerBadge a:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.visualizerBadge a:focus-visible { outline: none; }
 .visualizerBadgeCopy p { margin: 0; color: rgba(255, 255, 255, 0.72); font-size: 14px; line-height: 1.6; }
 
 @media (max-width: 800px) {
@@ -798,8 +930,20 @@ a:visited {
 }
 
 .contactField {
+  position: relative;
   display: grid;
   gap: 8px;
+  align-content: start;
+  padding-bottom: 14px;
+}
+.contactLimit {
+  position: absolute;
+  bottom: -2px;
+  right: 0;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--ull-accent);
+  text-align: right;
 }
 
 .contactField label {
@@ -852,29 +996,20 @@ a:visited {
   min-height: 46px;
   padding: 0 16px;
   border-radius: 0;
-  border: 1px solid rgba(255, 255, 255, 0.12);
   text-decoration: none;
   cursor: pointer;
   font: inherit;
-  transition: transform 0.14s ease, background 0.14s ease, border-color 0.14s ease;
+  transition: background-color 120ms ease, border-color 120ms ease;
 }
 
-.contactPrimaryBtn {
-  color: #111;
-  background: linear-gradient(135deg, #ffd0a8, #fff4d8);
-  border-color: rgba(255, 236, 217, 0.75);
-  font-weight: 700;
-}
+.contactPrimaryBtn { font-weight: 700; }
 
 .contactSecondaryBtn {
+  border: 1px solid rgba(255,255,255,.12);
   color: #fff;
   background: rgba(255, 255, 255, 0.05);
 }
 
-.contactPrimaryBtn:hover,
-.contactSecondaryBtn:hover {
-  transform: translateY(-1px);
-}
 
 .contactPrimaryBtn:disabled {
   cursor: not-allowed;
@@ -883,6 +1018,7 @@ a:visited {
 }
 
 .contactSecondaryBtn:hover {
+  transform: translateY(-1px);
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 194, 145, 0.3);
 }
@@ -934,9 +1070,7 @@ a:visited {
     text-align: center;
   }
 
-  .bio-img {
-    margin: 0 auto;
-  }
+  .bio-portrait { margin: 0 auto; }
 
   .site-header {
     height: auto;
@@ -949,25 +1083,27 @@ a:visited {
   }
 
   .siteNavigation {
-    margin: 0 0 10px;
+    margin-top: 0;
+    font-size: clamp(12px, 3.2vw, 16px);
   }
 
-  .nav {
-    padding: 0 8px;
+  .siteNavigation nav {
+    max-width: calc(100% - 16px);
     gap: clamp(4px, 1.25vw, 8px);
   }
 
-  .nav a {
-    padding: 10px clamp(6px, 1.8vw, 12px);
-    font-size: clamp(12px, 3.2vw, 16px);
-    white-space: nowrap;
+  .siteNavigation nav a {
+    padding: 10px clamp(7px, 2vw, 10px);
+  }
+
+  .siteNavigation .categoryNavigation a {
+    padding-inline: clamp(4px, 1.4vw, 10px);
   }
 
   .card {
     margin: 10px 12px 28px;
   }
 
-  .siteNavigation a,
   .contactPanel {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -986,8 +1122,9 @@ a:visited {
     flex-direction: column;
   }
 
-  .homeBrandRow,
-  .homeDiscoRow,
+  .homeBrandRow, .homeSocialIcons { justify-content: flex-start; }
+  .homeQuickLinks { text-align: left; }
+
   .releaseActions {
     flex-direction: column;
     align-items: stretch;
@@ -1000,7 +1137,6 @@ a:visited {
 }
 
 @media (pointer: coarse) and (max-width: 900px) {
-  .siteNavigation a,
   .contactPanel {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -1043,9 +1179,12 @@ a:visited {
 
 .skinBadge a:focus-visible,
 .skinBadge button:focus-visible,
-.skinPreviewClose:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.skinPreviewArrow:focus-visible,
+.skinPreviewClose:focus-visible { outline: none; }
 
 .skinPreview {
+  --skin-arrow-width: 56px;
+  --skin-arrow-gap: 16px;
   box-sizing: border-box;
   position: fixed;
   inset: 0;
@@ -1065,11 +1204,42 @@ a:visited {
 .skinPreview::backdrop { background: rgba(0, 0, 0, 0.88); }
 html:has(.skinPreview[open]) { overflow: hidden; }
 
+.skinPreviewStage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--skin-arrow-gap);
+  width: 100%;
+  min-width: 0;
+  pointer-events: none;
+}
+
+.skinPreviewArrow {
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--skin-arrow-width);
+  width: var(--skin-arrow-width);
+  height: 88px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #ffffffb3;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.skinPreviewArrow:hover,
+.skinPreviewArrow:active { color: #fff; }
+.skinPreviewArrow svg { display: block; pointer-events: none; }
+
 .skinPreviewImage {
   display: block;
+  flex: none;
+  pointer-events: auto;
   width: auto;
   height: auto;
-  max-width: min(100%, 1600px);
+  max-width: min(calc(100% - 2 * var(--skin-arrow-width) - 2 * var(--skin-arrow-gap)), 1600px);
   max-height: calc(100vh - 100px);
   max-height: calc(100dvh - 100px);
   box-shadow: 0 0 0 1px #444, 0 12px 60px #000;
@@ -1094,17 +1264,27 @@ html:has(.skinPreview[open]) { overflow: hidden; }
 .skinPreviewClose:hover { background: #333; border-color: #fff; }
 
 @media (max-width: 700px) {
-  .toolsNavigation { gap: 8px; }
-  .toolsNavigation a {
-    padding: 10px clamp(6px, 1.8vw, 12px);
-    font-size: clamp(12px, 3.2vw, 16px);
-    white-space: nowrap;
-  }
   .skinGrid { gap: 28px 18px; }
-  .skinPreview { padding-inline: 12px; }
+  .skinPreview { --skin-arrow-width: 44px; --skin-arrow-gap: 6px; padding-inline: 12px; }
+  .skinPreviewArrow { height: 72px; }
+  .skinPreviewArrow svg { width: 32px; height: 52px; }
   .skinPreviewClose { right: 16px; }
 }
 
 .skinLicenceNote { margin: 8px 0 0; color: #aaa; font-size: 13px; line-height: 1.6; text-align: center; }
 .skinLicenceNote a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
-.skinLicenceNote a:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.skinLicenceNote a:focus-visible { outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .siteNavigation nav a::before,
+  .simpleBoxButton { transition: none; }
+}
+
+/* Button focus must not add an outer selection ring. Keep existing button states. */
+:where(a[href], button, summary, [role="button"], [tabindex], input[type="button"], input[type="submit"], input[type="reset"]):focus { outline: none; }
+
+/* Six equal main-menu keycaps remain readable on narrow screens. */
+@media (max-width: 480px) {
+  .siteNavigation .nav { width: calc(100% - 16px); gap: 4px; font-size: clamp(10px, 3vw, 14px); }
+  .siteNavigation .nav a { padding-inline: 3px; }
+}

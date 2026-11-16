@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ullhexa MicroNudge user guide and licence | Ull Hexa</title>
+  <link rel="stylesheet" href="../../../app/typography.css?v=20261002-font">
+  <link rel="stylesheet" href="../../../app/plugin-documentation.css?v=20261111-download-refinement">
+</head>
+<body>
+  <main class="documentPage">
+    <a class="documentBack" href="../">← Back to Ullhexa MicroNudge</a>
+    <h1>Ullhexa MicroNudge user guide and licence</h1>
+    <p class="documentVersion">Version 1.0.2</p>
+    <nav class="documentLinks" aria-label="Document sections"><a href="#user-guide">User guide</a><a href="#licence">Licence</a></nav>
+    <section id="user-guide" aria-labelledby="guideTitle"><h2 id="guideTitle">User guide</h2><div class="documentText">Ullhexa MicroNudge
+
+Use Ullhexa MicroNudge on your bass or other main track. Route the kick or reference track to the plugin&#x27;s sidechain input to compare their waveforms. Sidechain routing depends on your DAW; it supplies a visual reference and is not mixed into the output by the scope&#x27;s Sum display.
+
+Offset and phase
+
+OFFSET moves the main signal by up to 5 ms in either direction. PHASE rotates its phase from −180° to +180°. Each section has L/R controls, a Link option and a copy button that makes R match L. Click OFFSET or PHASE to bypass that section. Polarity inverts the signal, Stereo Flip swaps the channels, and Mono Sum combines them.
+
+Ullhexa MicroNudge reports its processing latency to the host. At 48 kHz it reports 1,775 samples. Keep the DAW&#x27;s plugin delay compensation enabled for alignment and renders; low-latency monitoring and bypass behavior depend on the host. Offset is an intentional timing change in addition to compensated processing latency.
+
+Scope
+
+Scope opens the clock-synced display. Main, SC and Sum independently show the main output, sidechain and their visual sum. Mono or Stereo selects the view; Stereo offers Stacked and Overlay. Freeze holds the captured audio; offset and phase adjustments can still update the frozen preview.
+
+Use the bottom handle for time division and Dot or Trip for dotted or triplet timing. Use the right handle or scroll over the display for amplitude zoom. These display controls do not change output gain.
+
+VCA envelopes
+
+VCA enables project-synced attenuation. The top of the editor is unity gain; lower nodes reduce volume. Drag nodes, double-click to add or remove interior nodes, and drag a line to curve its segment. Up to 16 nodes are available. The two edge nodes remain at the cycle boundaries and share a level. Nodes can share a horizontal position for vertical steps.
+
+The green snap control and grid count apply to both bands. The curve button opens Factory, User and Favorites libraries. Selecting a shape applies it and closes the library. Save stores an edited shape; hover over its tile to reveal the favorite star. The smoothing slider softens the applied envelope without changing the authored shape. Reset resets the selected band&#x27;s curve.
+
+At the left end of the HPF control, the band split is bypassed and the white envelope affects the full signal. Drag the actual filter handle to enable the split and change its cutoff. Click the purple or white region to edit the low or high band. Each band has independent time division and Dot/Trip settings. The small timing-link square copies the selected timing to the other band and keeps them linked while lit; it does not copy the curve.
+
+Presets and interface
+
+Click the preset name at the top to open your preset library. Save presets, mark favorites and organize references to the same preset in multiple groups. Removing from a group does not delete the preset; deleting permanently removes it from the library and its groups. Unsaved curve shapes used in a saved preset are also saved to the user curve library.
+
+The Ull Hexa logo opens About, UI controls and Scaling. Select a scale or drag the bottom-right corner; use Set current scale to default to remember it. Click outside a menu to close it. The curve library closes when a curve is chosen.
+
+Presets and curves are stored locally in ~/Library/Application Support/Ull Hexa/MicroNudge. Interface preferences are in ~/Library/Application Support/Ull Hexa/MicroNudge.settings. The plugin does not require an account or internet connection. The website button opens your browser when clicked.
+
+https://ullhexa.com
+</div></section>
+    <section id="licence" aria-labelledby="licenceTitle"><h2 id="licenceTitle">Licence</h2><div class="documentText">Ullhexa MicroNudge End User License Agreement
+Terms revision 14 November 2026
+
+This End User License Agreement (&quot;Agreement&quot;) applies to the Ullhexa MicroNudge audio plugin by Ull Hexa (&quot;Software&quot;).
+
+By installing or using the Software, you confirm that you have read this Agreement and agree to its terms. If you do not agree, do not install or use the Software.
+
+1. Free Use License
+
+Ull Hexa grants you a limited, non-exclusive, non-transferable license to install and use the Software free of charge for personal or professional music-production work, subject to this Agreement.
+
+This free-use license does not make the Software open source, public domain, or free to modify, rebrand, resell, or redistribute.
+
+2. Ownership
+
+The Software, design, graphics, code, name, logo, documentation, and related materials remain the property of Ull Hexa or its licensors. This Agreement does not transfer ownership of the Software to you.
+
+3. Official Builds
+
+Official builds of Ullhexa MicroNudge are distributed only through channels controlled by Ull Hexa.
+
+You should not install builds from unknown or unofficial sources. If a build has been modified after signing, the original signature may no longer be valid.
+
+4. Restrictions
+
+You may not sell, sublicense, rent, lease, or otherwise transfer the Software except as expressly permitted by Ull Hexa.
+
+You may not redistribute, resell or repackage the Software without written permission from Ull Hexa. Share the official download link instead. You may not modify, rebrand or wrap the Software in a way that implies it was created, approved or signed by anyone other than Ull Hexa.
+
+You may not use the names &quot;Ullhexa MicroNudge&quot; or &quot;Ull Hexa&quot;, or any related logo or identity, to impersonate Ull Hexa or distribute unofficial builds as official releases.
+
+You may not reverse engineer, decompile, disassemble, modify, or create derivative works from the Software except where such restriction is prohibited by applicable law.
+
+You may not remove copyright, trademark, attribution, license, signature, or proprietary notices from the Software.
+
+5. Test Builds
+
+Builds marked Debug, test, or pre-release are provided for evaluation and workflow testing and may contain bugs or incomplete release infrastructure.
+
+You are responsible for backing up important DAW projects and session data before using prototype or test builds.
+
+6. No Warranty
+
+To the extent permitted by applicable law, the Software is provided &quot;as is&quot; without warranties of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement.
+
+7. Limitation Of Liability
+
+To the maximum extent permitted by applicable law, Ull Hexa will not be liable for any indirect, incidental, special, consequential, or punitive damages, or for loss of data, loss of profits, loss of business, DAW instability, project corruption, or interruption of work arising from use of or inability to use the Software.
+
+Nothing in this Agreement excludes liability or limits rights or remedies that cannot lawfully be excluded or limited. Mandatory consumer rights remain unaffected.
+
+8. User Data
+
+The Software stores user presets, groups, favorites and curve libraries in ~/Library/Application Support/Ull Hexa/MicroNudge, and interface preferences in ~/Library/Application Support/Ull Hexa/MicroNudge.settings. Plugin settings are also saved within your DAW projects. Removing the plugin may not automatically remove these files.
+
+9. Donations And Future Products
+
+The Software may be provided free of charge. If donation links or paid products are offered later, they are separate from this free-use license unless stated otherwise by Ull Hexa.
+
+Ull Hexa does not undertake to provide support, bug fixes, updates, maintenance, future compatibility, or continued availability of this free product, except where required by applicable law.
+
+10. Termination
+
+This Agreement remains in effect until terminated. Your rights under this Agreement terminate automatically if you fail to comply with its terms. Upon termination, you must stop using and remove the Software.
+
+11. Contact
+
+Ull Hexa
+Website: https://ullhexa.com
+Email: ullhexa.music@gmail.com
+
+12. Third-Party Components
+
+Third-party components remain subject to their own applicable licenses and notices. This Agreement does not restrict rights granted under those licenses. See THIRD_PARTY_NOTICES.txt. Your music, audio, presets and curve shapes remain yours; these restrictions concern the Software itself.
+</div></section>
+  </main>
+</body>
+</html>

@@ -1,7 +1,11 @@
 import { startBackground } from "./bg.js?v=20260404b";
-import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261013-dnd-root";
-import { createSiteNavigation } from "./site-navigation.js?v=20261013-skins";
-import { renderSerumSkins, mountSerumSkins } from "./serum-skins.js?v=20261013-publication";
+import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261113-gm-gallery";
+import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261116-public-downloads";
+import { renderSerumSkins, mountSerumSkins } from "./serum-skins.js?v=20261015-skin-arrows";
+import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261116-public-downloads";
+import { mountContactForm } from "./contact-form.js?v=20261110-synth";
+import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261115-news-technical-copy";
+import { bindPressActions } from "./press-action.js?v=20261110-link-fix";
 startBackground();
 
 const content = document.getElementById("content");
@@ -22,22 +26,25 @@ const SOCIAL_LINKS = [
     alt: "Spotify"
   },
   {
+    title: "YouTube Music",
+    href: "https://music.youtube.com/channel/UCKDxFaro26Hm9jOwzqFShmg?si=qX4ibZl6tI216TS5",
+    img: "./assets/Brands/youtube-music.webp",
+    alt: "YouTube Music"
+  },
+  {
+    title: "Tidal",
+    href: "https://tidal.com/artist/72690695/u",
+    img: "./assets/Brands/tidal.webp",
+    alt: "Tidal",
+    imageClass: "brandIconTidal"
+  },
+  {
     title: "TikTok",
     href: "https://www.tiktok.com/@ullhexa",
     img: "./assets/Brands/TikTok_Icon_Black_Circle.png",
     alt: "TikTok"
-  },
-  {
-    title: "YouTube",
-    href: "https://www.youtube.com/@ull_hexa",
-    img: "./assets/Brands/yt_logo_fullcolor_white_digital.png",
-    alt: "YouTube"
   }
 ];
-
-const TOOL_RELEASES = {
-  plugins: []
-};
 
 const VISUALIZERS = [
   {
@@ -47,7 +54,7 @@ const VISUALIZERS = [
       { mode: "squares", title: "City", image: "City.webp", description: "Build a neon skyline with every note. Colourful towers rise and glow with the intensity of your playing." },
       { mode: "plane", title: "3D Plane", image: "3D_plane.webp", description: "Shape a floating wireframe with your notes. Pitch and velocity bend the surface into shifting geometric forms." },
       { mode: "plasma", title: "Plasma Sphere", image: "Plasma_sphere.webp", description: "Send glowing tendrils through a sphere of light. Notes spark new connections, while sustained playing keeps them moving." },
-      { mode: "rubik", title: "Rubik's Cube", image: "Rubiks_cube.webp", description: "Turn a familiar puzzle into a musical instrument. Notes twist rows, rotate the cube and pull its colours apart." }
+      { mode: "cube", title: "Cube", image: "Cube.webp", description: "Turn a familiar puzzle into a musical instrument. Notes twist rows, rotate the cube and pull its colours apart." }
     ]
   },
   {
@@ -61,102 +68,18 @@ const VISUALIZERS = [
   }
 ];
 
-const SYNC_RELEASES = [];
-
-function isValidEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
-
-function logoLink({ href, img, alt, title }) {
+function logoLink({ href, img, alt, title, imageClass = "" }) {
   return `
     <a href="${href}" target="_blank" rel="noreferrer" class="brandLogoOnlyBtn" aria-label="${title}">
-      <img src="${img}" alt="${alt}" class="brandIconImg" loading="lazy" />
+      <img src="${img}" alt="${alt}" class="brandIconImg ${imageClass}" loading="lazy" />
     </a>
   `;
 }
 
-function actionButton({ href, label, external = false, active = false, disabled = false }) {
-  const attrs = external ? 'target="_blank" rel="noreferrer"' : "";
+function catalogueSection(title, contentHtml) {
   return `
-    <a href="${disabled ? "#" : href}" class="softActionBtn${active ? " softActionBtnActive" : ""}${disabled ? " softActionBtnDisabled" : ""}" ${attrs} ${disabled ? 'aria-disabled="true" tabindex="-1"' : ""}>
-      ${label}
-    </a>
-  `;
-}
-
-function renderImageStack(images, altBase) {
-  if (!images || images.length === 0) {
-    return `
-      <div class="releaseImagePlaceholder">
-        <span>Images coming soon</span>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="releaseImageScroller">
-      ${images.map((src, index) => `<img src="${src}" alt="${altBase} image ${index + 1}" class="releaseImage" loading="lazy" />`).join("")}
-    </div>
-  `;
-}
-
-function downloadButtons(item) {
-  return `
-    <div class="releaseActions">
-      ${actionButton({ href: item.macUrl || "#", label: "Download macOS", external: Boolean(item.macUrl), disabled: !item.macUrl })}
-      ${actionButton({ href: item.windowsUrl || "#", label: "Download Windows", external: Boolean(item.windowsUrl), disabled: !item.windowsUrl })}
-    </div>
-  `;
-}
-
-function releaseSortValue(id) {
-  const match = String(id || "").match(/(\d+)/);
-  return match ? Number(match[1]) : 0;
-}
-
-function renderReleaseFeed(items, emptyMessage, variant = "tools") {
-  const sortedItems = [...items].sort((a, b) => releaseSortValue(b.id) - releaseSortValue(a.id));
-
-  if (sortedItems.length === 0) {
-    return `
-      <div class="releaseEmpty">
-        <h3>Coming soon</h3>
-        <p>${emptyMessage}</p>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="releaseFeed releaseFeed${variant === "sync" ? " releaseFeedSync" : ""}">
-      ${sortedItems
-        .map(item => `
-          <article class="releaseCard releaseCard${variant === "sync" ? " releaseCardSync" : ""}">
-            <div class="releaseVisual">
-              ${renderImageStack(item.images, item.title)}
-              ${variant === "sync"
-                ? actionButton({
-                    href: item.discoUrl || "https://ullhexa.com",
-                    label: "Go to DISCO",
-                    external: Boolean(item.discoUrl),
-                    disabled: !item.discoUrl
-                  })
-                : downloadButtons(item)}
-            </div>
-            <div class="releaseCopy">
-              <h3>${item.title}</h3>
-              <p class="releaseDesc">${item.desc}</p>
-            </div>
-          </article>
-        `)
-        .join("")}
-    </div>
-  `;
-}
-
-function toolsSection(title, contentHtml) {
-  return `
-    <section class="contactShell" aria-labelledby="toolsPageTitle">
-      <h2 id="toolsPageTitle" class="visuallyHidden">${title}</h2>
+    <section class="contactShell" aria-labelledby="cataloguePageTitle">
+      <h2 id="cataloguePageTitle" class="visuallyHidden">${title}</h2>
       ${contentHtml}
     </section>
   `;
@@ -164,6 +87,12 @@ function toolsSection(title, contentHtml) {
 
 function renderVisualizerBadges() {
   return `
+    <div class="catalogueIntro">
+      <p><strong>MIDI visualizers</strong> turn notes from your MIDI controller or computer keyboard into moving visuals.<br>
+        Compatible desktop browsers: Google Chrome, Microsoft Edge, Opera and Firefox. Firefox requires a site permission add-on for MIDI.</p>
+      <p><strong>Audio visualizers</strong> react to sound from your microphone or a shared browser tab.<br>
+        Browser tab audio (desktop): Google Chrome, Microsoft Edge and Opera. Microphone input also works in Safari.</p>
+    </div>
     <div class="visualizerColumns">
       ${VISUALIZERS.map(({ family, title, modes }) => `
         <section class="visualizerColumn" aria-labelledby="${family}VisualizersTitle">
@@ -192,81 +121,93 @@ function renderVisualizerBadges() {
 
 const pages = {
   home: () => `
-    <div class="contactIntro">
-      <h2>About Ull Hexa</h2>
-    </div>
-
-    <div class="bio">
-      <img src="./assets/profile.png" alt="Profile photo" class="bio-img" />
-
-      <div class="bio-text">
-        <p>
-          Ull Hexa is a TV- and game-music composer and sound sculptor from Norway, obsessed with
-          crafting sounds that fuses the tribal instictual with the futuristic unknown. All sounds are made by hand and ear,
-          using analog modular synthesizers, acoustic instruments, field recordings, and sounds taken from real objects and
-          environments, and blended together with some of the best orchestral sample libraries available. The sonic experience
-          draws the mind into abstract spaces and unseen worlds, beyond any single time or place.
-        </p>
-
+    <section class="homeBio homeIntro" aria-label="Welcome to Ull Hexa">
+      <div data-bio-measure>
+        <p class="homeWelcome">Welcome, I'm Ull Hexa, an artist and music producer from Norway.
+          I also develop plugins, software and web-tools. Feel free to have a look :D</p>
         <div class="homeQuickLinks">
           <p class="homeQuickLinksTitle">See more by Ull Hexa</p>
           <div class="homeBrandRow">
-            ${SOCIAL_LINKS.map(logoLink).join("")}
-          </div>
-          <div class="homeDiscoRow">
-            <span>For Sync licensing</span>
-            ${actionButton({ href: "#sync", label: "Press here" })}
-            <span>and continue to DISCO.</span>
+            <div class="homeSocialIcons">${SOCIAL_LINKS.map(logoLink).join("")}</div>
           </div>
         </div>
+        <section class="homeOverview" aria-label="Explore the tools and software">
+          <a class="homeOverviewItem" href="#plugins">
+            <div class="homeOverviewImage"><img src="./assets/news/products/micronudge.webp" alt="Ullhexa MicroNudge plugin" width="320" height="218" loading="lazy" decoding="async" /></div>
+            <div class="homeOverviewCopy"><h2>Plugins <span aria-hidden="true">→</span></h2><p>Free audio plugins for notes, spatial audio, filtering and kick/bass alignment.</p></div>
+          </a>
+          <a class="homeOverviewItem" href="#skins">
+            <div class="homeOverviewImage"><img src="./Serum_2_skins/preview_image/pastel_clay.webp" alt="Pastel Clay skin for Serum 2" width="320" height="218" loading="lazy" decoding="async" /></div>
+            <div class="homeOverviewCopy"><h2>Serum 2 skins <span aria-hidden="true">→</span></h2><p>Free skins with custom artwork, textures and the Ull Hexa font.</p></div>
+          </a>
+          <a class="homeOverviewItem" href="#visualizers">
+            <div class="homeOverviewImage"><img src="./assets/products/visualizers/Quantum_string.webp" alt="Quantum String audio visualizer" width="320" height="218" loading="lazy" decoding="async" /></div>
+            <div class="homeOverviewCopy"><h2>Visualizers <span aria-hidden="true">→</span></h2><p>Browser visuals that react to MIDI notes or incoming audio.</p></div>
+          </a>
+          <a class="homeOverviewItem" href="#dnd">
+            <div class="homeOverviewImage"><img src="./assets/news/products/gm-console.webp" alt="Ull Hexa GM Console with maps and character tokens" width="320" height="218" loading="lazy" decoding="async" /></div>
+            <div class="homeOverviewCopy"><h2>GM Console <span aria-hidden="true">→</span></h2><p>A browser-based Game Master console for Dungeons &amp; Dragons sessions.</p></div>
+          </a>
+        </section>
       </div>
-    </div>
-
-    <div class="contactGrid">
-      <div class="contactPanel">
-        <p class="contactRole">News / Projects</p>
-        <h3 style="margin:0 0 14px;font-size:28px;line-height:1;">Coming soon</h3>
-      </div>
-    </div>
+    </section>
+    ${renderHomeNews()}
   `,
 
-  sync: () => `
-    <section class="pageStack">
-      <div class="contactIntro">
-        <h2>Music for Film, TV, & Games</h2>
-        <p class="contactLead">Explore the musical releases by Ull Hexa</p>
+  about: () => `
+    <section class="aboutBio" aria-labelledby="aboutBioTitle">
+    <div class="contactIntro">
+      <h2 id="aboutBioTitle">About Ull Hexa</h2>
+    </div>
+
+    <div class="bio">
+      <div class="bio-portrait">
+        <img src="./assets/profile.png" alt="Profile photo" class="bio-img" />
       </div>
 
-      <section class="flatSection">
-        <h3>DISCO</h3>
-        ${renderReleaseFeed(
-          SYNC_RELEASES,
-          "Album releases, artwork, notes, and DISCO links will be added here with the newest release at the top.",
-          "sync"
-        )}
-      </section>
+      <div class="bio-text">
+        <p>
+          Hi, I’m Ull Hexa, a composer, sound sculptor and audio software developer from Norway.
+          I’ve worked with music composition, production, mixing and mastering since 2017, when I built
+          my first music studio. I now work from my third and definitely my favorite studio.
+        </p>
+        <p>
+          The music I create fuses the tribal side of human nature with modern sound synthesis. I shape it by hand
+          and ear, using analog synthesizers, Euroracks, field recordings and sounds from real objects
+          and orchestral samples. I do not use AI in any aspect of my music.
+        </p>
+        <p>
+          Ull Hexa is a new artist and brand, but is founded on plenty of experience in the music field.
+          With Ull Hexa, I want to bring my musical taste and style into SYNC work as well, particularly
+          for games. Feel free to <a href="#contact">contact me</a> if you have some interesting projects
+          in the works that you'd like music for.
+        </p>
+        <p>
+          Over the years, I have also garnered a lot of technical abilities, a sense of acoustic quality,
+          and the need for custom solutions that feeds my passion for art and technology. Therefore I
+          started developing plugins that I would love to use in my own production. I craft tools
+          that I deem unique, that serve a purpose, and that are worth the time and effort. If you like these tools too, even better!
+        </p>
+        <p>
+          If you like what I do and enjoy using the plugins that I develop, please consider leaving
+          a little tip in the link below:
+        </p>
+
+        <p class="homeSupportLink"><a href="https://www.paypal.com/ncp/payment/SJ4SW8M8N3NS2" target="_blank" rel="noopener noreferrer">Support Ull Hexa on PayPal <span aria-hidden="true">↗</span></a></p>
+
+      </div>
+    </div>
+
     </section>
   `,
 
-  tools: () => toolsSection(
-    "Plugins",
-    renderReleaseFeed(
-      TOOL_RELEASES.plugins,
-      "Plugin releases will appear here with artwork, text, and download buttons for macOS and Windows."
-    )
-  ),
+  music: () => '<p class="musicLoadStatus" role="status">Loading releases…</p>',
 
-  plugins: () => toolsSection(
-    "Plugins",
-    renderReleaseFeed(
-      TOOL_RELEASES.plugins,
-      "Plugin releases will appear here with artwork, text, and download buttons for macOS and Windows."
-    )
-  ),
+  plugins: () => catalogueSection("Plugins", renderPluginCatalogue()),
 
-  skins: () => toolsSection("Serum 2 skins", renderSerumSkins()),
+  skins: () => catalogueSection("Serum 2 skins", renderSerumSkins()),
 
-  visualizers: () => toolsSection(
+  visualizers: () => catalogueSection(
     "Visualizers",
     renderVisualizerBadges()
   ),
@@ -275,10 +216,6 @@ const pages = {
 
   contact: () => `
     <section class="contactShell">
-      <div class="contactIntro">
-        <h2>Ull Hexa</h2>
-      </div>
-
       <div class="contactGrid">
         <div class="contactPanel contactIdentity">
           <div class="contactIdentityGlow"></div>
@@ -294,32 +231,35 @@ const pages = {
         </div>
 
         <div class="contactPanel">
-          <form id="contactForm" class="contactForm">
+          <form id="contactForm" class="contactForm" novalidate>
             <input id="contactRecipient" name="recipient" type="hidden" value="ullhexa.music@gmail.com" />
 
             <div class="contactFieldRow">
               <div class="contactField">
                 <label for="contactName">Your name</label>
-                <input id="contactName" name="name" type="text" placeholder="Your name" required />
+                <input id="contactName" name="name" type="text" autocomplete="name" maxlength="120" aria-describedby="contactNameLimit" placeholder="Your name" required />
+                <small class="contactLimit" id="contactNameLimit" aria-live="polite"></small>
               </div>
               <div class="contactField">
                 <label for="contactEmail">Your email</label>
-                <input id="contactEmail" name="email" type="email" placeholder="you@example.com" required />
+                <input id="contactEmail" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required />
               </div>
             </div>
 
             <div class="contactField">
               <label for="contactSubject">Subject</label>
-              <input id="contactSubject" name="subject" type="text" placeholder="Project, licensing, collaboration..." />
+              <input id="contactSubject" name="subject" type="text" maxlength="180" aria-describedby="contactSubjectLimit" placeholder="Project, licensing, collaboration..." />
+              <small class="contactLimit" id="contactSubjectLimit" aria-live="polite"></small>
             </div>
 
             <div class="contactField">
               <label for="contactMessage">Message</label>
-              <textarea id="contactMessage" name="message" rows="7" placeholder="Write a short message..." required></textarea>
+              <textarea id="contactMessage" name="message" rows="7" maxlength="5000" aria-describedby="contactMessageLimit" placeholder="Write a short message..." required></textarea>
+              <small class="contactLimit" id="contactMessageLimit" aria-live="polite"></small>
             </div>
 
             <div class="contactActions">
-              <button type="submit" id="contactSubmitBtn" class="contactPrimaryBtn">Send message</button>
+              <button type="submit" id="contactSubmitBtn" class="contactPrimaryBtn simpleBoxButton">Send message</button>
             </div>
             <p id="contactStatus" class="contactStatus" role="status" aria-live="polite"></p>
           </form>
@@ -330,135 +270,54 @@ const pages = {
 };
 
 function routeFromHash() {
-  return (location.hash || "#home").slice(1);
+  return resolveSiteRoute((location.hash || "#home").slice(1).split("?")[0]);
 }
 
 let cleanupPage = null;
 
 function render() {
+  // The publication holding page must not render or fetch the full site feed.
+  // Local previews remain complete because they do not have logoOnlyMode.
+  if (document.body.classList.contains("logoOnlyMode")) return;
   cleanupPage?.();
   cleanupPage = null;
   const route = routeFromHash();
   const page = pages[route] || pages.home;
-  content.classList.toggle("toolsPage", updateSiteNavigation(route));
+  content.classList.toggle("homePage", page === pages.home);
+  content.classList.toggle("categoryPage", updateSiteNavigation(route));
   content.classList.toggle("dndPage", route === "dnd");
   content.classList.toggle("skinsPage", route === "skins");
+  content.classList.toggle("pluginsPage", route === "plugins");
   content.innerHTML = page();
+  if (page === pages.home) {
+    const unmountNews = mountHomeNews(content);
+    const unbindOverview = bindPressActions(content, { selector: ".homeOverviewItem" });
+    cleanupPage = () => { unmountNews(); unbindOverview(); };
+  }
+  if (route === "music") {
+    let cancelled = false;
+    let unbind = null;
+    cleanupPage = () => { cancelled = true; unbind?.(); };
+    // Keep the catalogue and its stories off the homepage's initial download.
+    import("./music-catalogue.js?v=20261116-public-credit").then(({ renderMusicCatalogue }) => {
+      if (cancelled) return;
+      content.innerHTML = renderMusicCatalogue();
+      unbind = bindPressActions(content, { selector: ".musicCatalogue a, .musicStory summary" });
+    }).catch(() => {
+      if (!cancelled) content.innerHTML = '<p class="musicLoadStatus" role="status">The releases could not be loaded. Please reload the page to try again.</p>';
+    });
+  }
   if (route === "skins") cleanupPage = mountSerumSkins(content);
   if (route === "dnd") mountDndShowcase(content);
 
-  const contactForm = document.getElementById("contactForm");
-  const contactRecipient = document.getElementById("contactRecipient");
-  const contactName = document.getElementById("contactName");
-  const contactEmail = document.getElementById("contactEmail");
-  const contactSubject = document.getElementById("contactSubject");
-  const contactMessage = document.getElementById("contactMessage");
-  const contactSubmitBtn = document.getElementById("contactSubmitBtn");
-  const contactStatus = document.getElementById("contactStatus");
-
-  if (contactForm && contactRecipient && contactSubmitBtn && contactStatus) {
-    const setContactStatus = (message, tone = "neutral") => {
-      contactStatus.textContent = message;
-      contactStatus.dataset.tone = tone;
-    };
-
-    const activeRecipientConfig = () => contactFormConfig[contactRecipient.value] || null;
-    const hasAccessKey = () => {
-      const config = activeRecipientConfig();
-      return Boolean(config?.accessKey && !config.accessKey.startsWith("YOUR_WEB3FORMS_ACCESS_KEY"));
-    };
-
-    const formFieldsAreValid = () => {
-      const nameValue = contactName?.value?.trim() || "";
-      const emailValue = contactEmail?.value?.trim() || "";
-      const messageValue = contactMessage?.value?.trim() || "";
-      return Boolean(nameValue && messageValue && isValidEmail(emailValue));
-    };
-
-    const syncFormState = () => {
-      const canSend = hasAccessKey() && formFieldsAreValid();
-      contactSubmitBtn.disabled = !canSend;
-
-      if (!hasAccessKey()) {
-        setContactStatus("Form sending is not activated yet.", "warning");
-        return;
-      }
-
-      if ((contactEmail?.value || "").trim() && !isValidEmail(contactEmail.value)) {
-        setContactStatus("Please enter a valid email address.", "error");
-        return;
-      }
-
-      if (!formFieldsAreValid()) {
-        setContactStatus("Please fill in your name, email, and message before sending.", "warning");
-        return;
-      }
-
-      setContactStatus("Ready to send.", "neutral");
-    };
-
-    [contactName, contactEmail, contactSubject, contactMessage].forEach(el => {
-      if (el) el.addEventListener("input", syncFormState);
-      if (el) el.addEventListener("change", syncFormState);
-    });
-
-    contactForm.addEventListener("submit", async e => {
-      e.preventDefault();
-
-      const recipientConfig = activeRecipientConfig();
-      if (!recipientConfig || !hasAccessKey()) {
-        syncFormState();
-        return;
-      }
-
-      const payload = {
-        access_key: recipientConfig.accessKey,
-        subject: contactSubject?.value?.trim() || `New message for ${recipientConfig.label}`,
-        from_name: contactName?.value?.trim() || "Website contact form",
-        email: contactEmail?.value?.trim() || "",
-        message: contactMessage?.value?.trim() || "",
-        to_name: recipientConfig.label,
-        botcheck: ""
-      };
-
-      if (!formFieldsAreValid()) {
-        syncFormState();
-        return;
-      }
-
-      contactSubmitBtn.disabled = true;
-      contactSubmitBtn.textContent = "Sending...";
-      setContactStatus("Sending message...", "neutral");
-
-      try {
-        const response = await fetch("https://api.web3forms.com/submit", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const result = await response.json();
-        if (!response.ok || result.success === false) {
-          throw new Error(result.message || "Unable to send message.");
-        }
-
-        const selectedRecipient = contactRecipient.value;
-        contactForm.reset();
-        contactRecipient.value = selectedRecipient;
-        setContactStatus("Message sent successfully.", "success");
-      } catch (error) {
-        setContactStatus(error.message || "Unable to send message right now.", "error");
-      } finally {
-        contactSubmitBtn.textContent = "Send message";
-        syncFormState();
-      }
-    });
-
-    syncFormState();
+  if (route === "contact") {
+    const params = new URLSearchParams(location.hash.split("?").slice(1).join("?"));
+    const subject = content.querySelector("#contactSubject");
+    // Use the field value, never HTML, and retain the form's normal validation.
+    subject.value = (params.get("subject") || "").replace(/[\r\n]/g, " ").slice(0, subject.maxLength);
+    cleanupPage = mountContactForm(content, contactFormConfig["ullhexa.music@gmail.com"]);
   }
+
 }
 
 window.addEventListener("hashchange", render);

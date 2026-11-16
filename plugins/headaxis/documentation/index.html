@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ullhexa HeadAxis user guide and licence | Ull Hexa</title>
+  <link rel="stylesheet" href="../../../app/typography.css?v=20261002-font">
+  <link rel="stylesheet" href="../../../app/plugin-documentation.css?v=20261111-download-refinement">
+</head>
+<body>
+  <main class="documentPage">
+    <a class="documentBack" href="../">← Back to Ullhexa HeadAxis</a>
+    <h1>Ullhexa HeadAxis user guide and licence</h1>
+    <p class="documentVersion">Version 1.0.0</p>
+    <nav class="documentLinks" aria-label="Document sections"><a href="#user-guide">User guide</a><a href="#licence">Licence</a></nav>
+    <section id="user-guide" aria-labelledby="guideTitle"><h2 id="guideTitle">User guide</h2><div class="documentText">Ullhexa HeadAxis
+
+Head-controlled 3D audio spatialization by Ull Hexa.
+
+Audio Direction
+
+Think of the head as the listener. Sound arrives from your position looking at the display; you hear it through the head&#x27;s ears at the angle shown. Seeing the back means sound arrives from behind the listener. Seeing the top means it arrives from above.
+
+Controls
+
+- X rotates the head horizontally. Y rotates it vertically. Both wrap continuously; 180 degrees on each is straight ahead.
+- Drag inside the head display to rotate it. Hold Shift for finer adjustment, including during a drag. Double-click the display to return X and Y to the forward position.
+- Z sets distance from 20 cm to 50 m. Scroll up inside the head display to move closer; scroll down to move farther away. The displayed head size follows distance.
+- Drag a knob or scroll over it to change its value. Hold Shift for finer control.
+- Gain is the final output level, from -12 to +12 dB. Double-click the fader for 0 dB. Click its title to lock or unlock mouse adjustment; locking does not bypass the current gain.
+
+Input Modes
+
+Mono combines the input into one source and produces a spatial stereo output.
+
+Stereo preserves an existing stereo field while applying direction and distance cues. It does not identify or independently move objects embedded in a recording.
+
+Dual treats the left and right inputs as separate sources, so turning the head rotates their relative positions. Shared content in the inputs can behave differently from fully independent sources.
+
+Playback and Floor
+
+Click the Ull Hexa logo to open settings inside the head display. Choose Speakers or Headphones to match how you listen. Headphones retain interaural timing cues; Speakers adapts the processing for loudspeaker listening. Legacy retains the original, more strongly colored model.
+
+Select No floor, Wood, Tile, or Concrete. Floor reflections add material-dependent coloration and a sense of distance. Reduce playback level before comparing extreme gain or distance settings.
+
+How It Works
+
+HeadAxis combines frequency-dependent head shadow, ear-shaped spectral cues, ear-to-ear timing where appropriate, distance attenuation and air filtering. Optional reflections add a floor cue. Direction can remain apparent even when the overall levels in the two channels are similar. This is a procedural spatial effect, not a personalized measured HRTF or an exact reconstruction of a recorded scene. Results depend on the source and listening setup.
+
+Interface and Recall
+
+Settings offers six wallpapers and 75%, 100%, 125%, or 150% scaling. Set current UI as Default stores wallpaper and scale for new instances. Existing instances retain their own settings in the DAW project. Close settings by clicking the logo again or outside the head display.
+
+Audio parameters can be automated by your host. X and Y have a numeric wrap point; host interpolation across that boundary can differ from continuous mouse movement. Common front-facing positions are centered at 180 degrees to avoid that boundary.
+
+Credit and Contact
+
+Head animation imagery is based on a modified version of Woman&#x27;s Head by Zorglub City, BlenderKit asset ID bf3fd5b3-5021-484d-a42b-620384b4544d. See THIRD_PARTY_NOTICES.txt for the source and other credits.
+
+https://www.ullhexa.com
+ullhexa.music@gmail.com
+</div></section>
+    <section id="licence" aria-labelledby="licenceTitle"><h2 id="licenceTitle">Licence</h2><div class="documentText">Ullhexa HeadAxis Free Software License and Disclaimer
+
+Please read this license before installing or using Ullhexa HeadAxis (HeadAxis). By clicking Agree, installing, or using HeadAxis, you accept these terms.
+
+1. License Grant
+Ull Hexa grants you a limited, non-exclusive, non-transferable license to download, install, and use HeadAxis free of charge for personal, professional, educational, and commercial music or audio production.
+
+2. Restrictions
+You may not sell, resell, rent, lease, sublicense, distribute, repackage, upload, share, copy for distribution, modify for distribution, reverse engineer except where permitted by law, or present HeadAxis as your own product. You may not remove product names, copyright notices, credits, or attribution included with the software.
+
+3. Free Product; No Support Obligation
+HeadAxis is provided free of charge. Ull Hexa has no obligation to provide support, updates, fixes, compatibility changes, maintenance, continued availability, or responses to user requests. Ull Hexa may change, discontinue, or remove the software at any time.
+
+4. No Warranty
+HeadAxis is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, whether express, implied, or statutory. This includes, without limitation, warranties of merchantability, fitness for a particular purpose, non-infringement, compatibility, reliability, accuracy, and uninterrupted or error-free operation.
+
+5. Use at Your Own Risk
+You are solely responsible for your use of HeadAxis, your audio projects, your computer system, your DAW sessions, your files, and your results. You should keep backups of important work before installing or using any audio plugin.
+
+6. Limitation of Liability
+To the maximum extent permitted by law, Ull Hexa shall not be liable for any direct, indirect, incidental, special, consequential, exemplary, or other damages, including but not limited to lost profits, lost data, lost projects, business interruption, equipment or software issues, or any other losses arising from or related to HeadAxis, even if advised of the possibility of such damages.
+
+7. Third-Party Asset Credit
+HeadAxis includes head animation imagery based on a modified version of Woman&#x27;s Head by Zorglub City, BlenderKit asset ID bf3fd5b3-5021-484d-a42b-620384b4544d.
+
+Third-party components remain subject to their respective licenses. The restrictions in this license do not override rights granted by those licenses. See THIRD_PARTY_NOTICES.txt for credits and applicable notices.
+
+8. Privacy
+HeadAxis does not require an account and does not collect telemetry or personal data.
+
+9. Governing Terms
+Nothing in this license excludes, restricts, or overrides rights or remedies that cannot lawfully be excluded or limited. The warranty disclaimers, liability limitations, and other restrictions apply only to the extent permitted by applicable law.
+
+If any part of this license is found unenforceable, the remaining parts remain in effect to the fullest extent permitted by law.
+</div></section>
+  </main>
+</body>
+</html>

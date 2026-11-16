@@ -1,0 +1,12 @@
+:root { color-scheme:dark; }
+body { margin:0; background:#141517; color:#e7e7e9; font-family:var(--site-font),sans-serif; }
+.documentPage { max-width:780px; margin:32px auto 70px; padding:0 24px; }
+.documentPage a { color:inherit; text-underline-offset:3px; }
+.documentBack { font-size:13px; color:#aaa!important; }
+.documentPage h1 { font-size:25px; margin:32px 0 8px; }
+.documentVersion { color:#aaa; font-size:12px; }
+.documentLinks { display:flex; gap:24px; margin:22px 0 30px; font-size:13px; }
+.documentPage section { scroll-margin-top:24px; margin-top:40px; }
+.documentPage h2 { font-size:17px; font-weight:700; margin:0 0 20px; }
+.documentText { font:inherit; font-size:14px; line-height:1.65; white-space:pre-wrap; overflow-wrap:anywhere; }
+.documentPage a:focus-visible { outline: none; }

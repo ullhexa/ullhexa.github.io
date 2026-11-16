@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ullhexa IIIIPole user guide and licence | Ull Hexa</title>
+  <link rel="stylesheet" href="../../../app/typography.css?v=20261002-font">
+  <link rel="stylesheet" href="../../../app/plugin-documentation.css?v=20261111-download-refinement">
+</head>
+<body>
+  <main class="documentPage">
+    <a class="documentBack" href="../">← Back to Ullhexa IIIIPole</a>
+    <h1>Ullhexa IIIIPole user guide and licence</h1>
+    <p class="documentVersion">Version 1.0.0</p>
+    <nav class="documentLinks" aria-label="Document sections"><a href="#user-guide">User guide</a><a href="#licence">Licence</a></nav>
+    <section id="user-guide" aria-labelledby="guideTitle"><h2 id="guideTitle">User guide</h2><div class="documentText">Ullhexa IIIIPole
+
+Getting Started
+Insert Ullhexa IIIIPole on an audio or instrument channel. Start with low
+monitoring volume, FB at zero and a modest resonance setting. Open the Ull Hexa
+logo for About, UI Controls and Scaling options. The built-in UI Controls page
+contains the full editing and routing reference.
+
+Filter
+CUTOFF sets the low-pass frequency. RESONANCE emphasizes the cutoff region;
+RES SPLIT separates the resonance peaks. DRIVE adds saturation with managed
+level. SRR reduces the input sample rate for stepped textures, and HP removes
+low frequencies. Yellow switches enable each effect independently of its knob.
+TRIM adjusts input level. WET/DRY blends processed and dry audio; OUT controls
+both. Higher oversampling settings increase the ladder core&#x27;s integration rate
+and use more CPU. Oversampling does not make a highly nonlinear effect alias-free.
+
+The knob pointer is the set position. The white value arc follows modulation,
+and colored outer arcs show modulation ranges. Cutoff also shows the MIDI pitch
+offset. Knob images do not move with modulation.
+
+Feedback Caution
+FB returns up to 100% of the protected wet signal before SRR and DRIVE.
+WET/DRY and OUT remain outside this loop. With any FB above zero, RESONANCE and
+RES SPLIT use half their ordinary ranges and DRIVE is limited to 20 dB instead
+of 30 dB. Purple indicators identify these reduced ranges; knob travel remains
+unchanged. At zero FB, normal ranges return.
+
+Feedback and high resonance can produce unwanted, loud sustained tones.
+These limits do not eliminate the risk. Keep monitoring volume low and raise
+FB gradually. Double-click FB to reset it to zero.
+
+MIDI
+Create a separate MIDI track and route it to IIIIPole on the channel hosting
+the plugin. Some DAWs can route an instrument track&#x27;s MIDI directly to insert
+effects instead. Follow the host&#x27;s routing instructions. The AU is a
+MIDI-capable music effect, not a standalone instrument.
+
+- v/oct follows the last note; MIDI note 60 is the reference. DAWs may label its octave differently.
+- retrig restarts all four curves on a fresh note and loops while notes are held.
+  Overlapping notes continue the current progression. After release, each curve
+  finishes its cycle and holds its endpoint. Sustain also holds the gate.
+- velo opens cutoff by up to one third of its range. Pitch and velocity latch
+  until the next note.
+
+With retrig off, tempo and Hz modes run freely. Trig mode still responds to
+fresh notes, plays once and holds the endpoint. Release all notes before
+triggering again. Selecting a Time mode does not change retrig.
+
+Modulation
+MOD opens the second panel. Buttons 1-4 select the edited curve; the diodes
+above them enable background views. The active curve is always visible.
+CLONE arms copying to another page; select a pulsing destination or cancel by
+pressing CLONE again or elsewhere.
+
+Double-click to add a node or remove a free node. White edge nodes are linked.
+Drag between nodes to bend a segment. The grid number sets 1-16 time divisions:
+drag, scroll, or double-click to type. Its diode toggles snapping; Shift bypasses
+snapping. With the curve focused, Cmd/Ctrl+C and Cmd/Ctrl+V copy and paste nodes.
+
+TIME offers Straight, Dotted, Triplet, Hz and Trig. Hz covers 0.005-200 Hz;
+Trig covers 5 ms-25 s. LOG/LIN/EXP shapes interpolation. SKEW tapers either
+side toward the vertical midpoint. LEVEL changes the amplitude span. The
+right-hand slider offsets the curve, stopping nodes at the display limits.
+Controller changes are reversible by restoring their settings; manual node
+editing adopts the displayed shape as the new source.
+
+Signed faders set destination depths. Cutoff can combine all four sources;
+other destinations use one. UNI sends in one direction; BI sends around the
+set value. ON/OFF bypasses individual sends, and the bottom button bypasses
+all modulation. The white fader diode toggles center snapping.
+
+Curves And Presets
+The left triangle opens the curve library. Click a shape to apply it and close
+the library, or use the small arrows to step through the chosen Factory/User
+list. Editing never switches categories. One custom draft per page appears
+in User with an exclamation mark; S or Save adds it to the library. Selecting
+another shape retains that draft, but editing another replaces it. Delete
+opens multi-selection and requires confirmation. Factory shapes cannot be deleted.
+While browsing, the right-hand slider scrolls instead of changing offset.
+
+The preset bar stores the plugin settings, curves, custom drafts, selected mod
+page and visibility choices. It excludes input trim, wet/dry, oversampling,
+panel-open state and UI scale. Preset browsing stays open for auditioning.
+Save As creates a user preset; Rename and Delete apply only to user presets.
+Preset operations do not save or delete library curves. Enter confirms text;
+Escape cancels. DAW projects also retain unsaved custom curves.
+
+Scaling And Files
+Choose a scale in the Ull Hexa menu or drag the bottom-right corner. The same
+instance remembers its size when reopened. Set current scaling to Default
+sets the initial size for new instances.
+
+User presets, curves and default UI settings are stored in
+~/Library/Application Support/Ull Hexa/IIIIPole. Keep backups of important
+sessions and user files. Removing the plugin does not remove these files.
+
+https://ullhexa.com | ullhexa.music@gmail.com
+</div></section>
+    <section id="licence" aria-labelledby="licenceTitle"><h2 id="licenceTitle">Licence</h2><div class="documentText">Ullhexa IIIIPole End User License Agreement
+Terms revision 9 November 2026
+
+This End User License Agreement (&quot;Agreement&quot;) applies to the Ullhexa IIIIPole audio plugin by Ull Hexa (&quot;Software&quot;).
+
+By installing or using the Software, you confirm that you have read this Agreement and agree to its terms. If you do not agree, do not install or use the Software.
+
+1. Free Use License
+
+Ull Hexa grants you a limited, non-exclusive, non-transferable license to install and use the Software free of charge for personal or professional music-production work, subject to this Agreement.
+
+This free-use license does not make the Software open source, public domain, or free to modify, rebrand, resell, or redistribute.
+
+2. Ownership
+
+The Software, design, graphics, code, name, logo, documentation, and related materials remain the property of Ull Hexa or its licensors. This Agreement does not transfer ownership of the Software to you.
+
+3. Official Builds
+
+Official builds of Ullhexa IIIIPole are distributed only through channels controlled by Ull Hexa.
+
+You should not install builds from unknown or unofficial sources. If a build has been modified after signing, the original signature may no longer be valid.
+
+4. Restrictions
+
+You may not sell, sublicense, rent, lease, or otherwise transfer the Software except as expressly permitted by Ull Hexa.
+
+You may not redistribute, resell or repackage the Software without written permission from Ull Hexa. Share the official download link instead. You may not modify, rebrand or wrap the Software in a way that implies it was created, approved or signed by anyone other than Ull Hexa.
+
+You may not use the names &quot;Ullhexa IIIIPole&quot;, &quot;IIIIPole&quot; or &quot;Ull Hexa&quot;, or any related logo or identity, to impersonate Ull Hexa or distribute unofficial builds as official releases.
+
+You may not reverse engineer, decompile, disassemble, modify, or create derivative works from the Software except where such restriction is prohibited by applicable law.
+
+You may not remove copyright, trademark, attribution, license, signature, or proprietary notices from the Software.
+
+5. Test Builds
+
+Builds marked Debug, test, or pre-release are provided for evaluation and workflow testing and may contain bugs or incomplete release infrastructure.
+
+You are responsible for backing up important DAW projects and session data before using prototype or test builds.
+
+6. No Warranty
+
+To the extent permitted by applicable law, the Software is provided &quot;as is&quot; without warranties of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement.
+
+7. Limitation Of Liability
+
+To the maximum extent permitted by applicable law, Ull Hexa will not be liable for any indirect, incidental, special, consequential, or punitive damages, or for loss of data, loss of profits, loss of business, DAW instability, project corruption, or interruption of work arising from use of or inability to use the Software.
+
+Nothing in this Agreement excludes liability or limits rights or remedies that cannot lawfully be excluded or limited. Mandatory consumer rights remain unaffected.
+
+8. User Data
+
+The Software stores user presets, curve libraries and interface preferences in ~/Library/Application Support/Ull Hexa/IIIIPole. Plugin settings and unsaved custom curves are also saved within your DAW projects. Removing the plugin may not automatically remove these files.
+
+9. Donations And Future Products
+
+The Software may be provided free of charge. If donation links or paid products are offered later, they are separate from this free-use license unless stated otherwise by Ull Hexa.
+
+Ull Hexa does not undertake to provide support, bug fixes, updates, maintenance, future compatibility, or continued availability of this free product, except where required by applicable law.
+
+10. Termination
+
+This Agreement remains in effect until terminated. Your rights under this Agreement terminate automatically if you fail to comply with its terms. Upon termination, you must stop using and remove the Software.
+
+11. Contact
+
+Ull Hexa
+Website: https://ullhexa.com
+Email: ullhexa.music@gmail.com
+
+12. Third-Party Components
+
+Third-party components remain subject to their own applicable licenses and notices. This Agreement does not restrict rights granted under those licenses. See THIRD_PARTY_NOTICES.txt. Your music, audio, presets and curve shapes remain yours; these restrictions concern the Software itself.
+</div></section>
+  </main>
+</body>
+</html>

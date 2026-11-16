@@ -2,49 +2,49 @@ const imageRoot = "./assets/products/dnd/";
 
 const slides = [
   {
-    image: "citadel-console.png",
+    image: "citadel-console.webp",
     title: "The adventure, at a glance",
     description: "The Blighted Citadel with a party and encounter loaded. Keep characters, enemies, initiative and hit points beside the map, ready for the next turn.",
-    alt: "DM Control Center showing the Blighted Citadel, four player tokens, three enemies and the initiative panel."
+    alt: "Ull Hexa GM Console showing the Blighted Citadel, four player tokens, three enemies and the initiative panel."
   },
   {
-    image: "conditions-initiative.png",
+    image: "conditions-initiative.webp",
     title: "Keep track of every condition",
     description: "Open a character’s condition controls directly on the map. Poisoned, restrained and frightened markers help keep the state of the encounter visible, alongside the turn order.",
     alt: "Brom’s condition controls open over the Citadel, with Poisoned selected and condition markers visible in initiative."
   },
   {
-    image: "spell-areas.png",
+    image: "spell-areas.webp",
     title: "Give spells room to work",
     description: "Place, resize and rotate coloured circles, cones and squares to mark spell areas. On the Blighted Farm, a 15-foot radius, a cone, a square and a character aura make the battlefield easier to read.",
     alt: "The Blighted Farm with a red 15-foot spell radius, orange cone, blue square and blue character aura."
   },
   {
-    image: "ruler-measurements.png",
+    image: "ruler-measurements.webp",
     title: "Measure before you move",
     description: "Check distances directly on the map with the ruler. This measurement across the Blighted Ridge helps you judge movement and range before committing to an action.",
-    alt: "A dashed ruler spanning the Blighted Ridge, displaying a distance of 83.1 feet."
+    alt: "A dashed ruler spanning the Blighted Ridge, displaying a distance of 52.9 feet."
   },
   {
-    image: "autotrace.png",
+    image: "autotrace.webp",
     title: "Autotrace your movement",
-    description: "Enable automatic movement measurement and drag a token: the ruler follows, showing the distance as you move. Here, Aria’s route through the Blighted Homestead measures 45.7 feet.",
-    alt: "Aria being moved through the Blighted Homestead, with an automatic ruler tracing 45.7 feet from her starting position."
+    description: "Enable automatic movement measurement and drag a token: the ruler follows, showing the distance as you move. Here, Aria’s route through the Blighted Homestead measures 47.7 feet.",
+    alt: "Aria being moved through the Blighted Homestead, with an automatic ruler tracing 47.7 feet from her starting position."
   },
   {
-    image: "fog-of-war.png",
+    image: "fog-of-war.webp",
     title: "Reveal the world as you explore",
     description: "Paint and erase fog of war to control what the party can see. Mist covers the unexplored side of the Blighted Cavern while the DM keeps an overview of the encounter.",
     alt: "The Blighted Cavern with the party in a revealed passage and painted mist covering the eastern chambers."
   },
   {
-    image: "dice-machine.png",
+    image: "dice-machine.webp",
     title: "Roll without leaving the table",
     description: "The dice machine sits over the map, with dice from D4 to D100, individual results and a combined total. This roll at the Last Lantern combines a D20 and two D6s.",
-    alt: "The dice machine over the Last Lantern map, showing a D20 result of 13 and two D6 results of 2 and 1, totalling 16."
+    alt: "The dice machine over the Last Lantern map, showing a D20 result of 14 and two D6 results of 6 and 1, totalling 21."
   },
   {
-    image: "citadel-floors.png",
+    image: "citadel-floors.webp",
     title: "There is more beneath the roof",
     description: "Uncover buildings and move between their available floors. The Citadel’s headquarters opens into its sewers, with the darkness control setting the mood for what waits below.",
     alt: "The Blighted Citadel’s headquarters on floor minus one, revealing its sewer interior with darkness set to 40 percent."
@@ -57,15 +57,16 @@ export function renderDndShowcase() {
     <section class="dndShowcase">
       <div class="contactIntro dndIntro">
         <div class="dndTitleRow">
-          <h2>Ull Hexa D&amp;D</h2>
-          <a class="softActionBtn dndPlay" href="https://ullhexa.com/dnd/" target="_blank" rel="noopener noreferrer" aria-label="Play Ull Hexa D&D (opens in a new window)">Play <span aria-hidden="true">↗</span></a>
+          <h2>Ull Hexa GM Console</h2>
+          <a class="softActionBtn dndPlay" href="https://ullhexa.com/dnd/" target="_blank" rel="noopener noreferrer" aria-label="Play Ull Hexa GM Console (opens in a new tab)">Play <span aria-hidden="true">↗</span></a>
         </div>
-        <p class="dndLead">A home for your next adventure. Run your Dungeons &amp; Dragons sessions with interactive maps, ready-to-load parties and encounters, and a DM console that keeps the action within reach.</p>
+        <p class="dndLead">An independent Game Master Console optimized for Dungeons &amp; Dragons</p>
+        <p class="dndDescription">Run your sessions with interactive maps, party and encounter group editors, dice machine, and included spell cards. Made to fit your storylines and ideas, with the freedom to load your own maps, character tokens, image objects and spell cards.</p>
         <p class="dndDescription">Track initiative and conditions, place spell areas, measure movement and reveal the world with fog of war. Use the separate Player Display on a second screen while you manage the session from your console.</p>
         <p class="dndAvailability">Free to use. Runs in your browser.</p>
       </div>
 
-      <section class="dndGallery" tabindex="0" aria-label="D&D feature gallery" aria-roledescription="carousel">
+      <section class="dndGallery" tabindex="0" aria-label="Ull Hexa GM Console feature gallery" aria-roledescription="carousel">
         <div class="dndGalleryControls">
           <button class="softActionBtn dndGalleryArrow" type="button" data-gallery-previous aria-label="Previous image" aria-controls="dndGallerySlide"><span aria-hidden="true">←</span></button>
           <p class="dndGalleryCount"><span data-gallery-count>01 / 08</span><span class="dndGalleryHint">Explore the console</span></p>
@@ -81,6 +82,11 @@ export function renderDndShowcase() {
           </figcaption>
         </figure>
       </section>
+
+      <footer class="dndNotice">
+        <p><strong>Independence notice:</strong> Ull Hexa is not affiliated with, endorsed by, or sponsored by Wizards of the Coast.</p>
+        <p>Spell content includes material from SRD 5.2.1, licensed under CC BY 4.0. <a href="https://ullhexa.com/dnd/spell-credits.html" target="_blank" rel="noopener noreferrer">Spell content credits and licence</a>.</p>
+      </footer>
     </section>
   `;
 }

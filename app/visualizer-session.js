@@ -6,7 +6,8 @@ export const MODES = {
 export function selectionFromURL(url) {
   const params = new URL(url).searchParams;
   const family = params.get('family') === 'midi' ? 'midi' : 'audio';
-  const mode = params.get('mode') || (family === 'audio' && ['smooth', 'previous'].includes(params.get('catBounce')) ? 'cat' : null);
+  let mode = params.get('mode') || (family === 'audio' && ['smooth', 'previous'].includes(params.get('catBounce')) ? 'cat' : null);
+  if (family === 'midi' && mode === 'cube') mode = 'rubik';
   return { family, mode: MODES[family].includes(mode) ? mode : MODES[family][0] };
 }
 

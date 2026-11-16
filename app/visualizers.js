@@ -1,10 +1,17 @@
 import * as audio from './audio-visualizers.js?v=20261002-font';
-import * as midi from './midi-visualizers.js?v=20260930d';
-import { createVisualizerSession, selectionFromURL } from './visualizer-session.js';
+import * as midi from './midi-visualizers.js?v=20261110-midi-dismiss';
+import { createVisualizerSession, selectionFromURL } from './visualizer-session.js?v=20261114-cube';
+import { bindPressActions } from './press-action.js?v=20261110-link-fix';
 
 const session = createVisualizerSession({ audio, midi });
 const menus = [...document.querySelectorAll('.modeMenu')];
 const canvases = { audio: document.getElementById('canvas'), midi: document.getElementById('midiCanvas') };
+const midiSupportNotice = document.getElementById('midiSupportNotice');
+bindPressActions(midiSupportNotice, { selector: '#midiSupportClose' });
+document.getElementById('midiSupportClose').addEventListener('click', () => {
+  midi.dismissSupportNotice();
+  canvases.midi.focus({ preventScroll: true });
+});
 
 function closeMenus() {
   for (const menu of menus) {
@@ -27,7 +34,7 @@ function select(family, mode, remember = false) {
   if (remember) {
     const url = new URL(location.href);
     url.searchParams.set('family', family);
-    url.searchParams.set('mode', mode);
+    url.searchParams.set('mode', family === 'midi' && mode === 'rubik' ? 'cube' : mode);
     history.pushState(null, '', url);
   }
 }

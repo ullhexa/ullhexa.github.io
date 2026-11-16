@@ -1,0 +1,153 @@
+.pluginContribution { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:center; gap:clamp(30px,6vw,85px); max-width:950px; margin:0 auto 45px; }
+.pluginContributionCopy { min-width:0; }
+.pluginContribution h1 { font-size:clamp(32px,4vw,48px); line-height:1.12; margin:0 0 22px; }
+.pluginContributionIntro { color:#ffffffb8; font-size:15px; line-height:1.7; margin:0 0 25px; }
+.contributionProduct { display:flex; align-items:center; gap:16px; border-block:1px solid #ffffff26; padding:16px 0; margin-bottom:24px; }
+.contributionProduct img { width:52px; height:65px; object-fit:contain; }
+.contributionProduct strong { display:block; font-size:17px; margin-bottom:7px; }
+.contributionProduct span { color:#ffffff80; font-size:12px; }
+#contributionForm label { display:block; font-size:14px; margin-bottom:10px; }
+.contributionAmount { display:flex; align-items:center; gap:12px; background:#08080ab3; border:1px solid #ffffff55; padding:0 16px; height:60px; }
+.contributionAmount:focus-within { border-color:#ffffffb8; }
+.contributionAmount > span { color:#ffffff80; font-size:23px; }
+.contributionAmount .contributionCurrency { font-size:12px; }
+.contributionAmount input { min-width:0; width:100%; font:inherit; font-size:27px; color:#fff; background:none; border:0; outline:0; padding:10px 0; }
+.contributionAmount input::placeholder { color:#ffffff40; }
+.contributionHelp, .contributionAvailability, .contributionStatus { font-size:12px; color:#ffffff80; line-height:1.6; margin:12px 0 0; }
+.contributionAvailability { margin-bottom:22px; }
+.contributionStatus { color:var(--ull-accent); min-height:2.8em; }
+.contributionContinue { min-height:46px; min-width:145px; padding:0 22px; font:inherit; font-size:14px; cursor:pointer; }
+/* A quiet, self-contained destination shared by free and future paid delivery. */
+body.pluginFlowPage { background:#141517; color:#e7e7e9; }
+.pluginFlowPage .pluginProduct { max-width:970px; margin:30px auto 50px; padding:0 28px; }
+.pluginFlowPage .pluginBack { margin-bottom:30px; font-size:12px; }
+.pluginFinalHeading { margin:0 0 28px; }
+.pluginFinalHeading h1 { font-size:27px; font-weight:700; line-height:1.2; margin:0 0 8px; letter-spacing:0; }
+.pluginFinalHeading p { margin:0; font-size:14px; font-weight:400; color:#b8b8bd; line-height:1.5; }
+.pluginFinalHeading .pluginVersion { margin:0 0 8px; font-size:12px; color:#ffffff80; }
+.pluginFinalLayout { display:grid; grid-template-columns:minmax(0,320px) minmax(0,1fr); gap:50px; align-items:start; }
+.pluginFinalPayment, .pluginFinalInfo { min-width:0; }
+.pluginFinalDelivery { min-width:0; margin-top:26px; }
+.pluginFinalLayout.hasPayPal { grid-template-columns:minmax(0,380px) minmax(0,1fr); gap:40px; }
+.pluginPayPalPanel { color-scheme:light; background:#303030; color:#ededed; padding:20px; border-radius:4px; }
+/* Theme the surrounding content; keep PayPal's branded payment controls intact. */
+.pluginPayPalPanel input#amount { background:#e3e3e3; color:#202020; }
+.pluginPayPalPanel .currency-symbol, .pluginPayPalPanel .currency-label { color:#202020; }
+.pluginPayPalPanel .error-label { color:#ff9b9b; }
+.pluginPayPalPanel .paypal-card-art { background:#e3e3e3; border-radius:3px; padding:6px 8px; box-sizing:border-box; }
+.pluginPayPalStatus { margin:12px 0 0; color:#d0d0d0; font-size:13px; line-height:1.5; }
+.pluginPayPalFallback { color:#9bcaff; font-size:13px; }
+.pluginPayPalNote { color:#b8b8bd; font-size:12px; line-height:1.5; margin:0 0 12px; }
+.pluginPayPal [hidden] { display:none !important; }
+@media(max-width:760px) { .pluginFinalLayout.hasPayPal { grid-template-columns:1fr; gap:30px; } .hasPayPal .pluginFinalPayment { max-width:380px; width:100%; margin:0; } }
+
+.pluginFinalImage { height:270px; display:grid; place-items:center start; }
+.pluginFinalArtwork { display:block; width:auto; height:auto; max-width:100%; max-height:270px; }
+.pluginFinalDelivery .pluginDownloadBlock { margin-top:0; padding:0; border:0; }
+.pluginFinalDelivery .pluginDownload { box-sizing:border-box; width:240px; max-width:100%; min-height:46px; font-size:14px; align-items:center; justify-content:center; text-align:center; }
+.pluginFinalDelivery .pluginDownloadMeta { font-size:11px; margin:12px 0; }
+.pluginFinalDelivery .pluginDownloadMeta span { padding:0 2px; }
+.pluginFinalDelivery .pluginDownloadAssurance, .pluginFinalDelivery .pluginLicence { font-size:11px; line-height:1.6; }
+.pluginFinalLayout .pluginDetails { display:block; border:0; padding:0; margin:0; }
+.pluginFinalLayout .pluginDetails section + section { margin-top:25px; }
+.pluginFinalLayout .pluginDetails h2 { font-size:14px; font-weight:700; margin:0 0 10px; }
+.pluginFinalLayout .pluginSpecs > div { grid-template-columns:105px minmax(0,1fr); gap:12px; border:0; padding:4px 0; font-size:12px; line-height:1.5; }
+.pluginFinalLayout .pluginInstallation { padding-left:17px; font-size:12px; line-height:1.55; }
+.pluginFinalLayout .pluginInstallation li { padding-left:3px; margin-bottom:9px; }
+.pluginFinalLayout .pluginDocumentation { margin-top:16px; font-size:12px; }
+.pluginDocumentation a { color:#c9c9ce; text-underline-offset:3px; }
+@media(max-width:650px) {
+  .pluginContribution, .pluginFinalLayout { grid-template-columns:1fr; gap:30px; }
+  .pluginContributionCopy { max-width:440px; width:100%; margin:auto; }
+  .pluginFlowPage .pluginProduct { padding:0 20px; margin-top:22px; }
+  .pluginFinalPayment { max-width:340px; width:100%; margin:0; }
+  .pluginFinalImage { height:220px; }
+  .pluginFinalArtwork { max-height:220px; }
+}
+
+.puppy-stage { width:100%; max-width:390px; margin:auto; min-width:0; }
+.puppy { display:block; width:100%; height:auto; overflow:visible; }
+@media(max-width:650px) { .puppy-stage { max-width:230px; } }
+    .outline { stroke:#453c36; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+    .detail { fill:none; stroke:#5c4c40; stroke-width:2; stroke-linecap:round; }
+    #puppy-rig { transform-origin:181px 364px; }
+    #ground-shadow { transform-origin:182px 366px; }
+    #body { transform-origin:180px 348px; animation:breathe 3.6s ease-in-out infinite; }
+    #head { transform-origin:181px 213px; animation:hopeful 4.5s ease-in-out infinite; }
+    #tail { transform-origin:223px 277px; animation:wag 950ms ease-in-out infinite alternate; }
+    #eyes { transform-origin:180px 151px; animation:blink 6.8s linear infinite; }
+    .pupil { transform-box:fill-box; transform-origin:center; transform:scale(.87); transition:transform 350ms ease-out; }
+    #bottom-lids { transform:translateY(-2px); transition:transform 350ms ease-out; }
+    #left-brow { transform-origin:144px 123px; }
+    #right-brow { transform-origin:218px 123px; }
+    #left-brow,#right-brow { transition:transform 350ms ease-out; }
+    #left-ear { transform-origin:114px 98px; }
+    #right-ear { transform-origin:242px 98px; }
+    #shuffle-foot { transform-origin:211px 324px; }
+    #left-arm { transform-origin:137px 239px; }
+    #right-arm { transform-origin:222px 239px; }
+    #scuff { opacity:0; }
+    #happy-mouth { opacity:0; transform:scale(.7); transform-origin:182px 187px; transition:opacity 180ms ease-out,transform 250ms ease-out; }
+    #rest-mouth { transition:opacity 160ms ease-out; }
+    #tongue { transform-origin:186px 202px; }
+    .eye-sparkle { opacity:0; transition:opacity 350ms ease-out; }
+    .cheek { opacity:.28; transition:opacity 350ms ease-out; }
+    .puppy[data-mood="zero"] #body { animation:none; }
+    .puppy[data-mood="zero"] #head { animation:head-dip 5.2s cubic-bezier(.4,0,.2,1) both; }
+    .puppy[data-mood="zero"] #eyes { animation:none; }
+    .puppy[data-mood="zero"] #pupils { animation:down-then-contact 5.2s ease-in-out both; }
+    .puppy[data-mood="zero"] #tail { animation:quiet-tail 5.2s ease-in-out both; }
+    .puppy[data-mood="zero"] #shuffle-foot { animation:paw-shuffle 5.2s ease-in-out both; }
+    .puppy[data-mood="zero"] #scuff { animation:scuff 5.2s ease-in-out both; }
+    .puppy[data-mood="positive"] #puppy-rig { animation:happy-hops 2.1s ease-in-out 2; }
+    .puppy[data-mood="positive"] #ground-shadow { animation:jump-shadow 2.1s ease-in-out 2; }
+    .puppy[data-mood="positive"] #tail { animation:happy-wag 150ms ease-in-out infinite alternate; }
+    .puppy[data-mood="positive"] #head { animation:perky 1.4s ease-in-out infinite; }
+    .puppy[data-mood="positive"] #body { animation:none; }
+    .puppy[data-mood="positive"] #eyes { animation:blink 6.8s linear infinite; }
+    .puppy[data-mood="positive"] .pupil { transform:scale(1.04,1.01); }
+    .puppy[data-mood="positive"] #bottom-lids { transform:translateY(-5px); }
+    .puppy[data-mood="positive"] #left-brow { transform:translateY(-4px) rotate(-4deg); }
+    .puppy[data-mood="positive"] #right-brow { transform:translateY(-4px) rotate(4deg); }
+    .puppy[data-mood="positive"] #left-ear { transform:translateY(-3px) rotate(26deg); }
+    .puppy[data-mood="positive"] #right-ear { transform:translateY(-3px) rotate(-26deg); }
+    .puppy[data-mood="positive"] #left-arm { transform:rotate(18deg); }
+    .puppy[data-mood="positive"] #right-arm { transform:rotate(-18deg); }
+    .puppy[data-mood="positive"] #happy-mouth { opacity:1; transform:scale(1); }
+    .puppy[data-mood="positive"] #rest-mouth { opacity:0; }
+    .puppy[data-mood="positive"] #tongue { animation:pant 500ms ease-in-out infinite alternate; }
+    .puppy[data-mood="positive"] .eye-sparkle { opacity:.65; }
+    .puppy[data-mood="positive"] .cheek { opacity:.45; }
+    #left-ear,#right-ear,#left-arm,#right-arm { transition:transform 420ms ease-out; }
+    @keyframes breathe { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.012)} }
+    @keyframes hopeful { 0%,100%{transform:rotate(-3deg)} 44%,65%{transform:rotate(3deg) translateY(-1px)} }
+    @keyframes wag { from{transform:rotate(-12deg)} to{transform:rotate(15deg)} }
+    @keyframes happy-wag { from{transform:rotate(-21deg)} to{transform:rotate(23deg)} }
+    @keyframes blink { 0%,43%,46%,100%{transform:scaleY(1)} 44.5%{transform:scaleY(.08)} }
+    /* Look at the ground first, then reconnect with the viewer while the head stays down. */
+    @keyframes head-dip { 0%{transform:rotate(-3deg)} 14%,84%{transform:translateY(7px) rotate(2deg) scaleY(.96)} 100%{transform:rotate(-3deg)} }
+    @keyframes down-then-contact { 0%,100%{transform:translateY(0)} 14%,29%{transform:translateY(5px)} 46%,84%{transform:translateY(-5px)} }
+    @keyframes quiet-tail { 0%,100%{transform:rotate(-12deg)} 18%,84%{transform:rotate(-24deg)} }
+    @keyframes paw-shuffle { 0%,21%,92%,100%{transform:translateX(0) rotate(0)} 34%,59%,79%{transform:translateX(-10px) rotate(9deg)} 46%,70%{transform:translateX(3px) rotate(-4deg)} }
+    @keyframes scuff { 0%,23%,89%,100%{opacity:0} 34%,59%,79%{opacity:.4;transform:translateX(-4px)} 46%,70%{opacity:.1;transform:translateX(0)} }
+    @keyframes perky { 0%,100%{transform:translateY(-3px) rotate(-5deg)} 50%{transform:translateY(-5px) rotate(4deg)} }
+    @keyframes pant { from{transform:scaleY(.96) rotate(-2deg)} to{transform:scaleY(1.04) rotate(2deg)} }
+    @keyframes happy-hops {
+      0%,100%{transform:translate(0,0) scale(1)}
+      7%{transform:translate(0,0) scale(1.025,.96)}
+      22%{transform:translate(-8px,-30px) rotate(-4deg) scale(.98,1.02)}
+      35%{transform:translate(-5px,0) rotate(-1deg) scale(1.04,.95)}
+      44%{transform:translate(-4px,0) scale(1)}
+      60%{transform:translate(12px,-43px) rotate(5deg) scale(.97,1.03)}
+      75%{transform:translate(7px,0) rotate(1deg) scale(1.04,.94)}
+      86%{transform:translate(1px,-13px) rotate(-2deg)}
+      95%{transform:translate(0,0) scale(1.02,.97)}
+    }
+    @keyframes jump-shadow { 0%,7%,35%,44%,75%,95%,100%{transform:scaleX(1);opacity:.35} 22%,60%{transform:scaleX(.72);opacity:.18} 86%{transform:scaleX(.88);opacity:.26} }
+    @media(prefers-reduced-motion:reduce) {
+      .puppy * { animation:none!important;transition:none!important; }
+      .puppy[data-mood="zero"] #head { transform:translateY(5px) rotate(2deg) scaleY(.96); }
+      .puppy[data-mood="zero"] #pupils { transform:translateY(-5px); }
+      .puppy[data-mood="zero"] #shuffle-foot { transform:translateX(-6px) rotate(5deg); }
+      .puppy[data-mood="positive"] #head { transform:translateY(-3px) rotate(-3deg); }
+    }

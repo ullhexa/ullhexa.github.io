@@ -1,5 +1,6 @@
 const canvas = document.getElementById("midiCanvas");
 const ctx = canvas.getContext("2d");
+const midiSupportNotice = document.getElementById("midiSupportNotice");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
@@ -10,6 +11,7 @@ window.addEventListener("resize", () => {
 
 let currentMode = 'squares';
 let isActive = false;
+let supportNoticeDismissed = false;
 let animationFrameId = 0;
 let notes = {};
 let expansionZoom = 0; // 0 = normal, 1 = full explosion zoom
@@ -2461,7 +2463,7 @@ function onMIDINote(note, velocity) {
 
 let midiAccessRequested = false;
 function connectMidi() {
-  if (midiAccessRequested || !navigator.requestMIDIAccess) return;
+  if (midiAccessRequested || typeof navigator.requestMIDIAccess !== 'function') return;
   midiAccessRequested = true;
   navigator.requestMIDIAccess().then(midiAccess => {
     const connectInputs = () => {
@@ -2508,7 +2510,14 @@ function finishRubikRotation() {
   currentRubikRotation = null;
 }
 
+function dismissSupportNotice() {
+  supportNoticeDismissed = true;
+  midiSupportNotice.hidden = true;
+}
+
 function setActive(active) {
+  // Check the API, not the browser name. Permission denial is not lack of support.
+  midiSupportNotice.hidden = supportNoticeDismissed || !active || typeof navigator.requestMIDIAccess === 'function';
   if (active === isActive) return;
   if (!active) {
     releaseNotes();
@@ -2532,4 +2541,4 @@ window.addEventListener('pagehide', () => {
 });
 window.addEventListener('pageshow', () => { if (isActive && !animationFrameId) animate(); });
 
-export { setMode, setActive };
+export { setMode, setActive, dismissSupportNotice };

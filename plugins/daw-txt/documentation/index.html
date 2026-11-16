@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="canonical" href="https://ullhexa.com/plugins/daw-txt/documentation/">
+  <title>Ullhexa DAW-TXT user guide and licence | Ull Hexa</title>
+  <link rel="stylesheet" href="../../../app/typography.css?v=20261002-font">
+  <link rel="stylesheet" href="../../../app/plugin-documentation.css?v=20261111-download-refinement">
+</head>
+<body>
+  <main class="documentPage">
+    <a class="documentBack" href="../">← Back to Ullhexa DAW-TXT</a>
+    <h1>Ullhexa DAW-TXT user guide and licence</h1>
+    <p class="documentVersion">Version 1.0.10</p>
+    <nav class="documentLinks" aria-label="Document sections"><a href="#user-guide">User guide</a><a href="#licence">Licence</a></nav>
+    <section id="user-guide" aria-labelledby="guideTitle"><h2 id="guideTitle">User guide</h2><div class="documentText">Ullhexa DAW-TXT User Guide
+
+What Ullhexa DAW-TXT Does
+
+Ullhexa DAW-TXT keeps a persistent task list inside a DAW project. Use it for session notes, mix changes, arrangement reminders, export checklists, or any short production workflow where the list should travel with the project.
+
+Basic Workflow
+
+Type a task into the Add Task field and press Enter to add it.
+
+Select a task by clicking it or using the arrow keys.
+
+Press Enter on a selected task to mark it complete or incomplete.
+
+Use Undo and Redo to move through recent task edits.
+
+Use Clear List to reset the whole list. Clear List is intended as a full reset of the plugin task state, not just the currently visible filtered view.
+
+Main Buttons
+
+- Add Task: write in the top field and press Enter.
+- Undo / Redo: restore recent task changes.
+- Clear List: clear the whole list.
+- Eye: runs the selected Eyeball mode from Options.
+- Pin: pin or unpin the selected task or tasks.
+- Up/Down toggle: reverse the visible order of active tasks.
+- Expand / Collapse / Compress: open all rows, close all rows, or force one-line task rows.
+- Shift/Ctrl/Cmd + click on Expand / Collapse / Compress: apply that view change only to selected tasks.
+
+Eyeball Modes
+
+The Eye button has multiple modes selected from Options.
+
+- Toggle task types: cycle only through task categories that exist in the current list.
+- View last completed task and below: jump to the latest completed-task area.
+- Focus on selected tasks: temporarily show only the selected task set.
+- Hide selected: temporarily hide the selected task set.
+- Move to last active task: center the last selected, edited, or added task.
+
+Changing Eyeball mode clears current eye filters first so tasks do not become trapped in a previous view state.
+
+When unfocusing or unhiding a selected set, Ullhexa DAW-TXT keeps that set selected and centers the view around it, so the same set can be toggled again quickly.
+
+If only one task type exists, Toggle task types has no useful cycle and the Eye button is visually disabled. If a task filter is active, the Eye button shows an outline.
+
+Selection
+
+- Click: select a task.
+- Ctrl/Cmd + click: add or remove a task from the selection.
+- Shift + click: select a task range.
+- Arrow keys: move selection.
+- Escape: deselect the task and activate the Add Task editor.
+
+Editing
+
+- Ctrl/Cmd + Enter: edit the selected task.
+- Shift + Enter: insert a new task above the selected task and open it in edit mode.
+- Shift + Enter inside a text editor: insert a new line.
+- Right-click: open the context menu for edit, duplicate, copy, paste, and delete.
+
+Completion And Pinning
+
+- Enter: complete or uncomplete the selected task.
+- P: pin or unpin the selected task or tasks.
+- Pin button: pin or unpin selected active tasks.
+- Checkmark: complete or uncomplete the hovered task, or the full current selection.
+- Ctrl/Cmd + click on the task circle: pin or unpin instead of complete.
+
+Copy, Paste, And Delete
+
+- Ctrl/Cmd + X: cut and copy the selected task or tasks.
+- Ctrl/Cmd + C: copy the selected task or tasks.
+- Ctrl/Cmd + V: paste the copied task or tasks above the selected task.
+- Delete: delete the selected task.
+- Ctrl/Cmd + trash: delete all completed, all pinned, or all regular active tasks in that category. If selected tasks are included, those selected tasks are included too.
+
+Expanded Tasks
+
+- Alt + Enter: expand or collapse the selected task.
+- Alt + Up/Down: scroll inside a long expanded task.
+- Long-task marker: drag it or use the mouse wheel to scroll long expanded text.
+- Lock icon: lock or unlock the hovered task, or all selected expanded tasks with a lock icon.
+
+Selected task expansion follows the current Expand / Collapse / Compress view state unless that task is locked.
+
+Themes
+
+Ullhexa DAW-TXT includes graphical skins and built-in minimal themes.
+
+Built-in minimal presets:
+
+- Noir
+- Paper
+- Neon
+- Banana
+- Candy
+- Ocean
+- Dark
+
+Custom color opens the custom minimal-theme editor. Your saved themes are available to other Ullhexa DAW-TXT instances under your macOS user account. If you save a preset with a built-in name, Ullhexa DAW-TXT automatically appends a number, such as Banana 2, to avoid collisions.
+
+Stored User Data
+
+Ullhexa DAW-TXT stores user theme defaults and user theme presets in a per-user application data file. On macOS this is under the user&#x27;s Library folder:
+
+~/Library/Ullhexa/DAW-TXT/ThemeDefaults.xml
+
+Project task data is stored in the DAW session/plugin state.
+
+Troubleshooting
+
+If the plugin does not appear after installation, restart the DAW and rescan plugins in its settings. Check that you installed a format your DAW supports.
+
+If a task view looks filtered, change Eyeball mode or press the Eye button to clear the current filter.
+
+If the list needs to be reset completely, use Clear List.
+
+After updating Ullhexa DAW-TXT, quit your DAW fully and reopen it before loading your project.
+
+Shared list library and saving
+
+Open the list library from the title controls to save the current list or choose a saved one. Click Apply List to use the selected list. Swap existing list replaces the current tasks; Add to existing list appends the saved tasks. Save Current and Rename focus the name field automatically; Rename selects the existing name for replacement. The library is shared by instances and DAWs for your macOS user, separately from each project’s own tasks. Back it up with ~/Library/Ullhexa/DAW-TXT/ThemeDefaults.xml.
+
+Your DAW saves the instance state. Active task edits are included before you press Enter; Escape cancels an edit. Save the DAW again after cancelling if the draft was previously saved. Closing the editor commits active text. A library write failure shows an error and does not report success.
+
+The data location is unchanged from version 1.0.9. Existing project state remains readable. When upgrading from version 1.0.8 or earlier, Ullhexa DAW-TXT copies the earlier shared list library and theme defaults into the current preferences folder if no current file exists. The original is retained; later changes made in the earlier plugin are not synchronized.
+</div></section>
+    <section id="licence" aria-labelledby="licenceTitle"><h2 id="licenceTitle">Licence</h2><div class="documentText">Ullhexa DAW-TXT End User License Agreement
+Terms revision 13 October 2026
+
+This End User License Agreement (&quot;Agreement&quot;) applies to the Ullhexa DAW-TXT audio plugin by Ull Hexa (&quot;Software&quot;).
+
+By installing or using the Software, you confirm that you have read this Agreement and agree to its terms. If you do not agree, do not install or use the Software.
+
+1. Free Use License
+
+Ull Hexa grants you a limited, non-exclusive, non-transferable license to install and use the Software free of charge for personal or professional music-production work, subject to this Agreement.
+
+This free-use license does not make the Software open source, public domain, or free to modify, rebrand, resell, or redistribute.
+
+2. Ownership
+
+The Software, design, graphics, code, name, logo, documentation, and related materials remain the property of Ull Hexa or its licensors. This Agreement does not transfer ownership of the Software to you.
+
+3. Official Builds
+
+Official builds of Ullhexa DAW-TXT are distributed only through channels controlled by Ull Hexa.
+
+You should not install builds from unknown or unofficial sources. If a build has been modified after signing, the original signature may no longer be valid.
+
+4. Restrictions
+
+You may not sell, sublicense, rent, lease, or otherwise transfer the Software except as expressly permitted by Ull Hexa.
+
+You may not modify, rebrand, wrap, repackage, or redistribute the Software in a way that implies it was created, approved, or signed by anyone other than Ull Hexa.
+
+You may not use the names &quot;Ullhexa DAW-TXT&quot; or &quot;Ull Hexa&quot;, or any related logo or identity, to impersonate Ull Hexa or distribute unofficial builds as official releases.
+
+You may not reverse engineer, decompile, disassemble, modify, or create derivative works from the Software except where such restriction is prohibited by applicable law.
+
+You may not remove copyright, trademark, attribution, license, signature, or proprietary notices from the Software.
+
+5. Test Builds
+
+Builds marked Debug, test, or pre-release are provided for evaluation and workflow testing and may contain bugs or incomplete release infrastructure.
+
+You are responsible for backing up important DAW projects and session data before using prototype or test builds.
+
+6. No Warranty
+
+To the extent permitted by applicable law, the Software is provided &quot;as is&quot; without warranties of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement.
+
+7. Limitation Of Liability
+
+To the maximum extent permitted by applicable law, Ull Hexa will not be liable for any indirect, incidental, special, consequential, or punitive damages, or for loss of data, loss of profits, loss of business, DAW instability, project corruption, or interruption of work arising from use of or inability to use the Software.
+
+Nothing in this Agreement excludes liability or limits rights or remedies that cannot lawfully be excluded or limited. Mandatory consumer rights remain unaffected.
+
+8. User Data
+
+The Software may store user preferences, theme defaults, user theme presets, and the shared task-list library in the user&#x27;s application data folder. Removing the plugin may not automatically remove these files.
+
+9. Donations And Future Products
+
+The Software may be provided free of charge. If donation links or paid products are offered later, they are separate from this free-use license unless stated otherwise by Ull Hexa.
+
+Ull Hexa does not undertake to provide support, bug fixes, updates, maintenance, future compatibility, or continued availability of this free product, except where required by applicable law.
+
+10. Termination
+
+This Agreement remains in effect until terminated. Your rights under this Agreement terminate automatically if you fail to comply with its terms. Upon termination, you must stop using and remove the Software.
+
+11. Contact
+
+Ull Hexa
+Website: https://ullhexa.com
+Email: ullhexa.music@gmail.com
+
+12. Third-Party Components
+
+Third-party components remain subject to their own applicable licenses and notices. This Agreement does not restrict rights granted under those licenses. See THIRD_PARTY_NOTICES.txt. Your music, audio, and task content remain yours; these restrictions concern the Software itself.
+</div></section>
+  </main>
+</body>
+</html>

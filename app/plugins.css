@@ -1,0 +1,104 @@
+.card.pluginsPage { max-width: 1100px; }
+.pluginCatalogue { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+.pluginBadge { display: grid; grid-template-columns: minmax(150px, 43%) minmax(0, 1fr); align-items: center; gap: 22px; padding: 12px 0; }
+.pluginBadgeImage { position: relative; display: grid; place-items: center; min-width: 0; height: 260px; border: 0; background: transparent; text-decoration: none; color: #ffffff80; }
+.pluginBadgeImage img { position: absolute; inset: 0; margin: auto; display: block; width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; transform: scale(1); transform-origin: center; transition: transform 350ms cubic-bezier(.16, 1, .3, 1); }
+/* Log-like attack: about 61% of the growth by 5 ms, 72% by 10 ms.
+   Both curves settle smoothly without overshoot; the layout box stays fixed. */
+@media (hover: hover) and (pointer: fine) {
+  .pluginBadgeImage:hover img { transform: scale(1.05); transition-duration: 250ms; transition-timing-function: cubic-bezier(0, 1, 0, 1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pluginBadgeImage img, .pluginBadgeImage:hover img { transform: none; transition: none; }
+}
+.pluginBadgeCopy h3 { margin: 0 0 12px; font-size: 25px; font-weight: 600; line-height: 1.15; }
+.pluginBadgeCopy h3 a { color: #fff; text-decoration: none; text-underline-offset: 5px; }
+.pluginBadgeCopy h3 a:hover { text-decoration: underline; }
+.pluginBadgeCopy p { margin: 0; color: #ffffffb8; font-size: 14px; line-height: 1.65; }
+.pluginBadgeMeta { display: block; margin-top: 14px; color: #ffffff73; font-size: 12px; line-height: 1.5; }
+.pluginPlaceholderFrame span { color: #ffffff38; font-size: 32px; font-weight: 400; }
+.pluginBadgePlaceholder h3 { color: #ffffff91; }
+.pluginBadgePlaceholder p { color: #ffffff73; }
+.pluginImagePending { padding: 16px; text-align: center; font-size: 13px; }
+.pluginBadge a:focus-visible, .pluginProduct a:focus-visible, .pluginProduct button:focus-visible, .pluginProduct summary:focus-visible { outline: none; }
+.pluginPage .site-header { height: 225px; }
+.pluginPage .site-header > a { display: block; width: 210px; line-height: 0; }
+.pluginPage .logo { max-width: 100%; width: 100%; }
+.pluginPage .siteNavigation { margin-top: -24px; }
+.pluginProduct { max-width: 1140px; margin: 30px auto 60px; padding: 0 24px; }
+.pluginBack { display: inline-block; color: #ffffff9c; text-decoration: none; font-size: 13px; margin: 0 0 25px; }
+.pluginBack:hover { color: #fff; }
+.pluginHero { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(0, 1fr); gap: clamp(30px, 5vw, 68px); align-items: start; }
+.pluginGallery { min-width: 0; }
+.pluginSlide { margin: 0; }
+.pluginGalleryImage { position: relative; display: block; box-sizing: border-box; width: 100%; aspect-ratio: 1; padding: 14px; overflow: hidden; border: 1px solid #ffffff38; background: #08080ab3; cursor: zoom-in; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.pluginGalleryImage.is-zoomed { cursor: zoom-out; }
+.pluginGalleryArtwork { position: absolute; inset: 14px; display: block; background-repeat: no-repeat; background-size: contain; background-position: center; pointer-events: none; }
+.pluginSlide figcaption { min-height: 70px; padding-top: 17px; }
+.pluginSlide h2 { margin: 0 0 7px; font-size: 16px; line-height: 1.3; }
+.pluginSlide p { margin: 0; color: #ffffff99; font-size: 13px; line-height: 1.65; }
+.pluginThumbnails { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+.pluginThumbnails button { width: 64px; height: 58px; padding: 4px; border: 1px solid #ffffff2e; background: #08080ab3; cursor: pointer; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.pluginThumbnails button[aria-pressed="true"] { border-color: #fff; }
+.pluginThumbnailPreview { display: block; width: 100%; height: 100%; background-position: center; background-repeat: no-repeat; background-size: contain; pointer-events: none; }
+.pluginGalleryPending { display: grid; place-items: center; aspect-ratio: 1; border: 1px solid #ffffff38; color: #ffffff66; }
+.pluginEyebrow { margin: 4px 0 14px; color: #ffffff80; font-size: 13px; line-height: 1.5; }
+.pluginOverview h1 { margin: 0 0 8px; font-size: clamp(38px, 4vw, 52px); font-weight: 600; line-height: 1; letter-spacing: -.025em; }
+.pluginVersion { margin: 0 0 20px; color: #ffffff80; font-size: 13px; font-weight: 400; line-height: 1.5; }
+.pluginDescription { margin: 0 0 23px; color: #ffffffd1; font-size: 17px; line-height: 1.7; }
+.pluginFeatures { padding-left: 18px; margin: 0; color: #ffffffb8; font-size: 14px; line-height: 1.65; }
+.pluginFeatures li { padding-left: 5px; margin: 9px 0; }
+.pluginFeatures li::marker { color: #ffffff59; }
+.pluginAudioNote { margin: 20px 0 0; font-size: 13px; color: #ffffff80; line-height: 1.6; }
+.pluginDownloadBlock { margin-top: 28px; padding-top: 25px; border-top: 1px solid #ffffff26; }
+.pluginDownload { display: inline-flex; gap: 12px; min-height: 48px; padding: 0 20px; font-size: 15px; border-width: 1px; }
+.pluginDownload:disabled { opacity: .5; cursor: default; }
+.pluginDownloadMeta { margin: 14px 0 7px; color: #ffffffab; font-size: 12px; line-height: 1.6; }
+.pluginDownloadMeta span { padding: 0 5px; }
+.pluginDownloadAssurance { margin: 0; color: #ffffff80; font-size: 12px; }
+.pluginLicence { margin: 16px 0 0; color: #ffffff80; font-size: 12px; line-height: 1.65; }
+.pluginDetails { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(30px, 5vw, 68px); border-top: 1px solid #ffffff26; margin-top: 55px; padding-top: 30px; }
+.pluginDetails h2 { margin: 0 0 23px; font-size: 21px; font-weight: 600; }
+.pluginSpecs { margin: 0; }
+.pluginSpecs > div { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 18px; border-bottom: 1px solid #ffffff14; padding: 12px 0; font-size: 13px; line-height: 1.6; }
+.pluginSpecs dt { color: #ffffff80; }
+.pluginSpecs dd { margin: 0; color: #ffffffc9; }
+.pluginInstallation { padding-left: 21px; margin: 0; color: #ffffffb8; font-size: 14px; line-height: 1.7; }
+.pluginInstallation li { padding-left: 7px; margin-bottom: 14px; }
+.pluginInstallation li::marker { color: #ffffff73; }
+.pluginDocumentation { margin-top: 23px; font-size: 13px; color: #ffffff8c; line-height: 1.7; }
+.pluginDocumentation summary { cursor: pointer; color: #ffffffc9; }
+.pluginDocumentation code { overflow-wrap: anywhere; font-family: inherit; }
+.pluginFooter { border-top: 1px solid #ffffff1f; margin-top: 35px; padding-top: 22px; color: #ffffff80; font-size: 13px; line-height: 1.7; }
+.pluginFooter a { color: #ffffffc9; text-underline-offset: 3px; }
+@media (max-width: 850px) {
+  .pluginCatalogue { grid-template-columns: 1fr; gap: 24px; }
+  .pluginBadge { grid-template-columns: 180px minmax(0, 1fr); }
+  .pluginBadgeImage { height: 220px; }
+  .pluginHero, .pluginDetails { grid-template-columns: 1fr; gap: 32px; }
+  .pluginGallery { max-width: 600px; width: 100%; justify-self: center; }
+  .pluginDetails { margin-top: 36px; }
+  .pluginPage .site-header { height: 190px; }
+  .pluginPage .site-header > a { width: 180px; }
+  .pluginProduct { margin-top: 24px; }
+}
+@media (max-width: 440px) {
+  .pluginCatalogue { gap: 22px; }
+  .pluginBadge { grid-template-columns: 115px minmax(0, 1fr); gap: 16px; }
+  .pluginBadgeImage { height: 180px; }
+  .pluginBadgeCopy h3 { font-size: 21px; margin-bottom: 8px; }
+  .pluginBadgeCopy p { font-size: 13px; line-height: 1.55; }
+  .pluginBadgeMeta { font-size: 11px; margin-top: 10px; }
+  .pluginProduct { padding: 0 16px; }
+  .pluginSpecs > div { grid-template-columns: 105px minmax(0, 1fr); gap: 14px; }
+}
+
+/* Product entry and final delivery share release facts, not download controls. */
+.pluginOverview > .pluginTerms { margin-top:24px; }
+.pluginDownloadAssurance { line-height:1.65; }
+.pluginCheckoutEntry { display:flex; align-items:center; gap:20px; }
+.pluginPriceButton { min-width:108px; min-height:48px; font-size:15px; }
+.pluginPriceButton:disabled { opacity:.5; cursor:default; }
+.pluginProceed { color:#ffffffab; font-size:13px; line-height:1.5; }
+.pluginProceed > span { margin-right:6px; }
+@media(max-width:440px) { .pluginCheckoutEntry { gap:14px; } .pluginProceed { font-size:12px; } }

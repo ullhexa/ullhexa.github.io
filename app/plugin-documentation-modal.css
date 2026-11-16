@@ -1,0 +1,60 @@
+html.hasPluginDocumentation,
+html.hasPluginDocumentation body { overflow: hidden; }
+.pluginDocumentDialog {
+  color-scheme: dark;
+  box-sizing: border-box;
+  width: 820px;
+  height: 760px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #ffffff38;
+  border-radius: 0;
+  background: #141517;
+  color: #e7e7e9;
+  font-family: var(--site-font), sans-serif;
+  box-shadow: 0 16px 60px #0008;
+  outline: none;
+}
+.pluginDocumentDialog[open] { display: flex; flex-direction: column; }
+.pluginDocumentDialog::backdrop { background: #000b; }
+.pluginDocumentHeader {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 22px 12px 28px;
+}
+.pluginDocumentHeader h2 { margin: 0; font-size: 19px; font-weight: 700; line-height: 1.35; }
+.pluginDocumentVersion { margin: 7px 0 0; color: #aaa; font-size: 12px; }
+.pluginDocumentDialog button {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: #bdbdc1;
+  font: inherit;
+  box-shadow: none;
+  outline: none;
+  cursor: pointer;
+  transform: none;
+}
+.pluginDocumentDialog button:hover,
+.pluginDocumentDialog button:focus-visible { color: #fff; background: #ffffff0a; }
+.pluginDocumentClose { display: grid; place-items: center; flex: none; width: 36px; height: 36px; padding: 0; }
+.pluginDocumentNavigation { display: flex; flex: none; gap: 22px; padding: 0 28px 14px; border-bottom: 1px solid #ffffff26; }
+.pluginDocumentNavigation button { padding: 5px 0; font-size: 13px; text-decoration: underline; text-underline-offset: 4px; }
+.pluginDocumentScroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: 24px 28px 32px; outline: none; font-size: 14px; line-height: 1.65; }
+.pluginDocumentScroll section + section { margin-top: 40px; padding-top: 28px; border-top: 1px solid #ffffff26; }
+.pluginDocumentScroll h3 { margin: 0 0 20px; font-size: 17px; font-weight: 700; }
+.pluginDocumentText { white-space: pre-wrap; overflow-wrap: anywhere; }
+.pluginDocumentScroll [data-document-retry] { padding: 8px 12px; border: 1px solid #ffffff38; }
+@media (max-width: 480px) {
+  .pluginDocumentDialog { max-width: calc(100vw - 20px); max-height: calc(100dvh - 20px); }
+  .pluginDocumentHeader { padding: 16px 12px 12px 18px; gap: 10px; }
+  .pluginDocumentHeader h2 { font-size: 17px; }
+  .pluginDocumentNavigation { padding-left: 18px; padding-right: 18px; }
+  .pluginDocumentScroll { padding-left: 18px; padding-right: 18px; }
+}

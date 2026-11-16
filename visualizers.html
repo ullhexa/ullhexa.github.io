@@ -4,12 +4,12 @@
 
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Visualizers — Ull Hexa</title>
+  <title>Visualizers | Ull Hexa</title>
   <link rel="preload" href="./assets/fonts/ull-hexa-display/UllHexaDisplay-Regular.woff2?v=0.1.1" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="./assets/fonts/ull-hexa-display/UllHexaDisplay-Bold.woff2?v=0.1.1" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="./app/typography.css?v=20261002-font" />
-  <link rel="stylesheet" href="./app/audio-visualizers.css?v=20261002-font" />
-  <link rel="stylesheet" href="./app/visualizers.css?v=20261002-font" />
+  <link rel="stylesheet" href="./app/audio-visualizers.css?v=20261111-download-refinement" />
+  <link rel="stylesheet" href="./app/visualizers.css?v=20261111-download-refinement" />
 </head>
 <body data-family="audio" data-audio-capture="off">
 <div id="controls">
@@ -20,7 +20,7 @@
         <button type="button" data-mode="squares">City</button>
         <button type="button" data-mode="plane">3D Plane</button>
         <button type="button" data-mode="plasma">Plasma Sphere</button>
-        <button type="button" data-mode="rubik">Rubik's Cube</button>
+        <button type="button" data-mode="rubik">Cube</button>
       </div>
     </div>
     <div class="modeMenu" data-family="audio">
@@ -194,10 +194,19 @@
 <canvas id="canvas" aria-label="Audio visualizer" tabindex="-1" hidden></canvas>
 <canvas id="midiCanvas" aria-label="MIDI visualizer" tabindex="-1" hidden></canvas>
 <p id="midiHelp">Play MIDI or use A–Z.</p>
+<div id="midiSupportNotice" hidden>
+  <button id="midiSupportClose" type="button" aria-label="Close MIDI browser notice">
+    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M1 1l10 10M11 1L1 11" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+  </button>
+  <div role="status">
+    <p>This browser doesn’t support MIDI input.<br>Use Chrome, Edge, Firefox or Opera on a computer.</p>
+    <p>You can still use your computer keyboard (A–Z).</p>
+  </div>
+</div>
 <div id="bottomInfo">
   <span id="status">input: none</span>
   <span id="inputHelp">Mic uses microphone input. Web Audio uses shared browser-tab audio.</span>
 </div>
-<script type="module" src="./app/visualizers.js?v=20261002-font"></script>
+<script type="module" src="./app/visualizers.js?v=20261114-cube"></script>
 </body>
 </html>
