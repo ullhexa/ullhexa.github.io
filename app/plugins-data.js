@@ -367,15 +367,6 @@ export const plugins = [{
   "paypal": { "hostedButtonId": "BTG2X28BM5PEE" },
   "images": [
     {
-      "src": "/assets/products/plugins/micronudge/1.webp?v=5b6d4fba42f7",
-      "thumb": "/assets/products/plugins/micronudge/1-thumb.webp?v=acc984b0b257",
-      "width": 1446,
-      "height": 984,
-      "title": "Freeze the comparison",
-      "caption": "Freeze the scope to inspect the main and sidechain waveforms while adjusting offset and phase.",
-      "alt": "Ullhexa MicroNudge: A frozen mono scope showing the main and sidechain waveforms, with linked offset and phase controls."
-    },
-    {
       "src": "/assets/products/plugins/micronudge/2.webp?v=76ad605378b5",
       "thumb": "/assets/products/plugins/micronudge/2-thumb.webp?v=0229dfbf3c31",
       "width": 1449,
@@ -383,6 +374,15 @@ export const plugins = [{
       "title": "Kick and bass, in view",
       "caption": "Compare the main and sidechain waveforms while adjusting timing, phase and the low-band VCA envelope.",
       "alt": "Ullhexa MicroNudge: Stereo overlay with main and sidechain waveforms, a 919 Hz band split and an editable purple low-band envelope."
+    },
+    {
+      "src": "/assets/products/plugins/micronudge/1.webp?v=5b6d4fba42f7",
+      "thumb": "/assets/products/plugins/micronudge/1-thumb.webp?v=acc984b0b257",
+      "width": 1446,
+      "height": 984,
+      "title": "Freeze the comparison",
+      "caption": "Freeze the scope to inspect the main and sidechain waveforms while adjusting offset and phase.",
+      "alt": "Ullhexa MicroNudge: A frozen mono scope showing the main and sidechain waveforms, with linked offset and phase controls."
     },
     {
       "src": "/assets/products/plugins/micronudge/3.webp?v=4aa51b804423",
@@ -509,6 +509,5 @@ export const plugins = [{
     "Route the kick or reference track to the plugin's sidechain input, then open Scope to compare waveforms while adjusting offset and phase."
   ],
   "documentation": "/Library/Application Support/Ull Hexa/MicroNudge/Documentation",
-  "contact": "ullhexa.music@gmail.com",
-  "badgeImageIndex": 1
+  "contact": "ullhexa.music@gmail.com"
 }];

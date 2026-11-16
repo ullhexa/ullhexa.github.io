@@ -49,6 +49,42 @@ body {
 }
 
 
+
+/* Temporary static-site preview gate. The full local preview stays unchanged. */
+.previewLockedMode { background: #000; }
+.previewLockedMode #bg,
+.previewLockedMode .siteNavigation,
+.previewLockedMode #content { display: none; }
+.previewLockedMode .site-header {
+  box-sizing: border-box;
+  min-height: 100svh;
+  height: auto;
+  padding: 32px 16px;
+  flex-direction: column;
+  gap: 28px;
+}
+.previewLockedMode .logo { width: min(72vw, 320px); }
+.previewGate { width: min(260px, 100%); }
+.previewGate label { display: block; margin-bottom: 8px; font-size: 14px; color: #bcbcbc; }
+.previewGateControls { display: flex; gap: 10px; }
+.previewGate input {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  height: 42px;
+  padding: 8px 12px;
+  border: 1px solid #555;
+  border-radius: 2px;
+  background: #151515;
+  color: #fff;
+  font: inherit;
+  font-size: 18px;
+  letter-spacing: .3em;
+}
+.previewGate input:focus { outline: none; border-color: var(--ull-accent); }
+.previewGate .simpleBoxButton { height: 42px; padding: 0 18px; font-size: 14px; }
+.previewGate [role="alert"] { min-height: 20px; margin: 8px 0 0; color: var(--ull-accent); font-size: 13px; }
+
 .site-header {
   height: clamp(260px, 34vh, 340px);
   display: flex;

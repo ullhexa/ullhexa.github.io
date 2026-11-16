@@ -1,12 +1,12 @@
 import { mountPluginDocumentation } from './plugin-documentation-modal.js?v=20261115-installer-docs';
 import { mountGalleryZoom } from "./plugin-gallery-zoom.js?v=20261014-sticky-zoom";
-import { plugins } from "./plugins-data.js?v=20261116-public-downloads";
-import { escapeHTML as html } from "./plugin-catalogue.js?v=20261116-public-downloads";
+import { plugins } from "./plugins-data.js?v=20261116-micronudge-gallery";
+import { escapeHTML as html } from "./plugin-catalogue.js?v=20261116-micronudge-gallery";
 import { startBackground } from "./bg.js?v=20260404b";
 import { createSiteNavigation } from "./site-navigation.js?v=20261116-public-downloads";
 
 import { bindPressActions } from "./press-action.js?v=20261110-link-fix";
-import { renderPluginTerms, renderCheckoutEntry, renderPluginDetails, renderPluginFooter } from "./plugin-download.js?v=20261116-public-downloads";
+import { renderPluginTerms, renderCheckoutEntry, renderPluginDetails, renderPluginFooter } from "./plugin-download.js?v=20261116-plugin-contact";
 
 function renderGallery(plugin) {
   const first = plugin.images[0];
@@ -89,7 +89,7 @@ if (plugin) {
   root.innerHTML = renderProduct(plugin);
   mountGallery(plugin, root);
   mountPluginDocumentation(root, plugin);
-  bindPressActions(root, { selector: ".pluginBack, .pluginCheckoutLink, .pluginDocumentation a" });
+  bindPressActions(root, { selector: ".pluginBack, .pluginCheckoutLink, .pluginDocumentation a, .pluginFooter a" });
 } else {
   root.innerHTML = '<h1>Plugin not found</h1><a href="../../#plugins">All plugins</a>';
 }

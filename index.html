@@ -8,7 +8,7 @@
     <link rel="preload" href="./assets/fonts/ull-hexa-display/UllHexaDisplay-Regular.woff2?v=0.1.1" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="./assets/fonts/ull-hexa-display/UllHexaDisplay-Bold.woff2?v=0.1.1" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="./app/typography.css?v=20261002-font" />
-    <link rel="stylesheet" href="./styles.css?v=20261116-contact-test" />
+    <link rel="stylesheet" href="./styles.css?v=20261116-pin-preview" />
     <link rel="stylesheet" href="./app/plugins.css?v=20261115-plugin-versions" />
     <link rel="stylesheet" href="./app/home-news.css?v=20261116-about-home" />
     <link rel="stylesheet" href="./app/music.css?v=20261116-music" />
@@ -16,7 +16,7 @@
     <link rel="preload" href="./assets/ui/buttons/submenu-synth-states.webp?v=2" as="image" type="image/webp" />
   </head>
 
-  <body class="logoOnlyMode">
+  <body class="previewLockedMode" data-preview-gate="pin">
     <canvas id="bg"></canvas>
 
     <header class="site-header">
@@ -40,6 +40,6 @@
 
     <main class="card" id="content"></main>
 
-    <script type="module" src="./app/main.js?v=20261116-contact-test"></script>
+    <script type="module" src="./app/main.js?v=20261116-pin-preview"></script>
   </body>
 </html>

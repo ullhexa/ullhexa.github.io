@@ -1,4 +1,4 @@
-import { plugins } from "./plugins-data.js?v=20261116-public-downloads";
+import { plugins } from "./plugins-data.js?v=20261116-micronudge-gallery";
 
 export const escapeHTML = value => String(value).replace(/[&<>"']/g, character => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"

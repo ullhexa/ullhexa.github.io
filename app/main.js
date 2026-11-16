@@ -2,11 +2,11 @@ import { startBackground } from "./bg.js?v=20260404b";
 import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261113-gm-gallery";
 import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261116-public-downloads";
 import { renderSerumSkins, mountSerumSkins } from "./serum-skins.js?v=20261015-skin-arrows";
-import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261116-public-downloads";
+import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261116-micronudge-gallery";
 import { mountContactForm } from "./contact-form.js?v=20261110-synth";
 import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261115-news-technical-copy";
 import { bindPressActions } from "./press-action.js?v=20261110-link-fix";
-startBackground();
+import { mountPreviewGate } from "./preview-gate.js?v=20261116-pin-preview";
 
 const content = document.getElementById("content");
 const updateSiteNavigation = createSiteNavigation();
@@ -284,7 +284,7 @@ function render() {
   cleanupPage = null;
   // Allow the direct Contact link while the public homepage remains closed.
   // Other routes must not render or fetch the full site feed in holding mode.
-  if (holding && !contactOnly) {
+  if (previewGate.isLocked() || (holding && !contactOnly)) {
     content.replaceChildren();
     return;
   }
@@ -326,5 +326,7 @@ function render() {
 
 }
 
+const previewGate = mountPreviewGate(() => { startBackground(); render(); });
+if (!previewGate.isLocked()) startBackground();
 window.addEventListener("hashchange", render);
 render();
