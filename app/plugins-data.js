@@ -205,8 +205,8 @@ export const plugins = [{
   "audioNote": "",
   "download": {
     "status": "published",
-    "url": "https://github.com/ullhexa/ullhexa.github.io/releases/download/headaxis-v1.0.0/HeadAxis-1.0.0-macOS.pkg",
-    "file": "HeadAxis-1.0.0-macOS.pkg",
+    "url": "https://github.com/ullhexa/ullhexa.github.io/releases/download/headaxis-v1.0.0/Ullhexa.HeadAxis-1.0.0-macOS.pkg",
+    "file": "Ullhexa.HeadAxis-1.0.0-macOS.pkg",
     "bytes": 418269324,
     "size": "418.3 MB",
     "sha256": "7498b84b9424a1326e8378b0fa54977b2447ff583ac0d67812a363cef2bbae77",
@@ -236,7 +236,7 @@ export const plugins = [{
     ]
   ],
   "installation": [
-    "Quit your DAW and open HeadAxis-1.0.0-macOS.pkg.",
+    "Quit your DAW and open Ullhexa.HeadAxis-1.0.0-macOS.pkg.",
     "Follow the installer and choose VST3, Audio Unit (AU), or both.",
     "Reopen or rescan your DAW, then insert Ullhexa HeadAxis on an audio track with stereo output.",
     "Select Speakers or Headphones in settings. Drag the head to adjust direction and use Z for distance."
@@ -315,8 +315,8 @@ export const plugins = [{
   "audioNote": "",
   "download": {
     "status": "published",
-    "url": "https://github.com/ullhexa/ullhexa.github.io/releases/download/iiiipole-v1.0.0/IIIIPole-1.0.0.pkg",
-    "file": "IIIIPole-1.0.0.pkg",
+    "url": "https://github.com/ullhexa/ullhexa.github.io/releases/download/iiiipole-v1.0.0/Ullhexa.IIIIPole-1.0.0.pkg",
+    "file": "Ullhexa.IIIIPole-1.0.0.pkg",
     "bytes": 47510009,
     "size": "47.5 MB",
     "sha256": "17a4bdf9ea5f0b0e10449759f3c2d91d25786ef4a0187ff0b56155784db03373",
@@ -346,7 +346,7 @@ export const plugins = [{
     ]
   ],
   "installation": [
-    "Close your DAW and open IIIIPole-1.0.0.pkg.",
+    "Close your DAW and open Ullhexa.IIIIPole-1.0.0.pkg.",
     "Follow the installer and choose VST3, Audio Unit (AU), or both.",
     "Reopen your DAW and insert Ullhexa IIIIPole. Rescan your plugins if it does not appear.",
     "Open the Ull Hexa logo for controls and MIDI routing guidance. To use MIDI controls, route a MIDI track to the plugin as described by your DAW."

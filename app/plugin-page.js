@@ -1,7 +1,7 @@
 import { mountPluginDocumentation } from './plugin-documentation-modal.js?v=20261115-installer-docs';
 import { mountGalleryZoom } from "./plugin-gallery-zoom.js?v=20261014-sticky-zoom";
-import { plugins } from "./plugins-data.js?v=20261116-micronudge-gallery";
-import { escapeHTML as html } from "./plugin-catalogue.js?v=20261116-micronudge-gallery";
+import { plugins } from "./plugins-data.js?v=20261117-branded-installers";
+import { escapeHTML as html } from "./plugin-catalogue.js?v=20261117-branded-installers";
 import { startBackground } from "./bg.js?v=20260404b";
 import { createSiteNavigation } from "./site-navigation.js?v=20261116-public-downloads";
 
