@@ -1,10 +1,10 @@
 import { startBackground } from "./bg.js?v=20260404b";
 import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261113-gm-gallery";
 import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261116-public-downloads";
-import { renderSerumSkins, mountSerumSkins } from "./serum-skins.js?v=20261119-installation";
+import { renderSerumSkins, mountSerumSkins } from "./serum-skins.js?v=20261120-privacy";
 import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261117-branded-installers";
 import { mountContactForm } from "./contact-form.js?v=20261110-synth";
-import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261115-news-technical-copy";
+import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261119-latest-projects";
 import { bindPressActions } from "./press-action.js?v=20261110-link-fix";
 import { mountPreviewGate } from "./preview-gate.js?v=20261116-pin-preview";
 
@@ -121,16 +121,9 @@ function renderVisualizerBadges() {
 
 const pages = {
   home: () => `
-    <section class="homeBio homeIntro" aria-label="Welcome to Ull Hexa">
+    <section class="homeBio homeIntro" aria-label="Ull Hexa tools and software">
       <div data-bio-measure>
-        <p class="homeWelcome">Welcome, I'm Ull Hexa, an artist and music producer from Norway.
-          I also develop plugins, software and web-tools. Feel free to have a look :D</p>
-        <div class="homeQuickLinks">
-          <p class="homeQuickLinksTitle">See more by Ull Hexa</p>
-          <div class="homeBrandRow">
-            <div class="homeSocialIcons">${SOCIAL_LINKS.map(logoLink).join("")}</div>
-          </div>
-        </div>
+        <p class="homeWelcome">Audio plugins, custom skins and browser tools for music and play.</p>
         <section class="homeOverview" aria-label="Explore the tools and software">
           <a class="homeOverviewItem" href="#plugins">
             <div class="homeOverviewImage"><img src="./assets/news/products/micronudge.webp" alt="Ullhexa MicroNudge plugin" width="320" height="218" loading="lazy" decoding="async" /></div>
@@ -149,6 +142,12 @@ const pages = {
             <div class="homeOverviewCopy"><h2>GM Console <span aria-hidden="true">→</span></h2><p>A browser-based Game Master console for Dungeons &amp; Dragons sessions.</p></div>
           </a>
         </section>
+      </div>
+    </section>
+    <section class="homeQuickLinks homeMoreLinks" aria-label="More by Ull Hexa">
+      <p class="homeQuickLinksTitle">See more by Ull Hexa</p>
+      <div class="homeBrandRow">
+        <div class="homeSocialIcons">${SOCIAL_LINKS.map(logoLink).join("")}</div>
       </div>
     </section>
     ${renderHomeNews()}

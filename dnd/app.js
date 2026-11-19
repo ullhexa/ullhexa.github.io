@@ -668,17 +668,5 @@ async function start() {
   window.addEventListener('pageshow',event=>{if(event.persisted){render();updateConnection();if(player){send({type:'scene-hello'});reportScene();}else save();}});
   if(dmFrame)window.parent.postMessage({type:'dm-ready',url:location.href,title:document.title},location.origin);
 
-  // Optional browser-native agent tools use the same state transitions as the visible controls.
-  if (document.modelContext?.registerTool) {
-    const lifecycle = new AbortController();
-    window.addEventListener('pagehide', () => lifecycle.abort(), { once: true });
-    const register = tool => { try { Promise.resolve(document.modelContext.registerTool(tool, { signal: lifecycle.signal })).catch(error => console.warn('Optional browser tool unavailable:', error)); } catch (error) { console.warn('Optional browser tool unavailable:', error); } };
-    register({ name: 'read_map_state', description: 'Read the current encounter state and visible discoveries.', inputSchema: { type: 'object', properties: {} }, annotations: { readOnlyHint: true }, execute: async () => ({ content: [{ type: 'text', text: JSON.stringify({ map: map.title, role: player ? 'player' : 'dm', active: map.interactions.filter(item => isVisible(map,state,item.id)).map(item=>item.id), camera: state.camera, party: state.party, tokenMode: state.tokenMode, roster: state.roster, shapes: state.shapes }) }] }) });
-    if (!player) register({ name: 'set_map_reveal', description: 'Reveal or conceal a map interaction in the DM encounter. The player display follows.', annotations: { readOnlyHint: false }, inputSchema: { type: 'object', properties: { id: { type: 'string', enum: map.interactions.map(item=>item.id) }, revealed: { type: 'boolean' } }, required: ['id','revealed'], additionalProperties: false }, execute: async ({ id, revealed }) => {
-      if (!map.interactions.some(item => item.id === id) || typeof revealed !== 'boolean') throw new Error('Invalid reveal request.');
-      if (state.active.includes(id) !== revealed) commit(toggleInteraction(map,state,id), 'Encounter reveal updated.');
-      return { content: [{ type: 'text', text: JSON.stringify({ id, revealed: isVisible(map,state,id) }) }] };
-    } });
-  }
 }
 (!player&&!query.has('dm-frame')?Promise.resolve(startDMShell()):player&&!embedded?startPlayerDisplay():start()).catch(error => { if(embedded)window.parent.postMessage({type:'scene-error'},location.origin); $('map-loading').textContent = error.message; $('map-loading').hidden = false; $('live-message').textContent = 'The encounter could not start. Reload this page to try again.'; console.error(error); });

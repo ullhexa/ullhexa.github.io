@@ -54,7 +54,7 @@ export function renderNewsPagination(current, total) {
 
 export function renderHomeNews(page = newsPage) {
   return `<section class="contactPanel homeNews" aria-labelledby="homeNewsTitle">
-    <h2 id="homeNewsTitle">News / Projects</h2>
+    <h2 id="homeNewsTitle">Latest Projects</h2>
     <div id="homeNewsFeed" class="newsFeed" tabindex="0" role="region" aria-label="News posts, newest first">
       <div class="newsPosts">${renderNewsPosts(page.posts)}</div>
       <div class="newsPaging">
