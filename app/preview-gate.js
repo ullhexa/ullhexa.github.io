@@ -27,11 +27,11 @@ export function mountPreviewGate(onUnlock) {
       <button type="submit" class="simpleBoxButton">Enter</button>
     </div>
     <p id="previewPinStatus" role="alert"></p>
-    <p class="sitePrivacy"><a href="/privacy/">Privacy &amp; cookies</a></p>`;
+    <p class="sitePrivacy"><a href="/privacy/">Privacy &amp; cookies</a> · <button type="button" class="privacySettingsLink" data-cookie-settings>Cookie settings</button></p>`;
   body.querySelector('.site-header').append(form);
   const input = form.querySelector('input');
   const status = form.querySelector('[role="alert"]');
-  const unbindPress = bindPressActions(form, { selector: 'button' });
+  const unbindPress = bindPressActions(form, { selector: 'button[type="submit"]' });
 
   input.addEventListener('input', () => {
     status.textContent = '';
