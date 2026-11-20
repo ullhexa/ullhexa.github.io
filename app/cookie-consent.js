@@ -24,11 +24,7 @@ export function mountCookieConsent(doc) {
     <details class="cookieDetails">
       <summary>Read more</summary>
       <div class="cookieDetailText">
-        <p><strong>Your choice:</strong> Accept all enables the embedded PayPal forms. Necessary only leaves them unloaded. Either choice lets you continue using the site and download free plugins.</p>
-        <p><strong>Saved in your browser:</strong> the choice, notice version and dates stay on this device for 180 days. They are not sent to Ull Hexa or linked to your name or email. Change your choice anytime through Cookie settings.</p>
-        <p><strong>PayPal:</strong> its own privacy settings affect its optional uses. See PayPal’s <a href="https://www.paypal.com/no/legalhub/paypal/privacy-full" target="_blank" rel="noopener noreferrer">privacy statement</a> and <a href="https://www.paypal.com/no/legalhub/paypal/cookie-full" target="_blank" rel="noopener noreferrer">cookie policy</a>. Withdrawing stops the embedded forms by reloading pages where PayPal is running. It does not erase PayPal’s existing cookies or payment records.</p>
-        <p><strong>Messages and contributions:</strong> Ull Hexa handles the inquiries and payment records it receives. You can request access to your information or ask for correction or deletion, where applicable.</p>
-        <p><a href="/privacy/" target="_blank" rel="noopener">Full privacy notice</a> includes contact details, providers, retention periods and your rights.</p>
+        <p>Your choice is saved on this device for 180 days. Free downloads work either way. <a href="/privacy/" target="_blank" rel="noopener">Privacy notice</a></p>
       </div>
     </details>
   </div>
