@@ -1,3 +1,4 @@
+import { bindNewsTouchScrollOrder, newsScrollBoundary } from './news-touch-scroll.js?v=20261120-touch-scroll';
 import { newsPage } from './news-latest.js?v=20261115-news-technical-copy';
 import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
 
@@ -140,11 +141,7 @@ export function bindNewsScrollOrder(feed) {
       page.scrollTop = Math.max(0, page.scrollTop + pixels + feedRemaining);
       return;
     }
-    const pageBottom = Math.max(0, page.scrollHeight - page.clientHeight);
-    const panel = feed.closest('.homeNews').getBoundingClientRect();
-    const boundary = panel.height > page.clientHeight - 64
-      ? Math.min(pageBottom, Math.max(0, page.scrollTop + panel.top - 16))
-      : pageBottom;
+    const boundary = newsScrollBoundary(feed, page);
     const remaining = Math.max(0, boundary - page.scrollTop);
     if (remaining <= 1) return;
     event.preventDefault();
@@ -154,7 +151,11 @@ export function bindNewsScrollOrder(feed) {
     if (pixels > pagePixels) feed.scrollTop += pixels - pagePixels;
   };
   feed.addEventListener('wheel', onWheel, { passive: false });
-  return () => feed.removeEventListener('wheel', onWheel);
+  const unbindTouch = bindNewsTouchScrollOrder(feed);
+  return () => {
+    feed.removeEventListener('wheel', onWheel);
+    unbindTouch();
+  };
 }
 
 export function mountHomeNews(root, initialPage = newsPage) {
