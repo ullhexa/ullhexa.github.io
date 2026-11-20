@@ -205,11 +205,11 @@ export const plugins = [{
   "audioNote": "",
   "download": {
     "status": "published",
-    "url": "https://github.com/ullhexa/ullhexa.github.io/releases/download/headaxis-v1.0.0/Ullhexa.HeadAxis-1.0.0-macOS.pkg",
+    "url": "https://github.com/ullhexa/ullhexa.github.io/releases/download/headaxis-v1.0.0/Ullhexa.HeadAxis-1.0.0-macOS.pkg?v=3bf5de5fe3d9",
     "file": "Ullhexa.HeadAxis-1.0.0-macOS.pkg",
-    "bytes": 418269324,
-    "size": "418.3 MB",
-    "sha256": "7498b84b9424a1326e8378b0fa54977b2447ff583ac0d67812a363cef2bbae77",
+    "bytes": 415624561,
+    "size": "415.6 MB",
+    "sha256": "3bf5de5fe3d926434b83e99103e9976b5273687718906f7a5be3c6cc5c5a4454",
     "assurance": "Developer ID signed and Apple notarized; notarization ticket included."
   },
   "licence": "Free for personal and professional audio work. Redistribution, resale and repackaging require permission; full terms are included in the installer.",
@@ -468,11 +468,11 @@ export const plugins = [{
   "audioNote": "",
   "download": {
     "status": "published",
-    "url": "https://github.com/ullhexa/ullhexa.github.io/releases/download/micronudge-v1.0.2/Ullhexa.MicroNudge-1.0.2.pkg",
+    "url": "https://github.com/ullhexa/ullhexa.github.io/releases/download/micronudge-v1.0.2/Ullhexa.MicroNudge-1.0.2.pkg?v=67b7410f3146",
     "file": "Ullhexa.MicroNudge-1.0.2.pkg",
-    "bytes": 21557319,
+    "bytes": 21556854,
     "size": "21.6 MB",
-    "sha256": "c4007accfcb4957f120a9ae3cc3b0163c358fa83d142c4140c24951704a16fee",
+    "sha256": "67b7410f3146524522e6f369a0f6ff90200a218325a0688fc761cfd1d645552f",
     "assurance": "Developer ID signed and Apple notarized; notarization ticket included."
   },
   "licence": "Free for personal and professional audio work. Redistribution, resale and repackaging require permission; full terms are included in the installer.",

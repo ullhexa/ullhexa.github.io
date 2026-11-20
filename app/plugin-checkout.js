@@ -1,6 +1,6 @@
 import { mountPluginDocumentation } from './plugin-documentation-modal.js?v=20261115-installer-docs';
-import { plugins } from './plugins-data.js?v=20261117-branded-installers';
-import { escapeHTML as html } from './plugin-catalogue.js?v=20261117-branded-installers';
+import { plugins } from './plugins-data.js?v=20261120-private-metadata';
+import { escapeHTML as html } from './plugin-catalogue.js?v=20261120-private-metadata';
 import { bindPressActions } from './press-action.js?v=20261110-link-fix';
 import { isFreePlugin, renderPluginDownload, renderPluginDetails } from './plugin-download.js?v=20261116-public-downloads';
 import { renderPluginPayPal, mountPluginPayPal } from './plugin-paypal.js?v=20261116-public-downloads';

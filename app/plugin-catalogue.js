@@ -1,4 +1,4 @@
-import { plugins } from "./plugins-data.js?v=20261117-branded-installers";
+import { plugins } from "./plugins-data.js?v=20261120-private-metadata";
 
 export const escapeHTML = value => String(value).replace(/[&<>"']/g, character => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
