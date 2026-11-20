@@ -22,7 +22,10 @@
 
   <h2 id="paypal">PayPal</h2>
   <p>With your consent, PayPal forms load on plugin download pages. You can also contribute directly on PayPal. PayPal (Europe) S.à r.l. et Cie, S.C.A. is responsible for its payment service. If you contribute, PayPal sends me your name, email, amount and payment reference. I keep these to reconcile payments and answer enquiries (legitimate interests), and as required by accounting law. I retain them as long as those obligations or a specific dispute require.</p>
-  <p>The embedded forms receive your IP address and browser/device details and use cookies and similar storage. PayPal's general cookie policy covers payments, security, personalisation, measurement and advertising. Its own privacy settings affect its optional uses. <a href="https://www.paypal.com/no/legalhub/paypal/privacy-full" rel="noreferrer">PayPal privacy statement</a> · <a href="https://www.paypal.com/no/legalhub/paypal/cookie-full" rel="noreferrer">PayPal cookie notice</a>.</p>
+  <p>The forms use PayPal Hosted Buttons for contributions and payment/security functions. PayPal’s SDK also sends loading, error and interaction measurements to PayPal. Requests disclose your IP address, browser/device details, technical identifiers and page information. Ull Hexa has no separate advertising or website analytics integration. PayPal’s wider policy also covers personalisation and advertising across its services; its published policy does not identify every internal use for this particular embed. <a href="https://www.paypal.com/no/legalhub/paypal/privacy-full" rel="noreferrer">PayPal privacy statement</a> · <a href="https://www.paypal.com/no/legalhub/paypal/cookie-full" rel="noreferrer">PayPal cookie notice</a>.</p>
+  <h3 id="paypal-storage">PayPal storage details</h3>
+  <p>The reviewed SDK uses <code>__paypal_storage__</code> in this site’s local storage for an identifier and session state. It has no automatic expiry in the reviewed code and remains until cleared or removed by the browser. Its internal session renews after 20 minutes; that does not delete the stored identifier. A temporary <code>__test__localStorage__</code> entry checks storage availability and is immediately removed.</p>
+  <p>PayPal controls cookies on its own domains. In a fresh HTTP check of the configured form service on 20 November 2026, responses offered <code>enforce_policy</code>, <code>ts</code> and <code>ts_c</code> for one year; <code>tsrce</code> for three days; <code>LANG</code> for about nine hours; <code>l7_az</code> for 30 minutes; and session cookies <code>x-pp-s</code> and <code>nsid</code>. These are response expiry values, not proof that every browser stores every cookie. Cross-site restrictions, PayPal sign-in, region and checkout can change what is stored. This is not a complete inventory of PayPal checkout or account storage.</p>
 
   <h2 id="cookies">Browser storage</h2>
   <p>This browser remembers your cookie choice for 180 days. That period applies to Ull Hexa's choice record, not PayPal's cookies. The record contains only the choice, notice version and dates, with no name, email or visitor identifier. It is not sent to Ull Hexa.</p>
@@ -40,6 +43,6 @@
   <p>You can ask for access, correction or deletion and, where applicable, object, restrict processing or request a portable copy. Use the contact form or email below to exercise your rights or request a copy of transfer safeguards. I may need to verify your identity. PayPal handles requests about its own payment-service records directly. You can also complain to <a href="https://www.datatilsynet.no/en/" rel="noreferrer">Datatilsynet</a>.</p>
 
   <p class="privacyOperator">Fredrik Gjerstad Støpamo (Ull Hexa) · <span>ullhexa.music@gmail.com</span></p>
-</main><script type="module" src="/app/cookie-consent.js?v=20261120-settings"></script>
+</main><script type="module" src="/app/cookie-consent.js?v=20261120-compact"></script>
 </body>
 </html>

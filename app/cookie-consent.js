@@ -17,7 +17,7 @@ export function mountCookieConsent(doc) {
   panel.innerHTML = `<div class="cookieScroll">
     <h2 id="cookieTitle" tabindex="-1" autofocus>Privacy &amp; cookies</h2>
     <div data-cookie-intro>
-      <p id="cookieSummary">We use necessary browser storage. Optional PayPal contribution forms use cookies, your IP address and browser details. PayPal’s policy covers payments, security, personalisation, measurement and advertising. See our <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a> for details. Change your choice anytime in Cookie settings.</p>
+      <p id="cookieSummary">Allow PayPal cookies and similar technologies for contributions, security and usage measurement? PayPal receives your IP address and browser details. <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a>. Change your choice anytime in Cookie settings.</p>
     </div>
     <div data-cookie-settings-view hidden>
       <p id="cookieSettingsSummary">Choose which optional content can load. Your choice is saved on this device for 180 days. Free downloads work either way. See our <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a> for details.</p>
@@ -37,8 +37,10 @@ export function mountCookieConsent(doc) {
           <details>
             <summary>PayPal contribution forms</summary>
             <div class="cookieCategoryText">
-              <p>Loads the embedded PayPal forms on plugin download pages. PayPal receives your IP address and browser details and uses cookies and similar storage. Turning this off leaves the forms unloaded. Free downloads and the separate link to PayPal still work.</p>
-              <p>PayPal’s general policy covers payments, security, personalisation, measurement and advertising. See its <a href="https://www.paypal.com/no/legalhub/paypal/privacy-full" target="_blank" rel="noopener noreferrer">privacy statement</a> and <a href="https://www.paypal.com/no/legalhub/paypal/cookie-full" target="_blank" rel="noopener noreferrer">cookie policy</a>.</p>
+              <p>Loads PayPal’s contribution forms and payment controls on plugin download pages. PayPal handles payments and security, and its SDK reports loading, errors and interactions to PayPal. Requests include your IP address, browser/device details and technical identifiers.</p>
+              <p>The SDK uses <code>__paypal_storage__</code> on this site for an identifier and session state. This local storage has no fixed expiry; the internal session renews after 20 minutes. PayPal also uses its own cookies. See <a href="/privacy/#paypal-storage" target="_blank" rel="noopener">storage details</a>.</p>
+              <p>Ull Hexa has no separate advertising or website analytics integration. PayPal’s wider policy also covers personalisation and advertising across its services. See its <a href="https://www.paypal.com/no/legalhub/paypal/privacy-full" target="_blank" rel="noopener noreferrer">privacy statement</a> and <a href="https://www.paypal.com/no/legalhub/paypal/cookie-full" target="_blank" rel="noopener noreferrer">cookie policy</a>.</p>
+              <p>Turning this off leaves the forms unloaded. Free downloads and the separate link to PayPal still work.</p>
               <p>Saving this setting as off reloads pages where PayPal is running. This stops the embedded forms, but does not erase PayPal’s existing cookies or payment records. The 180-day period applies to your Ull Hexa choice, not PayPal’s cookies.</p>
             </div>
           </details>
