@@ -1,9 +1,10 @@
 html.hasCookieDialog { overflow:hidden; }
-.cookieBanner { position:fixed; inset:0; margin:auto; width:min(560px, calc(100% - 32px)); max-width:none; max-height:calc(100svh - 32px); padding:0; box-sizing:border-box; background:#202123; color:#e7e7e9; border:1px solid #515255; border-top:2px solid #F04B32; border-radius:4px; box-shadow:0 18px 70px #0009; overflow:hidden; font-family:var(--site-font,sans-serif); text-align:left; }
-.cookieBanner[open] { display:grid; grid-template-rows:minmax(0,1fr) auto; }
+.cookieBanner { position:fixed; inset:50% auto auto 50%; transform:translate(-50%, -50%); margin:0; width:min(560px, calc(100% - 32px)); height:auto; max-width:none; max-height:calc(100svh - 32px); padding:0; box-sizing:border-box; background:#202123; color:#e7e7e9; border:1px solid #515255; border-top:2px solid #F04B32; border-radius:4px; box-shadow:0 18px 70px #0009; overflow:hidden; font-family:var(--site-font,sans-serif); text-align:left; }
+/* Content-sized flex layout avoids Safari stretching a fixed grid dialog to the viewport. */
+.cookieBanner[open] { display:flex; flex-direction:column; }
 .cookieBanner:not([open]), .cookieBanner [hidden] { display:none !important; }
 .cookieBanner::backdrop { background:rgba(0,0,0,.57); -webkit-backdrop-filter:blur(5px); backdrop-filter:blur(5px); }
-.cookieScroll { min-height:0; overflow:auto; overscroll-behavior:contain; padding:26px 28px 20px; scrollbar-width:thin; scrollbar-color:#F04B32 #343537; }
+.cookieScroll { flex:0 1 auto; min-height:0; overflow:auto; overscroll-behavior:contain; padding:26px 28px 20px; scrollbar-width:thin; scrollbar-color:#F04B32 #343537; }
 .cookieScroll::-webkit-scrollbar { width:7px; }
 .cookieScroll::-webkit-scrollbar-track { background:#343537; }
 .cookieScroll::-webkit-scrollbar-thumb { background:#F04B32; border-radius:3px; }
@@ -15,7 +16,7 @@ html.hasCookieDialog { overflow:hidden; }
 .cookieDetailText { padding:4px 0 0; }
 .cookieDetailText p { font-size:12px; color:#ccc; }
 .cookieDetailText strong { color:#eee; }
-.cookieActions { display:flex; gap:12px; padding:18px 28px 24px; border-top:1px solid #414245; }
+.cookieActions { flex:0 0 auto; display:flex; gap:12px; padding:18px 28px 24px; border-top:1px solid #414245; }
 .cookieActions button { flex:1; appearance:none; min-height:44px; padding:11px 12px; border:1px solid #737477; border-radius:3px; background:linear-gradient(#38393b,#252628); color:#fff; font:inherit; font-size:13px; font-weight:700; cursor:pointer; text-align:center; -webkit-tap-highlight-color:transparent; }
 .cookieActions button:active { background:#191a1c; border-color:#F04B32; color:#F04B32; }
 .cookieClose { position:absolute; right:8px; top:7px; padding:0 5px; min-width:28px; min-height:28px; border:0; background:none; color:#ddd; font:inherit; font-size:22px; cursor:pointer; -webkit-tap-highlight-color:transparent; }

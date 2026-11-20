@@ -9,7 +9,7 @@ export function mountCookieConsent(doc) {
   // The full notice must be readable before a visitor makes their choice.
   const isPrivacyPage = /^\/privacy(?:\/(?:index\.html)?)?$/.test(doc.defaultView.location.pathname);
   const style = doc.createElement('link');
-  style.rel = 'stylesheet'; style.href = '/app/cookie-consent.css?v=20261120-dialog';
+  style.rel = 'stylesheet'; style.href = '/app/cookie-consent.css?v=20261120-dialog-size';
   doc.head.append(style);
   const panel = doc.createElement('dialog');
   panel.className = 'cookieBanner';
