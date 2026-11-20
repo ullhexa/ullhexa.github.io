@@ -6,10 +6,9 @@ export function mountCookieConsent(doc) {
   if (mounted.has(doc)) return mounted.get(doc);
   if (doc.defaultView.top !== doc.defaultView.self) return;
   const preference = cookiePreference(doc);
-  // The full notice must be readable before a visitor makes their choice.
   const isPrivacyPage = /^\/privacy(?:\/(?:index\.html)?)?$/.test(doc.defaultView.location.pathname);
   const style = doc.createElement('link');
-  style.rel = 'stylesheet'; style.href = '/app/cookie-consent.css?v=20261120-dialog-size';
+  style.rel = 'stylesheet'; style.href = '/app/cookie-consent.css?v=20261120-settings';
   doc.head.append(style);
   const panel = doc.createElement('dialog');
   panel.className = 'cookieBanner';
@@ -17,24 +16,64 @@ export function mountCookieConsent(doc) {
   panel.setAttribute('aria-describedby', 'cookieSummary');
   panel.innerHTML = `<div class="cookieScroll">
     <h2 id="cookieTitle" tabindex="-1" autofocus>Privacy &amp; cookies</h2>
-    <div id="cookieSummary">
-      <p>Necessary browser storage keeps this site working. <strong>Accept all</strong> also loads PayPal contribution forms, which receive your IP address and browser details and use cookies and similar storage.</p>
-      <p>PayPal’s cookie policy covers payments, security, personalisation, measurement and advertising.</p>
+    <div data-cookie-intro>
+      <p id="cookieSummary">We use necessary browser storage. Optional PayPal contribution forms use cookies, your IP address and browser details. PayPal’s policy covers payments, security, personalisation, measurement and advertising. See our <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a> for details. Change your choice anytime in Cookie settings.</p>
     </div>
-    <details class="cookieDetails">
-      <summary>Read more</summary>
-      <div class="cookieDetailText">
-        <p>Your choice is saved on this device for 180 days. Free downloads work either way. <a href="/privacy/" target="_blank" rel="noopener">Privacy notice</a></p>
+    <div data-cookie-settings-view hidden>
+      <p id="cookieSettingsSummary">Choose which optional content can load. Your choice is saved on this device for 180 days. Free downloads work either way. See our <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a> for details.</p>
+      <button type="button" class="cookieBack" data-cookie-back>← Back</button>
+      <div class="cookieCategories">
+        <div class="cookieCategory">
+          <details>
+            <summary>Necessary storage</summary>
+            <div class="cookieCategoryText">
+              <p>Remembers your cookie choice and keeps requested features working. The preview PIN lasts for the tab session. GM Console and Studio Tools save work and settings on your device. This storage is not used for advertising.</p>
+              <p>Saved work stays until cleared or replaced. Export a backup before clearing site data.</p>
+            </div>
+          </details>
+          <span class="cookieAlways">Always active</span>
+        </div>
+        <div class="cookieCategory">
+          <details>
+            <summary>PayPal contribution forms</summary>
+            <div class="cookieCategoryText">
+              <p>Loads the embedded PayPal forms on plugin download pages. PayPal receives your IP address and browser details and uses cookies and similar storage. Turning this off leaves the forms unloaded. Free downloads and the separate link to PayPal still work.</p>
+              <p>PayPal’s general policy covers payments, security, personalisation, measurement and advertising. See its <a href="https://www.paypal.com/no/legalhub/paypal/privacy-full" target="_blank" rel="noopener noreferrer">privacy statement</a> and <a href="https://www.paypal.com/no/legalhub/paypal/cookie-full" target="_blank" rel="noopener noreferrer">cookie policy</a>.</p>
+              <p>Saving this setting as off reloads pages where PayPal is running. This stops the embedded forms, but does not erase PayPal’s existing cookies or payment records. The 180-day period applies to your Ull Hexa choice, not PayPal’s cookies.</p>
+            </div>
+          </details>
+          <button type="button" class="cookieToggle" role="switch" aria-checked="false" aria-label="Allow PayPal contribution forms" data-cookie-paypal><span aria-hidden="true"></span></button>
+        </div>
       </div>
-    </details>
+    </div>
   </div>
-  <div class="cookieActions">
+  <div class="cookieActions" data-cookie-intro-actions>
+    <button type="button" data-cookie-customize>Cookie settings</button>
+    <button type="button" data-cookie-reject>Reject all</button>
     <button type="button" data-cookie-accept>Accept all</button>
-    <button type="button" data-cookie-reject>Necessary only</button>
   </div>
-  <button type="button" class="cookieClose" aria-label="Close cookie settings" data-cookie-close hidden>×</button>`;
+  <div class="cookieActions" data-cookie-settings-actions hidden>
+    <button type="button" data-cookie-accept>Accept all</button>
+    <button type="button" data-cookie-reject>Reject all</button>
+    <button type="button" data-cookie-save>Save preferences</button>
+  </div>
+  <button type="button" class="cookieClose" aria-label="Close without accepting optional cookies" data-cookie-close>×</button>`;
   doc.body.append(panel);
+  const title = panel.querySelector('h2');
+  const toggle = panel.querySelector('[data-cookie-paypal]');
   let returnFocus = null;
+  const setDraft = value => toggle.setAttribute('aria-checked', value ? 'true' : 'false');
+  const showView = view => {
+    const settings = view === 'settings';
+    panel.querySelector('[data-cookie-intro]').hidden = settings;
+    panel.querySelector('[data-cookie-intro-actions]').hidden = settings;
+    panel.querySelector('[data-cookie-settings-view]').hidden = !settings;
+    panel.querySelector('[data-cookie-settings-actions]').hidden = !settings;
+    title.textContent = settings ? 'Cookie settings' : 'Privacy & cookies';
+    panel.setAttribute('aria-describedby', settings ? 'cookieSettingsSummary' : 'cookieSummary');
+    panel.querySelector('.cookieScroll').scrollTop = 0;
+    if (panel.open) title.focus({preventScroll:true});
+  };
   const close = () => {
     if (!panel.open) return;
     panel.close();
@@ -43,34 +82,38 @@ export function mountCookieConsent(doc) {
     destination?.focus({preventScroll:true});
     returnFocus = null;
   };
-  const open = trigger => {
-    if (panel.open) return;
+  const open = (trigger, view = 'settings') => {
+    if (panel.open) { showView(view); return; }
     returnFocus = trigger || doc.activeElement;
-    panel.querySelector('[data-cookie-close]').hidden = !preference.read();
-    panel.querySelector('details').open = false;
-    panel.querySelector('.cookieScroll').scrollTop = 0;
+    setDraft(preference.read()?.paypal === true);
+    panel.querySelectorAll('details').forEach(detail => { detail.open = false; });
+    panel.querySelector('[data-cookie-close]').setAttribute('aria-label', preference.read() ? 'Close cookie settings without saving' : 'Close without accepting optional cookies');
+    showView(view);
     doc.documentElement.classList.add('hasCookieDialog');
     panel.showModal();
-    panel.querySelector('h2').focus({preventScroll:true});
+    title.focus({preventScroll:true});
   };
   const decide = value => { close(); preference.choose(value); };
-  panel.querySelector('[data-cookie-accept]').addEventListener('click', () => decide(true));
-  panel.querySelector('[data-cookie-reject]').addEventListener('click', () => decide(false));
-  panel.querySelector('[data-cookie-close]').addEventListener('click', close);
+  // Closing is never acceptance. Remember necessary-only on first dismissal;
+  // when settings are reopened, discard unsaved edits and keep the prior choice.
+  const dismiss = () => { if (preference.read()) close(); else decide(false); };
+  panel.querySelectorAll('[data-cookie-accept]').forEach(button => button.addEventListener('click', () => decide(true)));
+  panel.querySelectorAll('[data-cookie-reject]').forEach(button => button.addEventListener('click', () => decide(false)));
+  panel.querySelector('[data-cookie-close]').addEventListener('click', dismiss);
+  panel.querySelector('[data-cookie-customize]').addEventListener('click', () => showView('settings'));
+  panel.querySelector('[data-cookie-back]').addEventListener('click', () => showView('intro'));
+  toggle.addEventListener('click', () => setDraft(toggle.getAttribute('aria-checked') !== 'true'));
+  panel.querySelector('[data-cookie-save]').addEventListener('click', () => decide(toggle.getAttribute('aria-checked') === 'true'));
   doc.addEventListener('click', event => {
     const trigger = event.target.closest?.('[data-cookie-settings]');
-    if (trigger) { event.preventDefault(); open(trigger); }
+    if (trigger) { event.preventDefault(); open(trigger, 'settings'); }
   });
-  // Escape is a rejection on first visit, never implicit acceptance.
-  panel.addEventListener('cancel', event => {
-    event.preventDefault();
-    if (preference.read()) close(); else decide(false);
-  });
-  preference.subscribe(choice => { if (choice) close(); else if (!isPrivacyPage) open(); });
+  panel.addEventListener('cancel', event => { event.preventDefault(); dismiss(); });
+  preference.subscribe(choice => { if (choice) close(); else if (!isPrivacyPage) open(null, 'intro'); });
   bindPressActions(doc.body, {selector:'.cookieBanner button, [data-cookie-settings]'});
   const api = {open, preference};
   mounted.set(doc, api);
-  if (!preference.read() && !isPrivacyPage) open();
+  if (!preference.read() && !isPrivacyPage) open(null, 'intro');
   return api;
 }
 if (typeof document !== 'undefined') {
