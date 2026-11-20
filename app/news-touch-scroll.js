@@ -7,88 +7,117 @@ export function newsScrollBoundary(feed, page) {
     : bottom;
 }
 
-// A vertical swipe starting in the feed uses one ordered scroll path:
-// page to the reading position, then posts, then the rest of the page.
-// Reverse swipes follow that path backwards. Other gestures remain native.
+// Ordinary swipes in the aligned feed stay entirely native, including momentum.
+// Only a swipe needing a page/feed handoff installs a blocking touchmove handler.
 export function bindNewsTouchScrollOrder(feed) {
   const doc = feed.ownerDocument;
   const view = doc.defaultView;
-  let gesture = null, frame = 0, disposed = false;
-  const stopMomentum = () => {
+  let gesture = null, motion = null, frame = 0, tracking = false, disposed = false;
+  const detachMove = () => {
+    if (tracking) feed.removeEventListener('touchmove', move);
+    tracking = false;
+  };
+  const cancel = () => {
+    gesture = null;
+    motion = null;
     if (frame) view.cancelAnimationFrame(frame);
     frame = 0;
+    detachMove();
   };
-  const cancel = () => { gesture = null; stopMomentum(); };
   const nativeGesture = () =>
     (view.visualViewport?.scale || 1) > 1.01 || doc.getSelection?.()?.isCollapsed === false;
-  const advance = (node, pixels, minimum = 0, maximum = Math.max(0, node.scrollHeight - node.clientHeight)) => {
-    const before = node.scrollTop;
-    node.scrollTop = Math.max(minimum, Math.min(maximum, before + pixels));
-    return node.scrollTop - before;
+  const advance = (state, key, pixels, minimum, maximum) => {
+    const before = state[key];
+    state[key] = Math.max(minimum, Math.min(maximum, before + pixels));
+    return state[key] - before;
   };
-  const scroll = pixels => {
-    const page = doc.scrollingElement;
-    if (!page) return 0;
-    const boundary = newsScrollBoundary(feed, page);
+  const scroll = (state, pixels) => {
     let remaining = pixels;
     if (pixels > 0) {
-      if (page.scrollTop < boundary) remaining -= advance(page, remaining, 0, boundary);
-      if (remaining > 0) remaining -= advance(feed, remaining);
-      if (remaining > 0) remaining -= advance(page, remaining);
+      if (state.pageTop < state.boundary) remaining -= advance(state, 'pageTop', remaining, 0, state.boundary);
+      if (remaining > 0) remaining -= advance(state, 'feedTop', remaining, 0, state.feedMax);
+      if (remaining > 0) remaining -= advance(state, 'pageTop', remaining, 0, state.pageMax);
     } else {
-      if (page.scrollTop > boundary) remaining -= advance(page, remaining, boundary);
-      if (remaining < 0) remaining -= advance(feed, remaining);
-      if (remaining < 0) remaining -= advance(page, remaining);
+      if (state.pageTop > state.boundary) remaining -= advance(state, 'pageTop', remaining, state.boundary, state.pageMax);
+      if (remaining < 0) remaining -= advance(state, 'feedTop', remaining, 0, state.feedMax);
+      if (remaining < 0) remaining -= advance(state, 'pageTop', remaining, 0, state.pageMax);
     }
     return pixels - remaining;
   };
-  const coast = initialVelocity => {
-    if (view.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-    let velocity = Math.max(-3, Math.min(3, initialVelocity)), lastTime = null;
-    const tick = time => {
-      frame = 0;
-      if (disposed || nativeGesture() || doc.visibilityState === 'hidden') return;
-      const elapsed = lastTime === null ? 16 : time - lastTime;
-      lastTime = time;
-      // A suspended/background frame must not cause a large catch-up jump.
-      if (elapsed > 80) return;
+  const schedule = () => {
+    if (!frame) frame = view.requestAnimationFrame(tick);
+  };
+  const tick = time => {
+    frame = 0;
+    const state = motion;
+    if (!state || disposed) return;
+    if (nativeGesture() || doc.visibilityState === 'hidden') { cancel(); return; }
+    let pixels = state.pending;
+    state.pending = 0;
+    if (state.coasting) {
+      const elapsed = state.lastTime === null ? 16 : time - state.lastTime;
       const dt = Math.max(0, Math.min(32, elapsed));
       const decay = Math.exp(-dt / 260);
-      const pixels = velocity * 260 * (1 - decay);
-      velocity *= decay;
-      const moved = scroll(pixels);
-      if (Math.abs(velocity) < .025 || (Math.abs(pixels) > .5 && Math.abs(moved) < .5)) return;
-      frame = view.requestAnimationFrame(tick);
-    };
-    if (Math.abs(velocity) >= .025) frame = view.requestAnimationFrame(tick);
+      if (elapsed > 80) state.coasting = false;
+      else {
+        pixels += state.velocity * 260 * (1 - decay);
+        state.velocity *= decay;
+      }
+    }
+    state.lastTime = time;
+    const moved = scroll(state, pixels);
+    // Geometry is read once at gesture start. At most one write per scroller
+    // per frame, with no layout reads or scrollTop readbacks after these writes.
+    if (state.pageTop !== state.writtenPage) {
+      state.page.scrollTop = state.pageTop;
+      state.writtenPage = state.pageTop;
+    }
+    if (state.feedTop !== state.writtenFeed) {
+      feed.scrollTop = state.feedTop;
+      state.writtenFeed = state.feedTop;
+    }
+    if (state.coasting && Math.abs(state.velocity) >= .025 &&
+        !(Math.abs(pixels) > .5 && Math.abs(moved) < .5)) schedule();
+    else if (!gesture) motion = null;
   };
   const start = event => {
     cancel();
     if (event.defaultPrevented || event.touches.length !== 1 || !doc.scrollingElement || nativeGesture()) return;
-    // Do not take gestures from a text field if one is added to the feed later.
     if (event.target.closest?.('input, textarea, select, [contenteditable="true"]')) return;
+    const page = doc.scrollingElement;
+    const boundary = newsScrollBoundary(feed, page);
+    const pageTop = page.scrollTop;
+    // No move handler, preventDefault, animation frames or scripted momentum
+    // for the ordinary reading position. Native edge chaining remains available.
+    if (Math.abs(pageTop - boundary) <= 1) return;
     const touch = event.touches[0];
     gesture = { id: touch.identifier, x: touch.clientX, y: touch.clientY,
       lastY: touch.clientY, lastTime: event.timeStamp, distance: 0, velocity: 0,
-      samples: [{ position: 0, time: event.timeStamp }], scrolling: false };
+      samples: [{ position: 0, time: event.timeStamp }], scrolling: false,
+      direction: pageTop < boundary ? 1 : -1 };
+    motion = { page, pageTop, feedTop: feed.scrollTop, boundary,
+      pageMax: Math.max(0, page.scrollHeight - page.clientHeight),
+      feedMax: Math.max(0, feed.scrollHeight - feed.clientHeight),
+      writtenPage: pageTop, writtenFeed: feed.scrollTop,
+      pending: 0, velocity: 0, coasting: false, lastTime: null };
+    feed.addEventListener('touchmove', move, { passive: false });
+    tracking = true;
   };
   const move = event => {
     if (!gesture) return;
-    if (event.defaultPrevented || !event.cancelable || event.touches.length !== 1 || nativeGesture()) {
-      gesture = null;
-      return;
-    }
+    if (event.defaultPrevented || !event.cancelable || event.touches.length !== 1 || nativeGesture()) { cancel(); return; }
     const touch = [...event.touches].find(item => item.identifier === gesture.id);
-    if (!touch) { gesture = null; return; }
+    if (!touch) { cancel(); return; }
     if (!gesture.scrolling) {
       const dx = touch.clientX - gesture.x, dy = gesture.y - touch.clientY;
       if (!dx && !dy) return;
-      if (Math.abs(dx) > Math.abs(dy)) { gesture = null; return; }
+      if (Math.abs(dx) > Math.abs(dy) || Math.sign(dy) !== gesture.direction) { cancel(); return; }
       gesture.scrolling = true;
     }
     event.preventDefault();
     const pixels = gesture.lastY - touch.clientY;
-    scroll(pixels);
+    motion.pending += pixels;
+    schedule();
     if (pixels && Math.sign(pixels) !== Math.sign(gesture.velocity)) {
       gesture.samples = [{ position: gesture.distance, time: gesture.lastTime }];
     }
@@ -104,17 +133,21 @@ export function bindNewsTouchScrollOrder(feed) {
   const end = event => {
     const finished = gesture;
     gesture = null;
-    if (finished?.scrolling && !event.touches.length && !event.defaultPrevented &&
-        event.timeStamp - finished.lastTime < 80 && !nativeGesture()) coast(finished.velocity);
+    detachMove();
+    if (!finished?.scrolling) { motion = null; return; }
+    motion.coasting = !event.touches.length && !event.defaultPrevented &&
+      event.timeStamp - finished.lastTime < 80 && !nativeGesture() &&
+      !view.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    motion.velocity = Math.max(-3, Math.min(3, finished.velocity));
+    schedule();
   };
   const passive = { passive: true };
   const capturePassive = { passive: true, capture: true };
-  // New input anywhere stops a previous flick, including a tap outside the feed.
   const interruptions = ['touchstart', 'pointerdown', 'wheel', 'keydown', 'visibilitychange'];
   for (const type of interruptions) doc.addEventListener(type, cancel, capturePassive);
   view.addEventListener('blur', cancel);
+  view.addEventListener('resize', cancel);
   feed.addEventListener('touchstart', start, passive);
-  feed.addEventListener('touchmove', move, { passive: false });
   feed.addEventListener('touchend', end, passive);
   feed.addEventListener('touchcancel', cancel, passive);
   return () => {
@@ -122,8 +155,8 @@ export function bindNewsTouchScrollOrder(feed) {
     cancel();
     for (const type of interruptions) doc.removeEventListener(type, cancel, capturePassive);
     view.removeEventListener('blur', cancel);
+    view.removeEventListener('resize', cancel);
     feed.removeEventListener('touchstart', start);
-    feed.removeEventListener('touchmove', move);
     feed.removeEventListener('touchend', end);
     feed.removeEventListener('touchcancel', cancel);
   };

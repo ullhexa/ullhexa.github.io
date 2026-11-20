@@ -1,4 +1,4 @@
-import { bindNewsTouchScrollOrder, newsScrollBoundary } from './news-touch-scroll.js?v=20261120-touch-scroll';
+import { bindNewsTouchScrollOrder, newsScrollBoundary } from './news-touch-scroll.js?v=20261120-native-news-scroll';
 import { newsPage } from './news-latest.js?v=20261115-news-technical-copy';
 import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
 
