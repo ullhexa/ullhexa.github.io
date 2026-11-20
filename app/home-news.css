@@ -265,3 +265,14 @@ a.newsBadge { cursor: pointer; -webkit-user-select: none; user-select: none; }
   .homeOverviewItem { grid-template-columns: 112px minmax(0, 1fr); }
   .aboutBio .bio-text { text-align: left; }
 }
+
+/* Phone reading panel: the entire track fits with the browser bars visible.
+   svh stays stable while those bars slide in/out, avoiding scroll-range jumps. */
+@media (max-width: 700px), (pointer: coarse) and (max-height: 600px) {
+  .card.homePage { margin-bottom: 16px; }
+  .homeNews.contactPanel {
+    height: calc(100svh - 32px);
+    max-height: calc(100svh - 32px);
+  }
+  .newsFeed.newsFeedWaiting { overflow-y: hidden; }
+}

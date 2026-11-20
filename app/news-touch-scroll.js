@@ -1,3 +1,38 @@
+// Keep this query in step with the phone panel rule in home-news.css.
+export const PHONE_NEWS_QUERY = '(max-width: 700px), (pointer: coarse) and (max-height: 600px)';
+
+// The page scrolls natively until it reaches the bottom. Then the viewport-sized
+// feed becomes a native scroller. Never move either scroll position from JS.
+// In particular, do not cancel touchmove or simulate momentum on phones.
+export function bindPhoneNewsScroll(feed) {
+  const doc = feed.ownerDocument;
+  const view = doc.defaultView;
+  let ready = false, frame = 0;
+  const update = () => {
+    frame = 0;
+    const page = doc.scrollingElement;
+    if (!page) return;
+    const remaining = Math.max(0, page.scrollHeight - page.clientHeight) - page.scrollTop;
+    // Small hysteresis avoids toggling for fractional offsets and edge bounce.
+    ready = remaining <= (ready ? 24 : 2);
+    feed.classList.toggle('newsFeedWaiting', !ready);
+  };
+  const schedule = () => {
+    if (!frame) frame = view.requestAnimationFrame(update);
+  };
+  doc.addEventListener('scroll', schedule, { passive: true });
+  view.addEventListener('resize', schedule, { passive: true });
+  view.visualViewport?.addEventListener('resize', schedule, { passive: true });
+  update();
+  return () => {
+    if (frame) view.cancelAnimationFrame(frame);
+    doc.removeEventListener('scroll', schedule);
+    view.removeEventListener('resize', schedule);
+    view.visualViewport?.removeEventListener('resize', schedule);
+    feed.classList.remove('newsFeedWaiting');
+  };
+}
+
 // Keep the latest post visible while bringing a tall panel into reading position.
 export function newsScrollBoundary(feed, page) {
   const bottom = Math.max(0, page.scrollHeight - page.clientHeight);

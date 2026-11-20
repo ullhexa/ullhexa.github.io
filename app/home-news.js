@@ -1,4 +1,4 @@
-import { bindNewsTouchScrollOrder, newsScrollBoundary } from './news-touch-scroll.js?v=20261120-native-news-scroll';
+import { bindNewsTouchScrollOrder, newsScrollBoundary, bindPhoneNewsScroll, PHONE_NEWS_QUERY } from './news-touch-scroll.js?v=20261120-phone-sized-news';
 import { newsPage } from './news-latest.js?v=20261115-news-technical-copy';
 import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
 
@@ -122,7 +122,7 @@ export function createNewsPager(initialPage, fetchPage = fetch) {
 // Taller-than-viewport panels hand off with their heading near the top, so the
 // newest post is not skipped. Reverse scrolling returns through the feed first.
 // Zoom, keyboard and direct scrollbar use stay native.
-export function bindNewsScrollOrder(feed) {
+function bindTallNewsScrollOrder(feed) {
   const document = feed.ownerDocument;
   const onWheel = event => {
     if (event.defaultPrevented || !event.cancelable || event.ctrlKey || event.metaKey || event.shiftKey) return;
@@ -155,6 +155,22 @@ export function bindNewsScrollOrder(feed) {
   return () => {
     feed.removeEventListener('wheel', onWheel);
     unbindTouch();
+  };
+}
+
+// Rebind on rotation/window resize, so phone mode has no wheel or touch routing.
+export function bindNewsScrollOrder(feed) {
+  const compact = feed.ownerDocument.defaultView.matchMedia?.(PHONE_NEWS_QUERY);
+  let unbind = () => {};
+  const configure = () => {
+    unbind();
+    unbind = compact?.matches ? bindPhoneNewsScroll(feed) : bindTallNewsScrollOrder(feed);
+  };
+  configure();
+  compact?.addEventListener('change', configure);
+  return () => {
+    compact?.removeEventListener('change', configure);
+    unbind();
   };
 }
 
