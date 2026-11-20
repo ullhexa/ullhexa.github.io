@@ -31,9 +31,15 @@ canvas { position: fixed; inset: 0; outline: none; }
 .modeMenu.is-current > .modeMenuToggle { border-color: #aaa; }
 .menuChevron { width: 6px; height: 6px; border: solid #aaa; border-width: 0 1px 1px 0; transform: translateY(-2px) rotate(45deg); }
 .modeMenuToggle[aria-expanded="true"] .menuChevron { transform: translateY(2px) rotate(225deg); }
-.modeMenuToggle:hover, .modeMenuToggle[aria-expanded="true"], #controls .inputBtn:hover {
+.modeMenuToggle[aria-expanded="true"] {
   background: #414145;
   border-color: #aaa;
+}
+@media (hover: hover) and (pointer: fine) {
+  .modeMenuToggle:hover, #controls .inputBtn:hover {
+    background: #414145;
+    border-color: #aaa;
+  }
 }
 button:focus-visible { outline: none; }
 .modeDropdown {
@@ -58,7 +64,10 @@ button:focus-visible { outline: none; }
   background: transparent;
   text-align: left;
 }
-.modeDropdown button:hover, .modeDropdown button:focus-visible { background: #36363b; }
+.modeDropdown button:focus-visible { background: #36363b; }
+@media (hover: hover) and (pointer: fine) {
+  .modeDropdown button:hover { background: #36363b; }
+}
 .modeDropdown button[aria-current="true"] { background: #dddde1; color: #141417; font-weight: 600; }
 .modeDropdown button[aria-current="true"]::after { content: "✓"; position: absolute; right: 10px; }
 #settingsPanel { position: absolute; top: calc(100% + 8px); left: 0; border-radius: 0; background: #141416f5; }
@@ -99,7 +108,10 @@ button:focus-visible { outline: none; }
   cursor: pointer;
   pointer-events: auto;
 }
-#midiSupportClose:hover, #midiSupportClose.isPressing { color: #fff; background: #ffffff14; }
+#midiSupportClose.isPressing { color: #fff; background: #ffffff14; }
+@media (hover: hover) and (pointer: fine) {
+  #midiSupportClose:hover { color: #fff; background: #ffffff14; }
+}
 #midiHelp { position: fixed; bottom: 12px; left: 12px; margin: 0; color: #bbb; font-size: 12px; pointer-events: none; }
 body[data-family="audio"] #midiHelp,
 body[data-family="midi"] #settingsMenu,
@@ -117,3 +129,6 @@ body[data-family="midi"] #bottomInfo { bottom: 36px; }
   .modeMenuToggle { min-width: 84px; gap: 14px; }
   .modeDropdown { width: 192px; }
 }
+
+/* Use the site feedback, without the browser’s blue/grey touch flash. */
+:where(a[href], button, summary, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) { -webkit-tap-highlight-color: transparent; }

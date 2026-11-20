@@ -23,14 +23,20 @@
 .musicLinks a { color: #eee; }
 .musicSyncLink { display: inline-block; }
 .musicCatalogue a { text-decoration: none; overflow-wrap: anywhere; }
-.musicCatalogue a:hover, .musicCatalogue a:focus-visible { color: var(--ull-accent); text-decoration: underline; text-underline-offset: 4px; }
+.musicCatalogue a:focus-visible { color: var(--ull-accent); text-decoration: underline; text-underline-offset: 4px; }
+@media (hover: hover) and (pointer: fine) {
+  .musicCatalogue a:hover { color: var(--ull-accent); text-decoration: underline; text-underline-offset: 4px; }
+}
 .musicStory { margin-top: 17px; }
 .musicStory summary {
   width: fit-content; display: flex; gap: 10px; align-items: center; cursor: pointer;
   list-style: none; font-weight: 700; color: #eee; -webkit-user-select: none; user-select: none;
 }
 .musicStory summary::-webkit-details-marker { display: none; }
-.musicStory summary:hover, .musicStory summary:focus-visible { color: var(--ull-accent); }
+.musicStory summary:focus-visible { color: var(--ull-accent); }
+@media (hover: hover) and (pointer: fine) {
+  .musicStory summary:hover { color: var(--ull-accent); }
+}
 .musicStory summary:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
 .musicStoryArrow { display: inline-block; font-family: sans-serif; }
 .musicStory[open] .musicStoryArrow { transform: rotate(90deg); }

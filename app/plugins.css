@@ -9,11 +9,16 @@
   .pluginBadgeImage:hover img { transform: scale(1.05); transition-duration: 250ms; transition-timing-function: cubic-bezier(0, 1, 0, 1); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pluginBadgeImage img, .pluginBadgeImage:hover img { transform: none; transition: none; }
+  .pluginBadgeImage img { transform: none; transition: none; }
+}
+@media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) {
+  .pluginBadgeImage:hover img { transform: none; transition: none; }
 }
 .pluginBadgeCopy h3 { margin: 0 0 12px; font-size: 25px; font-weight: 600; line-height: 1.15; }
 .pluginBadgeCopy h3 a { color: #fff; text-decoration: none; text-underline-offset: 5px; }
-.pluginBadgeCopy h3 a:hover { text-decoration: underline; }
+@media (hover: hover) and (pointer: fine) {
+  .pluginBadgeCopy h3 a:hover { text-decoration: underline; }
+}
 .pluginBadgeCopy p { margin: 0; color: #ffffffb8; font-size: 14px; line-height: 1.65; }
 .pluginBadgeMeta { display: block; margin-top: 14px; color: #ffffff73; font-size: 12px; line-height: 1.5; }
 .pluginPlaceholderFrame span { color: #ffffff38; font-size: 32px; font-weight: 400; }
@@ -27,7 +32,9 @@
 .pluginPage .siteNavigation { margin-top: -24px; }
 .pluginProduct { max-width: 1140px; margin: 30px auto 60px; padding: 0 24px; }
 .pluginBack { display: inline-block; color: #ffffff9c; text-decoration: none; font-size: 13px; margin: 0 0 25px; }
-.pluginBack:hover { color: #fff; }
+@media (hover: hover) and (pointer: fine) {
+  .pluginBack:hover { color: #fff; }
+}
 .pluginHero { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(0, 1fr); gap: clamp(30px, 5vw, 68px); align-items: start; }
 .pluginGallery { min-width: 0; }
 .pluginSlide { margin: 0; }

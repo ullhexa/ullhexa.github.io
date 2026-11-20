@@ -41,8 +41,10 @@ html.hasPluginDocumentation body { overflow: hidden; }
   cursor: pointer;
   transform: none;
 }
-.pluginDocumentDialog button:hover,
 .pluginDocumentDialog button:focus-visible { color: #fff; background: #ffffff0a; }
+@media (hover: hover) and (pointer: fine) {
+  .pluginDocumentDialog button:hover { color: #fff; background: #ffffff0a; }
+}
 .pluginDocumentClose { display: grid; place-items: center; flex: none; width: 36px; height: 36px; padding: 0; }
 .pluginDocumentNavigation { display: flex; flex: none; gap: 22px; padding: 0 28px 14px; border-bottom: 1px solid #ffffff26; }
 .pluginDocumentNavigation button { padding: 5px 0; font-size: 13px; text-decoration: underline; text-underline-offset: 4px; }

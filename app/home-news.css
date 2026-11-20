@@ -135,9 +135,11 @@ a.newsBadge { cursor: pointer; -webkit-user-select: none; user-select: none; }
 /* Direct platform links keep music posts light and let listeners choose. */
 .newsReleaseLinks { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; }
 .newsReleaseLinks a { color: #eee; font-size: 11pt; line-height: 1.45; white-space: nowrap; text-decoration: underline; text-underline-offset: 3px; }
-.newsReleaseLinks a:hover, .newsReleaseLinks a:active { color: var(--ull-accent); }
-.newsCopy h3 a:hover { color: var(--ull-accent); }
-.newsBadge:hover { filter: brightness(1.1); }
+.newsReleaseLinks a:active { color: var(--ull-accent); }
+@media (hover: hover) and (pointer: fine) {
+  .newsReleaseLinks a:hover, .newsCopy h3 a:hover { color: var(--ull-accent); }
+  .newsBadge:hover { filter: brightness(1.1); }
+}
 .homeNews a:focus-visible { outline: none; color: var(--ull-accent); }
 .newsBadge:focus-visible { filter: brightness(1.15); }
 
@@ -197,7 +199,7 @@ a.newsBadge { cursor: pointer; -webkit-user-select: none; user-select: none; }
 .newsPageNumbers button:disabled { cursor: default; }
 .newsPageNumbers button:not(:disabled).isPressing,
 .newsPageNumbers button:not(:disabled):active { color: var(--ull-accent); }
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .newsPageNumbers button:not(:disabled):hover { color: var(--ull-accent); }
 }
 .newsPageGap { display: inline-block; padding: 0 2px; color: #fff; }
@@ -247,9 +249,15 @@ a.newsBadge { cursor: pointer; -webkit-user-select: none; user-select: none; }
 .homeOverviewCopy h2 { margin: 0 0 7px; font-size: 17px; line-height: 1.25; }
 .homeOverviewCopy h2 span { display: inline-block; margin-left: 3px; color: var(--ull-accent); }
 .homeOverviewCopy p { margin: 0; font-size: 14px; line-height: 1.45; color: #c4c4c6; }
-.homeOverviewItem:hover, .homeOverviewItem:focus-visible, .homeOverviewItem.isPressing { color: var(--ull-accent); }
+.homeOverviewItem:focus-visible, .homeOverviewItem.isPressing { color: var(--ull-accent); }
+@media (hover: hover) and (pointer: fine) {
+  .homeOverviewItem:hover { color: var(--ull-accent); }
+}
 .homeOverviewItem:focus-visible { outline: none; }
-.homeOverviewItem:hover img, .homeOverviewItem:focus-visible img { filter: brightness(1.12); }
+.homeOverviewItem:focus-visible img { filter: brightness(1.12); }
+@media (hover: hover) and (pointer: fine) {
+  .homeOverviewItem:hover img { filter: brightness(1.12); }
+}
 .aboutBio .bio { margin-bottom: 0; }
 @media (max-width: 700px) {
   .homeIntro { padding: 20px 16px; }

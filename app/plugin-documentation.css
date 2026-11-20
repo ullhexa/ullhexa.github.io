@@ -10,3 +10,6 @@ body { margin:0; background:#141517; color:#e7e7e9; font-family:var(--site-font)
 .documentPage h2 { font-size:17px; font-weight:700; margin:0 0 20px; }
 .documentText { font:inherit; font-size:14px; line-height:1.65; white-space:pre-wrap; overflow-wrap:anywhere; }
 .documentPage a:focus-visible { outline: none; }
+
+/* Use the site feedback, without the browser’s blue/grey touch flash. */
+:where(a[href], button, summary, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) { -webkit-tap-highlight-color: transparent; }
