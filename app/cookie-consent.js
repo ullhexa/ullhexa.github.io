@@ -17,7 +17,7 @@ export function mountCookieConsent(doc) {
   panel.innerHTML = `<div class="cookieScroll">
     <h2 id="cookieTitle" tabindex="-1" autofocus>Privacy &amp; cookies</h2>
     <div data-cookie-intro>
-      <p id="cookieSummary">Allow PayPal cookies and similar technologies for contributions, security and usage measurement? PayPal receives your IP address and browser details. <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a>. Change your choice anytime in Cookie settings.</p>
+      <p id="cookieSummary">PayPal contribution forms are optional. They use cookies and similar technologies, your IP address and browser details for payments, security and usage measurement. <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a> · Change your choice anytime in Cookie settings.</p>
     </div>
     <div data-cookie-settings-view hidden>
       <p id="cookieSettingsSummary">Choose which optional content can load. Your choice is saved on this device for 180 days. Free downloads work either way. See our <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a> for details.</p>
