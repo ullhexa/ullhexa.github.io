@@ -6,7 +6,7 @@ import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261120-private-
 import { mountContactForm } from "./contact-form.js?v=20261110-synth";
 import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261120-phone-sized-news";
 import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
-import { mountPreviewGate } from "./preview-gate.js?v=20261120-touch-taps";
+import { mountPreviewGate } from "./preview-gate.js?v=20261120-privacy";
 
 const content = document.getElementById("content");
 const updateSiteNavigation = createSiteNavigation();
@@ -150,6 +150,7 @@ const pages = {
         <div class="homeSocialIcons">${SOCIAL_LINKS.map(logoLink).join("")}</div>
       </div>
     </section>
+    <p class="sitePrivacy"><a href="/privacy/">Privacy &amp; cookies</a></p>
     ${renderHomeNews()}
   `,
 
@@ -260,6 +261,7 @@ const pages = {
             <div class="contactActions">
               <button type="submit" id="contactSubmitBtn" class="contactPrimaryBtn simpleBoxButton">Send message</button>
             </div>
+            <p class="contactPrivacy">Your message is sent through Web3Forms to my email inbox. <a href="/privacy/#contact" target="_blank" rel="noopener">How your information is handled</a>.</p>
             <p id="contactStatus" class="contactStatus" role="status" aria-live="polite"></p>
           </form>
         </div>
@@ -293,7 +295,7 @@ function render() {
   content.classList.toggle("dndPage", route === "dnd");
   content.classList.toggle("skinsPage", route === "skins");
   content.classList.toggle("pluginsPage", route === "plugins");
-  content.innerHTML = page();
+  content.innerHTML = page() + (page === pages.home ? "" : '<p class="sitePrivacy"><a href="/privacy/">Privacy &amp; cookies</a></p>');
   if (page === pages.home) {
     const unmountNews = mountHomeNews(content);
     const unbindOverview = bindPressActions(content, { selector: ".homeOverviewItem" });
@@ -306,7 +308,7 @@ function render() {
     // Keep the catalogue and its stories off the homepage's initial download.
     import("./music-catalogue.js?v=20261116-public-credit").then(({ renderMusicCatalogue }) => {
       if (cancelled) return;
-      content.innerHTML = renderMusicCatalogue();
+      content.innerHTML = renderMusicCatalogue() + '<p class="sitePrivacy"><a href="/privacy/">Privacy &amp; cookies</a></p>';
       unbind = bindPressActions(content, { selector: ".musicCatalogue a, .musicStory summary" });
     }).catch(() => {
       if (!cancelled) content.innerHTML = '<p class="musicLoadStatus" role="status">The releases could not be loaded. Please reload the page to try again.</p>';

@@ -1,0 +1,12 @@
+html { color-scheme:dark; background:#141517; color:#e7e7e9; }
+body { margin:0; font-family:var(--site-font); font-size:15px; line-height:1.65; }
+main { max-width:780px; margin:35px auto 60px; padding:0 24px; }
+a { color:#e7e7e9; text-underline-offset:3px; }
+a:hover, a:focus-visible { color:#F04B32; }
+h1 { font-size:28px; line-height:1.2; margin:28px 0 8px; }
+h2 { font-size:18px; margin:28px 0 8px; }
+p { margin:10px 0; }
+.updated, .back { font-size:12px; color:#bcbcbc; }
+li { margin:8px 0; }
+strong { font-weight:700; }
+@media(max-width:600px) { main { margin-top:24px; padding:0 20px; } }

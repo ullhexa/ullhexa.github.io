@@ -2,8 +2,8 @@ import { mountPluginDocumentation } from './plugin-documentation-modal.js?v=2026
 import { plugins } from './plugins-data.js?v=20261120-private-metadata';
 import { escapeHTML as html } from './plugin-catalogue.js?v=20261120-private-metadata';
 import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
-import { isFreePlugin, renderPluginDownload, renderPluginDetails } from './plugin-download.js?v=20261116-public-downloads';
-import { renderPluginPayPal, mountPluginPayPal } from './plugin-paypal.js?v=20261116-public-downloads';
+import { isFreePlugin, renderPluginDownload, renderPluginDetails, renderPluginFooter } from './plugin-download.js?v=20261120-privacy';
+import { renderPluginPayPal, mountPluginPayPal } from './plugin-paypal.js?v=20261120-privacy';
 
 function renderFinalDownload(plugin) {
   const paypal = renderPluginPayPal(plugin);
@@ -24,7 +24,8 @@ function renderFinalDownload(plugin) {
           ${renderPluginDownload(plugin)}
         </section>
       </div>
-    </div>`;
+    </div>
+    ${renderPluginFooter(plugin)}`;
 }
 
 const root = document.getElementById('product');
@@ -33,7 +34,7 @@ if (plugin && isFreePlugin(plugin)) {
   root.innerHTML = renderFinalDownload(plugin);
   mountPluginDocumentation(root, plugin);
   // Keep PayPal's own input and payment controls on their native event handling.
-  bindPressActions(root, { selector: '.pluginBack, .pluginDownload, [data-plugin-documentation], .pluginPayPalFallback' });
+  bindPressActions(root, { selector: '.pluginBack, .pluginDownload, [data-plugin-documentation], .pluginPayPalFallback, .pluginPayPalChoices button, [data-paypal-disable], .pluginFooter a' });
   mountPluginPayPal(root, plugin);
 } else {
   root.innerHTML = '<h1>Download unavailable</h1><a href="/#plugins">All plugins</a>';

@@ -151,3 +151,15 @@ body.pluginFlowPage { background:#141517; color:#e7e7e9; }
       .puppy[data-mood="zero"] #shuffle-foot { transform:translateX(-6px) rotate(5deg); }
       .puppy[data-mood="positive"] #head { transform:translateY(-3px) rotate(-3deg); }
     }
+
+/* Local preview before explicit permission to contact PayPal. */
+.pluginPayPalConsent h2 { margin:20px 0 10px; font-size:16px; }
+.pluginPayPalConsent p { font-size:12px; line-height:1.6; color:#dedede; }
+.pluginPayPalConsent a, .pluginPayPalExternal a { color:#dedede; text-underline-offset:3px; }
+.pluginPayPalPreview { display:block; max-width:100%; max-height:260px; width:auto; height:auto; margin:auto; }
+.pluginPayPalChoices { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+.pluginPayPalChoices button { padding:10px 12px; font-size:12px; min-height:42px; cursor:pointer; }
+.pluginPayPalExternal { margin:16px 0 0; font-size:12px; }
+.pluginPayPalDisable { display:block; margin:14px 0 0; padding:0; background:none; color:#dedede; border:0; text-decoration:underline; text-underline-offset:3px; font-size:12px; cursor:pointer; }
+@media(hover:hover) and (pointer:fine) { .pluginPayPalDisable:hover { color:var(--ull-accent); } }
+.pluginPayPalDisable:focus-visible { color:var(--ull-accent); }

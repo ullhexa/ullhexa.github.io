@@ -9,11 +9,24 @@ const ticketFor = plugin => plugin.priceUSD === 0 && /^[A-Z0-9]+$/.test(plugin.p
 export function renderPluginPayPal(plugin) {
   const ticket = ticketFor(plugin);
   if (!ticket) return '';
+  const first = plugin.images[0];
   return `<section class="pluginPayPal" aria-label="Optional contribution for ${html(plugin.title)}" data-plugin-paypal>
     <div class="pluginPayPalPanel">
+      <div class="pluginPayPalConsent" data-paypal-consent>
+        ${first ? `<img class="pluginPayPalPreview" src="${html(first.src)}" alt="${html(first.alt)}">` : ''}
+        <h2>Optional contribution</h2>
+        <p>PayPal stays off until you choose to load it. You can download the plugin without it.</p>
+        <p id="paypal-privacy-${ticket}">Loading the panel connects to PayPal and allows its cookies and similar storage. PayPal receives your IP address and browser details. Its technologies support payments and security, and can also be used for personalisation, measurement and advertising, depending on your PayPal settings.</p>
+        <p><a href="/privacy/#paypal" target="_blank" rel="noopener">Privacy &amp; cookies</a> · <a href="https://www.paypal.com/no/legalhub/paypal/cookie-full" target="_blank" rel="noopener noreferrer">PayPal cookie notice</a></p>
+        <div class="pluginPayPalChoices">
+          <button type="button" class="simpleBoxButton" data-paypal-enable aria-describedby="paypal-privacy-${ticket}">Allow and load PayPal</button>
+          <button type="button" class="simpleBoxButton" data-paypal-decline>Keep PayPal off</button>
+        </div>
+      </div>
       <div id="paypal-container-${ticket}" data-paypal-buttons></div>
-      <p class="pluginPayPalStatus" role="status" data-paypal-status>Loading PayPal…</p>
-      <a class="pluginPayPalFallback" data-paypal-fallback href="https://www.paypal.com/ncp/payment/${ticket}" target="_blank" rel="noopener noreferrer" hidden>Contribute on PayPal <span aria-hidden="true">↗</span></a>
+      <p class="pluginPayPalStatus" role="status" data-paypal-status hidden></p>
+      <p class="pluginPayPalExternal"><a class="pluginPayPalFallback" data-paypal-fallback href="https://www.paypal.com/ncp/payment/${ticket}" target="_blank" rel="noopener noreferrer">Open on PayPal instead <span aria-hidden="true">↗</span></a></p>
+      <button class="pluginPayPalDisable" type="button" data-paypal-disable hidden>Turn PayPal off and reload</button>
     </div>
   </section>`;
 }
@@ -51,24 +64,65 @@ export function mountPluginPayPal(root, plugin) {
   const section = root.querySelector('[data-plugin-paypal]');
   if (!ticket || !section) return () => {};
   if (mounts.has(section)) return mounts.get(section);
+  const doc = root.ownerDocument;
   const status = section.querySelector('[data-paypal-status]');
   const fallback = section.querySelector('[data-paypal-fallback]');
+  const consent = section.querySelector('[data-paypal-consent]');
+  const enable = section.querySelector('[data-paypal-enable]');
+  const decline = section.querySelector('[data-paypal-decline]');
+  const disable = section.querySelector('[data-paypal-disable]');
   let active = true;
+  let started = false;
+  let timeout;
   const isCurrent = () => active && section.isConnected;
   const showFallback = () => {
     if (!isCurrent()) return;
     status.hidden = false;
-    status.textContent = 'PayPal could not load here. You can contribute using the link below, or continue to the download.';
+    status.textContent = 'PayPal could not load here. You can use the PayPal link, or continue to the download.';
     fallback.hidden = false;
   };
-  const timeout = setTimeout(showFallback, 15000);
-  const cleanup = () => { active = false; clearTimeout(timeout); };
+  const onDecline = () => {
+    if (!isCurrent() || started) return;
+    status.hidden = false;
+    status.textContent = 'PayPal is off. The free download is available.';
+  };
+  const onDisable = () => {
+    if (!isCurrent() || !started) return;
+    // Removing a script tag does not stop executed third-party code. A full
+    // reload discards it and its frames; this page never remembers an opt-in.
+    cleanup();
+    doc.defaultView.location.reload();
+  };
+  const onEnable = () => {
+    if (!isCurrent() || started) return;
+    started = true;
+    consent.hidden = true;
+    disable.hidden = false;
+    status.hidden = false;
+    status.textContent = 'Loading PayPal…';
+    // Only this explicit action permits the SDK request. No saved choice,
+    // scrolling, hover, return URL or installer download may start PayPal.
+    timeout = setTimeout(showFallback, 15000);
+    loadSdk(doc).then(async paypal => {
+      if (!isCurrent()) return;
+      await paypal.HostedButtons({ hostedButtonId: ticket }).render(`#paypal-container-${ticket}`);
+      if (isCurrent()) status.hidden = true;
+    }).catch(showFallback).finally(() => clearTimeout(timeout));
+  };
+  const cleanup = () => {
+    active = false;
+    clearTimeout(timeout);
+    enable.removeEventListener('click', onEnable);
+    decline.removeEventListener('click', onDecline);
+    disable.removeEventListener('click', onDisable);
+    doc.defaultView.removeEventListener('pageshow', onPageShow);
+  };
+  // A back/forward-cache restoration is a new visit, not fresh permission.
+  const onPageShow = event => { if (event.persisted && started) onDisable(); };
+  enable.addEventListener('click', onEnable);
+  decline.addEventListener('click', onDecline);
+  disable.addEventListener('click', onDisable);
+  doc.defaultView.addEventListener('pageshow', onPageShow);
   mounts.set(section, cleanup);
-  // Delivery is already rendered and never waits for this optional payment panel.
-  loadSdk(root.ownerDocument).then(async paypal => {
-    if (!isCurrent()) return;
-    await paypal.HostedButtons({ hostedButtonId: ticket }).render(`#paypal-container-${ticket}`);
-    if (isCurrent()) { status.hidden = true; fallback.hidden = true; }
-  }).catch(showFallback).finally(() => clearTimeout(timeout));
   return cleanup;
 }
