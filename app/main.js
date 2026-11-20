@@ -1,12 +1,12 @@
 import { startBackground } from "./bg.js?v=20260404b";
 import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261113-gm-gallery";
-import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261116-public-downloads";
+import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261120-touch-taps";
 import { renderSerumSkins, mountSerumSkins } from "./serum-skins.js?v=20261120-privacy";
 import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261120-private-metadata";
 import { mountContactForm } from "./contact-form.js?v=20261110-synth";
-import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261119-latest-projects";
-import { bindPressActions } from "./press-action.js?v=20261110-link-fix";
-import { mountPreviewGate } from "./preview-gate.js?v=20261116-pin-preview";
+import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261120-touch-taps";
+import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
+import { mountPreviewGate } from "./preview-gate.js?v=20261120-touch-taps";
 
 const content = document.getElementById("content");
 const updateSiteNavigation = createSiteNavigation();
@@ -122,7 +122,7 @@ function renderVisualizerBadges() {
 const pages = {
   home: () => `
     <section class="homeBio homeIntro" aria-label="Ull Hexa tools and software">
-      <div data-bio-measure>
+      <div>
         <p class="homeWelcome">Audio plugins, custom skins and browser tools for music and play.</p>
         <section class="homeOverview" aria-label="Explore the tools and software">
           <a class="homeOverviewItem" href="#plugins">

@@ -1,5 +1,5 @@
 import { newsPage } from './news-latest.js?v=20261115-news-technical-copy';
-import { bindPressActions } from './press-action.js?v=20261110-link-fix';
+import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
 
 const escapeHTML = text => String(text).replace(/[&<>"']/g, character => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -117,9 +117,9 @@ export function createNewsPager(initialPage, fetchPage = fetch) {
   };
 }
 
-// Wheel/trackpad scrolling over the feed first brings the whole panel into view.
-// Once the page reaches its bottom, normal browser scrolling takes over inside
-// the feed. Reverse scrolling hands back to the page at the feed’s top edge.
+// Wheel/trackpad scrolling brings the panel into view before moving its posts.
+// Taller-than-viewport panels hand off with their heading near the top, so the
+// newest post is not skipped. Reverse scrolling returns through the feed first.
 // Zoom, keyboard and direct scrollbar use stay native.
 export function bindNewsScrollOrder(feed) {
   const document = feed.ownerDocument;
@@ -140,7 +140,12 @@ export function bindNewsScrollOrder(feed) {
       page.scrollTop = Math.max(0, page.scrollTop + pixels + feedRemaining);
       return;
     }
-    const remaining = Math.max(0, page.scrollHeight - page.clientHeight - page.scrollTop);
+    const pageBottom = Math.max(0, page.scrollHeight - page.clientHeight);
+    const panel = feed.closest('.homeNews').getBoundingClientRect();
+    const boundary = panel.height > page.clientHeight - 64
+      ? Math.min(pageBottom, Math.max(0, page.scrollTop + panel.top - 16))
+      : pageBottom;
+    const remaining = Math.max(0, boundary - page.scrollTop);
     if (remaining <= 1) return;
     event.preventDefault();
     const pagePixels = Math.min(pixels, remaining);
@@ -153,8 +158,6 @@ export function bindNewsScrollOrder(feed) {
 }
 
 export function mountHomeNews(root, initialPage = newsPage) {
-  const bio = root.querySelector('.homeBio');
-  const measure = root.querySelector('[data-bio-measure]');
   const news = root.querySelector('.homeNews');
   const feed = news.querySelector('.newsFeed');
   const posts = news.querySelector('.newsPosts');
@@ -163,13 +166,6 @@ export function mountHomeNews(root, initialPage = newsPage) {
   const pager = createNewsPager(initialPage);
   const unbindScrollOrder = bindNewsScrollOrder(feed);
   let disposed = false;
-  const resize = () => {
-    news.style.setProperty('--news-ideal-width', `${bio.getBoundingClientRect().width * 1.618}px`);
-    news.style.setProperty('--news-ideal-height', `${measure.getBoundingClientRect().height * 1.618}px`);
-  };
-  const observer = new ResizeObserver(resize);
-  observer.observe(bio);
-  resize();
 
   let imageObserver, visibilityObserver, imagesActive = false;
   const loadImage = image => {
@@ -234,7 +230,6 @@ export function mountHomeNews(root, initialPage = newsPage) {
   return () => {
     disposed = true;
     pager.dispose();
-    observer.disconnect();
     imageObserver?.disconnect();
     visibilityObserver?.disconnect();
     pagination.removeEventListener('click', changePage);

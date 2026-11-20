@@ -1,4 +1,4 @@
-import { bindPressActions } from "./press-action.js?v=20261110-link-fix";
+import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
 
 const navigationGroups = [
   {

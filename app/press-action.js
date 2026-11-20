@@ -1,5 +1,6 @@
-// Use for momentary website controls that should act as soon as they are pressed.
-// Native click remains available to assistive technology and modified link gestures.
+// Mouse and keyboard controls activate on press. Touch and pen retain native
+// taps so scrolling, cancelled gestures and long presses cannot trigger an early action.
+// Native click also remains available to assistive technology and modified links.
 export function bindPressActions(root, { selector = 'button, a[href]' } = {}) {
   const doc = root.ownerDocument;
   let pressed = null;
@@ -16,6 +17,10 @@ export function bindPressActions(root, { selector = 'button, a[href]' } = {}) {
     pressed?.classList.remove('isPressing');
     pressed = null;
   };
+  const cancel = () => {
+    release();
+    pointerActivation = null;
+  };
   const press = control => {
     release();
     pressed = control;
@@ -27,6 +32,11 @@ export function bindPressActions(root, { selector = 'button, a[href]' } = {}) {
   };
   const pointerDown = event => {
     if (event.defaultPrevented || event.button !== 0 || event.isPrimary === false || modified(event)) return;
+    pointerActivation = null;
+    if (event.pointerType !== 'mouse') {
+      release();
+      return;
+    }
     const control = controlFor(event);
     if (!control) return;
     event.preventDefault();
@@ -67,17 +77,17 @@ export function bindPressActions(root, { selector = 'button, a[href]' } = {}) {
   root.addEventListener('keyup', keyUp);
   root.addEventListener('focusout', release);
   doc.addEventListener('pointerup', release, true);
-  doc.addEventListener('pointercancel', release, true);
-  doc.defaultView?.addEventListener('blur', release);
+  doc.addEventListener('pointercancel', cancel, true);
+  doc.defaultView?.addEventListener('blur', cancel);
   return () => {
-    release();
+    cancel();
     root.removeEventListener('pointerdown', pointerDown);
     root.removeEventListener('click', click, true);
     root.removeEventListener('keydown', keyDown);
     root.removeEventListener('keyup', keyUp);
     root.removeEventListener('focusout', release);
     doc.removeEventListener('pointerup', release, true);
-    doc.removeEventListener('pointercancel', release, true);
-    doc.defaultView?.removeEventListener('blur', release);
+    doc.removeEventListener('pointercancel', cancel, true);
+    doc.defaultView?.removeEventListener('blur', cancel);
   };
 }

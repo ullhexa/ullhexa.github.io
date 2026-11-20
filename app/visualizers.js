@@ -1,7 +1,7 @@
 import * as audio from './audio-visualizers.js?v=20261002-font';
 import * as midi from './midi-visualizers.js?v=20261110-midi-dismiss';
 import { createVisualizerSession, selectionFromURL } from './visualizer-session.js?v=20261114-cube';
-import { bindPressActions } from './press-action.js?v=20261110-link-fix';
+import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
 
 const session = createVisualizerSession({ audio, midi });
 const menus = [...document.querySelectorAll('.modeMenu')];
