@@ -6,7 +6,7 @@ import { startBackground } from "./bg.js?v=20260404b";
 import { createSiteNavigation } from "./site-navigation.js?v=20261120-touch-taps";
 
 import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
-import { renderPluginTerms, renderCheckoutEntry, renderPluginDetails, renderPluginFooter } from "./plugin-download.js?v=20261120-sitewide";
+import { renderPluginTerms, renderCheckoutEntry, renderPluginDetails, renderPluginFooter } from "./plugin-download.js?v=20261120-dialog";
 
 function renderGallery(plugin) {
   const first = plugin.images[0];

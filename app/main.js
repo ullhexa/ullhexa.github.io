@@ -6,7 +6,7 @@ import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261120-private-
 import { mountContactForm } from "./contact-form.js?v=20261110-synth";
 import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261120-phone-sized-news";
 import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
-import { mountPreviewGate } from "./preview-gate.js?v=20261120-sitewide";
+import { mountPreviewGate } from "./preview-gate.js?v=20261120-dialog";
 
 const content = document.getElementById("content");
 const updateSiteNavigation = createSiteNavigation();

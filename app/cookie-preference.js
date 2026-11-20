@@ -1,7 +1,7 @@
 // Only the visitor's choice, disclosure version and dates are retained locally.
 // No visitor identifier, backend consent profile or browsing history.
 export const CONSENT_KEY = 'ullhexa-cookie-choice';
-export const CONSENT_VERSION = '20261120-sitewide';
+export const CONSENT_VERSION = '20261120-dialog';
 export const CONSENT_LIFETIME = 180 * 24 * 60 * 60 * 1000;
 const stores = new WeakMap();
 
