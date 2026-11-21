@@ -31,7 +31,7 @@ export function mountCookieConsent(doc) {
           <details>
             <summary>Necessary storage</summary>
             <div class="cookieCategoryText">
-              <p>Remembers your cookie choice and keeps requested features working. The preview PIN lasts for the tab session. GM Console and Studio Tools save work and settings on your device. This storage is not used for advertising.</p>
+              <p>Remembers your cookie choice and keeps requested features working. GM Console and Studio Tools save work and settings on your device. This storage is not used for advertising.</p>
               <p>Saved work stays until cleared or replaced. Export a backup before clearing site data.</p>
             </div>
           </details>
