@@ -2,12 +2,6 @@ import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
 
 const navigationGroups = [
   {
-    key: "tools",
-    categories: [
-      { key: "plugins", label: "Plugins" },
-    ]
-  },
-  {
     key: "web",
     categories: [
       { key: "dnd", label: "GM Console" },
@@ -18,7 +12,7 @@ const navigationGroups = [
 
 // Parent routes open their first category. Existing direct category links stay valid.
 export function resolveSiteRoute(route) {
-  if (route === "skins") return "plugins"; // Deferred live catalogue.
+  if (route === "skins" || route === "tools") return "plugins"; // Preserve old catalogue links.
   if (route === "sync") return "music"; // Preserve existing SYNC bookmarks.
   return navigationGroups.find(group => group.key === route)?.categories[0].key || route;
 }

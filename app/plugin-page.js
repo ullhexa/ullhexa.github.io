@@ -3,7 +3,7 @@ import { mountGalleryZoom } from "./plugin-gallery-zoom.js?v=20261014-sticky-zoo
 import { plugins } from "./plugins-data.js?v=20261120-private-metadata";
 import { escapeHTML as html } from "./plugin-catalogue.js?v=20261120-private-metadata";
 import { startBackground } from "./bg.js?v=20260404b";
-import { createSiteNavigation } from "./site-navigation.js?v=20261121-skins-held";
+import { createSiteNavigation } from "./site-navigation.js?v=20261121-plugins-direct";
 
 import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
 import { renderPluginTerms, renderCheckoutEntry, renderPluginDetails, renderPluginFooter } from "./plugin-download.js?v=20261121-outside-footer";
