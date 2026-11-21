@@ -1,10 +1,9 @@
 import { startBackground } from "./bg.js?v=20260404b";
 import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261113-gm-gallery";
-import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261120-touch-taps";
-import { renderSerumSkins, mountSerumSkins } from "./serum-skins.js?v=20261121-short-intro";
+import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261121-skins-held";
 import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261120-private-metadata";
 import { mountContactForm } from "./contact-form.js?v=20261110-synth";
-import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261120-phone-sized-news";
+import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261121-skins-held";
 import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
 import { mountPreviewGate } from "./preview-gate.js?v=20261121-outside-footer";
 
@@ -123,15 +122,11 @@ const pages = {
   home: () => `
     <section class="homeBio homeIntro" aria-label="Ull Hexa tools and software">
       <div>
-        <p class="homeWelcome">Audio plugins, custom skins and browser tools for music and play.</p>
+        <p class="homeWelcome">Audio plugins and browser tools for music and play.</p>
         <section class="homeOverview" aria-label="Explore the tools and software">
           <a class="homeOverviewItem" href="#plugins">
             <div class="homeOverviewImage"><img src="./assets/news/products/micronudge.webp" alt="Ullhexa MicroNudge plugin" width="320" height="218" loading="lazy" decoding="async" /></div>
             <div class="homeOverviewCopy"><h2>Plugins <span aria-hidden="true">→</span></h2><p>Free audio plugins for notes, spatial audio, filtering and kick/bass alignment.</p></div>
-          </a>
-          <a class="homeOverviewItem" href="#skins">
-            <div class="homeOverviewImage"><img src="./Serum_2_skins/preview_image/pastel_clay.webp" alt="Pastel Clay skin for Serum 2" width="320" height="218" loading="lazy" decoding="async" /></div>
-            <div class="homeOverviewCopy"><h2>Serum 2 skins <span aria-hidden="true">→</span></h2><p>Free skins with custom artwork, textures and the Ull Hexa font.</p></div>
           </a>
           <a class="homeOverviewItem" href="#visualizers">
             <div class="homeOverviewImage"><img src="./assets/products/visualizers/Quantum_string.webp" alt="Quantum String audio visualizer" width="320" height="218" loading="lazy" decoding="async" /></div>
@@ -205,7 +200,6 @@ const pages = {
 
   plugins: () => catalogueSection("Plugins", renderPluginCatalogue()),
 
-  skins: () => catalogueSection("Serum 2 skins", renderSerumSkins()),
 
   visualizers: () => catalogueSection(
     "Visualizers",
@@ -292,7 +286,6 @@ function render() {
   content.classList.toggle("homePage", page === pages.home);
   content.classList.toggle("categoryPage", updateSiteNavigation(route));
   content.classList.toggle("dndPage", route === "dnd");
-  content.classList.toggle("skinsPage", route === "skins");
   content.classList.toggle("pluginsPage", route === "plugins");
   content.innerHTML = page();
   if (page === pages.home) {
@@ -313,7 +306,6 @@ function render() {
       if (!cancelled) content.innerHTML = '<p class="musicLoadStatus" role="status">The releases could not be loaded. Please reload the page to try again.</p>';
     });
   }
-  if (route === "skins") cleanupPage = mountSerumSkins(content);
   if (route === "dnd") mountDndShowcase(content);
 
   if (route === "contact") {

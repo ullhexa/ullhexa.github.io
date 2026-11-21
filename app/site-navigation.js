@@ -5,7 +5,6 @@ const navigationGroups = [
     key: "tools",
     categories: [
       { key: "plugins", label: "Plugins" },
-      { key: "skins", label: "Serum 2 skins" }
     ]
   },
   {
@@ -19,6 +18,7 @@ const navigationGroups = [
 
 // Parent routes open their first category. Existing direct category links stay valid.
 export function resolveSiteRoute(route) {
+  if (route === "skins") return "plugins"; // Deferred live catalogue.
   if (route === "sync") return "music"; // Preserve existing SYNC bookmarks.
   return navigationGroups.find(group => group.key === route)?.categories[0].key || route;
 }
