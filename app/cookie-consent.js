@@ -8,7 +8,7 @@ export function mountCookieConsent(doc) {
   const preference = cookiePreference(doc);
   const isPrivacyPage = /^\/privacy(?:\/(?:index\.html)?)?$/.test(doc.defaultView.location.pathname);
   const style = doc.createElement('link');
-  style.rel = 'stylesheet'; style.href = '/app/cookie-consent.css?v=20261120-settings';
+  style.rel = 'stylesheet'; style.href = '/app/cookie-consent.css?v=20261121-capsule';
   doc.head.append(style);
   const panel = doc.createElement('dialog');
   panel.className = 'cookieBanner';
@@ -17,7 +17,11 @@ export function mountCookieConsent(doc) {
   panel.innerHTML = `<div class="cookieScroll">
     <h2 id="cookieTitle" tabindex="-1" autofocus>Privacy &amp; cookies</h2>
     <div data-cookie-intro>
-      <p id="cookieSummary">PayPal contribution forms are optional. They use cookies and similar technologies, your IP address and browser details for payments, security and usage measurement. <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a> · Change your choice anytime in Cookie settings.</p>
+      <div id="cookieSummary">
+        <p>This site uses cookies and similar technologies to provide the best user experience, optimal site functions, and additional optional services.</p>
+        <p>Within our page we use PayPal buttons and links for donations and contributions. Embedded PayPal forms load only with your permission. PayPal uses your IP address and browser details for payments, security and usage measurement.</p>
+        <p><a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a> · Change your choice anytime in Cookie settings.</p>
+      </div>
     </div>
     <div data-cookie-settings-view hidden>
       <p id="cookieSettingsSummary">Choose which optional content can load. Your choice is saved on this device for 180 days. Free downloads work either way. See our <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a> for details.</p>

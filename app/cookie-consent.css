@@ -1,4 +1,4 @@
-.cookieBanner { --cookie-panel-top:clamp(16px, 6svh, 64px); position:fixed; inset:var(--cookie-panel-top) auto auto 50%; transform:translateX(-50%); margin:0; width:min(680px, calc(100% - 32px)); height:auto; max-width:none; max-height:calc(100svh - var(--cookie-panel-top) - 16px); padding:0; box-sizing:border-box; background:#202123; color:#e7e7e9; border:1px solid #515255; border-top:2px solid #F04B32; border-radius:4px; box-shadow:0 18px 70px #0009; overflow:hidden; font-family:var(--site-font,sans-serif); text-align:left; }
+.cookieBanner { --cookie-body-size:calc(13px - 2pt); --cookie-panel-top:clamp(16px, 6svh, 64px); position:fixed; inset:var(--cookie-panel-top) auto auto 50%; transform:translateX(-50%); margin:0; width:min(680px, calc(100% - 32px)); height:auto; max-width:none; max-height:calc(100svh - var(--cookie-panel-top) - 16px); padding:0; box-sizing:border-box; background:#202123; color:#e7e7e9; border:1px solid #515255; border-top:2px solid #F04B32; border-radius:4px; box-shadow:0 18px 70px #0009; overflow:hidden; font-family:var(--site-font,sans-serif); text-align:left; }
 /* Content-sized flex layout avoids Safari stretching the dialog vertically. */
 .cookieBanner[open] { display:flex; flex-direction:column; }
 .cookieBanner:not([open]), .cookieBanner [hidden] { display:none !important; }
@@ -8,7 +8,7 @@
 .cookieScroll::-webkit-scrollbar-track { background:#343537; }
 .cookieScroll::-webkit-scrollbar-thumb { background:#F04B32; border-radius:3px; }
 .cookieBanner h2 { font-size:18px; line-height:1.35; margin:0 28px 16px 0; font-weight:700; color:#F04B32; outline:none; }
-.cookieBanner p { font-size:13px; line-height:1.6; margin:10px 0 0; }
+.cookieBanner p { font-size:var(--cookie-body-size); line-height:1.6; margin:10px 0 0; }
 .cookieBanner a { color:inherit; text-decoration:underline; text-underline-offset:3px; }
 .cookieBanner .cookiePolicy { font-weight:700; color:#fff; }
 .cookieActions { flex:0 0 auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; padding:18px 28px 24px; border-top:1px solid #414245; }
@@ -24,7 +24,7 @@
 .cookieCategory summary::before { content:'+'; flex:none; width:11px; color:#F04B32; font-family:Arial,sans-serif; font-size:17px; font-weight:400; text-align:center; }
 .cookieCategory details[open] summary::before { content:'−'; }
 .cookieCategoryText { padding:0 16px 16px; border-top:1px solid #414245; background:#191a1c; }
-.cookieCategoryText p { font-size:12px; color:#ccc; }
+.cookieCategoryText p { font-size:var(--cookie-body-size); color:#ccc; }
 .cookieAlways { position:absolute; top:22px; right:16px; font-size:12px; line-height:18px; color:#F04B32; }
 .cookieToggle { position:absolute; top:9px; right:14px; width:48px; height:44px; padding:0; border:0; background:none; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .cookieToggle::before { content:''; position:absolute; inset:10px 1px; border:1px solid #777; border-radius:14px; background:#555; }
@@ -38,3 +38,9 @@
 .cookieToggle:focus-visible { outline:none; }
 .cookieToggle:focus-visible::before { border-color:#fff; box-shadow:0 0 0 1px #fff; }
 @media(max-width:480px) { .cookieScroll { padding:24px 20px 18px; } .cookieActions { gap:8px; padding:16px 20px 20px; } .cookieActions button { font-size:12px; padding:10px 5px; } .cookieCategory summary { padding-left:12px; padding-right:110px; font-size:12px; } .cookieAlways { right:10px; font-size:11px; } .cookieCategoryText { padding:0 12px 14px; } }
+
+/* Equal white choices; leave Cookie settings and Save preferences unchanged. */
+.cookieActions button:is([data-cookie-accept], [data-cookie-reject]) { background:#fff; color:#000; border-color:#fff; }
+@media(hover:hover) and (pointer:fine) { .cookieActions button:is([data-cookie-accept], [data-cookie-reject]):hover { background:#f2f2f2; color:#000; border-color:#F04B32; } }
+.cookieActions button:is([data-cookie-accept], [data-cookie-reject]):active { background:#dedede; color:#000; border-color:#F04B32; }
+.cookieActions button:is([data-cookie-accept], [data-cookie-reject]):focus-visible { color:#000; border-color:#F04B32; }
