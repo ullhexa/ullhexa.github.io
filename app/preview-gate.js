@@ -26,8 +26,7 @@ export function mountPreviewGate(onUnlock) {
         aria-describedby="previewPinStatus" />
       <button type="submit" class="simpleBoxButton">Enter</button>
     </div>
-    <p id="previewPinStatus" role="alert"></p>
-    <p class="sitePrivacy"><a href="/privacy/">Privacy &amp; cookies</a> · <button type="button" class="privacySettingsLink" data-cookie-settings>Cookie settings</button></p>`;
+    <p id="previewPinStatus" role="alert"></p>`;
   body.querySelector('.site-header').append(form);
   const input = form.querySelector('input');
   const status = form.querySelector('[role="alert"]');

@@ -2,7 +2,7 @@ import { mountPluginDocumentation } from './plugin-documentation-modal.js?v=2026
 import { plugins } from './plugins-data.js?v=20261120-private-metadata';
 import { escapeHTML as html } from './plugin-catalogue.js?v=20261120-private-metadata';
 import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
-import { isFreePlugin, renderPluginDownload, renderPluginDetails, renderPluginFooter } from './plugin-download.js?v=20261120-dialog';
+import { isFreePlugin, renderPluginDownload, renderPluginDetails, renderPluginFooter } from './plugin-download.js?v=20261121-outside-footer';
 import { renderPluginPayPal, mountPluginPayPal } from './plugin-paypal.js?v=20261120-dialog';
 
 function renderFinalDownload(plugin) {

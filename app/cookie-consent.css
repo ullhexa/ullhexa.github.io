@@ -33,7 +33,7 @@
 .cookieToggle[aria-checked="true"]::before { background:#F04B32; border-color:#F04B32; }
 .cookieToggle[aria-checked="true"] span { left:27px; }
 .privacySettingsLink { appearance:none; background:none; border:0; padding:0; color:inherit; font:inherit; text-decoration:underline; text-underline-offset:3px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.cookieStandaloneSettings { position:fixed; left:12px; bottom:8px; z-index:30; color:#bcbcbc; font-size:11px; background:#141517cc; padding:4px 6px; }
+.cookieStandaloneSettings { position:fixed; left:12px; bottom:8px; z-index:30; color:#bcbcbc; font-size:13px; background:#141517cc; padding:4px 6px; }
 @media(hover:hover) and (pointer:fine) { .cookieActions button:hover { border-color:#F04B32; color:#e7e7e9; background:#353638; } .cookieClose:hover, .cookieBack:hover, .cookieBanner a:hover, .privacySettingsLink:hover { color:#e7e7e9; } .cookieCategory summary:hover { color:#e7e7e9; } .cookieToggle:hover::before { border-color:#eee; } }
 .cookieActions button:focus-visible, .cookieClose:focus-visible, .cookieBack:focus-visible, .cookieCategory summary:focus-visible, .privacySettingsLink:focus-visible { outline:none; color:#e7e7e9; text-decoration:underline; text-underline-offset:3px; }
 .cookieToggle:focus-visible { outline:none; }

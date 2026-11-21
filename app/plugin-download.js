@@ -45,7 +45,7 @@ export function renderPluginDetails(plugin) {
 
 export function renderPluginFooter(plugin) {
   const contactURL = `/#contact?subject=${encodeURIComponent(plugin.title)}`;
-  return `<footer class="pluginFooter">Questions or bug reports: <a href="${html(contactURL)}">Contact form <span aria-hidden="true">→</span></a><br><a href="/privacy/">Privacy &amp; cookies</a> · <button type="button" class="privacySettingsLink" data-cookie-settings>Cookie settings</button></footer>`;
+  return `<footer class="pluginFooter">Questions or bug reports: <a href="${html(contactURL)}">Contact form <span aria-hidden="true">→</span></a></footer>`;
 }
 
 // Parse decimal strings to cents without rounding invalid fractions into a free

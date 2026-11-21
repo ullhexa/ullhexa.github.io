@@ -24,15 +24,17 @@
     <link rel="preload" href="./assets/fonts/ull-hexa-display/UllHexaDisplay-Regular.woff2?v=0.1.1" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="./assets/fonts/ull-hexa-display/UllHexaDisplay-Bold.woff2?v=0.1.1" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="./app/typography.css?v=20261002-font" />
-    <link rel="stylesheet" href="./styles.css?v=20261120-privacy" />
+    <link rel="stylesheet" href="./styles.css?v=20261121-outside-footer" />
     <link rel="stylesheet" href="./app/plugins.css?v=20261120-touch-feedback" />
-    <link rel="stylesheet" href="./app/home-news.css?v=20261121-footer" />
+    <link rel="stylesheet" href="./app/home-news.css?v=20261121-outside-footer" />
     <link rel="stylesheet" href="./app/music.css?v=20261120-touch-feedback" />
     <link rel="preload" href="./assets/ui/buttons/nav-synth-states.webp?v=2" as="image" type="image/webp" />
     <link rel="preload" href="./assets/ui/buttons/submenu-synth-states.webp?v=2" as="image" type="image/webp" />
+    <link rel="stylesheet" href="/app/site-footer.css?v=20261121-outside-footer" />
   </head>
 
   <body class="previewLockedMode" data-preview-gate="pin">
+    <div class="sitePageContent">
     <canvas id="bg"></canvas>
 
     <header class="site-header">
@@ -55,8 +57,11 @@
 
 
     <main class="card" id="content"></main>
+    </div>
+    <footer class="siteFooter"><a href="/privacy/">Privacy &amp; cookies</a> · <button type="button" class="privacySettingsLink" data-cookie-settings>Cookie settings</button></footer>
 
-    <script type="module" src="./app/main.js?v=20261121-footer"></script>
-  <script type="module" src="/app/cookie-consent.js?v=20261121-short-copy"></script>
+
+    <script type="module" src="./app/main.js?v=20261121-outside-footer"></script>
+  <script type="module" src="/app/cookie-consent.js?v=20261121-outside-footer"></script>
 </body>
 </html>

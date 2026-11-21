@@ -25,14 +25,6 @@
 
 .homeBio .bio { margin-bottom: 0; }
 
-.homeNewsSection {
-  min-width: 0;
-  display: grid;
-  grid-template-rows: auto auto;
-  gap: 12px;
-}
-.homeNewsSection > .sitePrivacy { margin: 0; }
-
 .homeNews.contactPanel {
   box-sizing: border-box;
   min-width: 0;
@@ -278,15 +270,11 @@ a.newsBadge { cursor: pointer; -webkit-user-select: none; user-select: none; }
    svh stays stable while those bars slide in/out, avoiding scroll-range jumps. */
 @media (max-width: 700px), (pointer: coarse) and (max-height: 600px) {
   .card.homePage { margin-bottom: 16px; }
-  /* Reserve the footer's natural height inside the same viewport budget. */
-  .homeNewsSection {
-    height: calc(100svh - 32px);
-    grid-template-rows: minmax(0, 1fr) auto;
-  }
+  /* Leave room for the outside footer and 16px above/below the panel. */
   .homeNews.contactPanel {
     min-height: 0;
-    height: 100%;
-    max-height: 100%;
+    height: calc(100svh - 32px - var(--site-footer-height));
+    max-height: none;
   }
   .newsFeed.newsFeedWaiting { overflow-y: hidden; }
 }

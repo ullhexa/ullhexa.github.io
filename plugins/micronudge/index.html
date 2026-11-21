@@ -10,13 +10,15 @@
     <link rel="preload" href="../../assets/fonts/ull-hexa-display/UllHexaDisplay-Regular.woff2?v=0.1.1" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="../../assets/fonts/ull-hexa-display/UllHexaDisplay-Bold.woff2?v=0.1.1" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="../../app/typography.css?v=20261002-font" />
-    <link rel="stylesheet" href="../../styles.css?v=20261120-privacy" />
+    <link rel="stylesheet" href="../../styles.css?v=20261121-outside-footer" />
     <link rel="stylesheet" href="../../app/plugins.css?v=20261120-touch-feedback" />
     <link rel="preload" href="../../assets/ui/buttons/nav-synth-states.webp?v=2" as="image" type="image/webp" />
     <link rel="preload" href="../../assets/ui/buttons/submenu-synth-states.webp?v=2" as="image" type="image/webp" />
     <link rel="stylesheet" href="../../app/plugin-documentation-modal.css?v=20261120-touch-feedback" />
+    <link rel="stylesheet" href="/app/site-footer.css?v=20261121-outside-footer" />
   </head>
   <body class="pluginPage" data-product="micronudge">
+    <div class="sitePageContent">
     <canvas id="bg"></canvas>
     <header class="site-header"><a href="../../#plugins" aria-label="Ull Hexa plugins"><img src="../../assets/Ull_Hexa_sub_white.svg" alt="Ull Hexa" class="logo" width="897" height="479" /></a></header>
     <div class="siteNavigation">
@@ -28,7 +30,10 @@
       <nav id="webNavigation" class="categoryNavigation" aria-label="Web categories" hidden></nav>
     </div>
     <main class="pluginProduct" id="product"><noscript><h1>Ullhexa MicroNudge</h1><p>A free timing, phase alignment and split-band VCA plugin by Ull Hexa. Enable JavaScript to view the gallery and download information.</p><a href="../../#plugins">All plugins</a></noscript></main>
-    <script type="module" src="../../app/plugin-page.js?v=20261120-dialog"></script>
-  <script type="module" src="/app/cookie-consent.js?v=20261121-short-copy"></script>
+    </div>
+    <footer class="siteFooter"><a href="/privacy/">Privacy &amp; cookies</a> · <button type="button" class="privacySettingsLink" data-cookie-settings>Cookie settings</button></footer>
+
+    <script type="module" src="../../app/plugin-page.js?v=20261121-outside-footer"></script>
+  <script type="module" src="/app/cookie-consent.js?v=20261121-outside-footer"></script>
 </body>
 </html>

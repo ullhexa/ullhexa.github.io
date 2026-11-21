@@ -1371,7 +1371,6 @@ html:has(.skinPreview[open]) { overflow: hidden; }
 /* Use the site feedback, without the browser’s blue/grey touch flash. */
 :where(a[href], button, summary, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) { -webkit-tap-highlight-color: transparent; }
 
-.sitePrivacy { text-align:center; margin:18px 0; font-size:11px; line-height:1.5; color:#bcbcbc; }
-.sitePrivacy a, .contactPrivacy a { color:inherit; text-underline-offset:3px; }
+.contactPrivacy a { color:inherit; text-underline-offset:3px; }
 .contactPrivacy { margin:8px 0 0; font-size:12px; line-height:1.6; color:#bcbcbc; }
-@media(hover:hover) and (pointer:fine) { .sitePrivacy a:hover, .contactPrivacy a:hover { color:var(--ull-accent); } }
+@media(hover:hover) and (pointer:fine) { .contactPrivacy a:hover { color:var(--ull-accent); } }
