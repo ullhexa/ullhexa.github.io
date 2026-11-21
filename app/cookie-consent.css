@@ -1,4 +1,4 @@
-.cookieBanner { --cookie-body-size:calc(13px - 2pt); --cookie-panel-top:clamp(16px, 6svh, 64px); position:fixed; inset:var(--cookie-panel-top) auto auto 50%; transform:translateX(-50%); margin:0; width:min(680px, calc(100% - 32px)); height:auto; max-width:none; max-height:calc(100svh - var(--cookie-panel-top) - 16px); padding:0; box-sizing:border-box; background:#202123; color:#e7e7e9; border:1px solid #515255; border-top:2px solid #F04B32; border-radius:4px; box-shadow:0 18px 70px #0009; overflow:hidden; font-family:var(--site-font,sans-serif); text-align:left; }
+.cookieBanner { --cookie-body-size:12px; --cookie-panel-top:clamp(16px, 6svh, 64px); position:fixed; inset:var(--cookie-panel-top) auto auto 50%; transform:translateX(-50%); margin:0; width:min(680px, calc(100% - 32px)); height:auto; max-width:none; max-height:calc(100svh - var(--cookie-panel-top) - 16px); padding:0; box-sizing:border-box; background:#202123; color:#e7e7e9; border:1px solid #515255; border-top:2px solid #F04B32; border-radius:4px; box-shadow:0 18px 70px #0009; overflow:hidden; font-family:var(--site-font,sans-serif); text-align:left; }
 /* Content-sized flex layout avoids Safari stretching the dialog vertically. */
 .cookieBanner[open] { display:flex; flex-direction:column; }
 .cookieBanner:not([open]), .cookieBanner [hidden] { display:none !important; }
@@ -10,9 +10,9 @@
 .cookieBanner h2 { font-size:18px; line-height:1.35; margin:0 28px 16px 0; font-weight:700; color:#F04B32; outline:none; }
 .cookieBanner p { font-size:var(--cookie-body-size); line-height:1.6; margin:10px 0 0; }
 .cookieBanner a { color:inherit; text-decoration:underline; text-underline-offset:3px; }
-.cookieBanner .cookiePolicy { font-weight:700; color:#fff; }
+.cookieBanner .cookiePolicy { font-weight:700; color:#fff; text-decoration:none; }
 .cookieActions { flex:0 0 auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; padding:18px 28px 24px; border-top:1px solid #414245; }
-.cookieActions button { appearance:none; min-width:0; min-height:44px; padding:11px 10px; border:1px solid #737477; border-radius:3px; background:linear-gradient(#38393b,#252628); color:#fff; font:inherit; font-size:13px; font-weight:700; cursor:pointer; text-align:center; -webkit-tap-highlight-color:transparent; }
+.cookieActions button { appearance:none; min-width:0; min-height:44px; padding:11px 10px; border:1px solid #737477; border-radius:3px; background:linear-gradient(#38393b,#252628); color:#fff; font:inherit; font-size:14px; font-weight:700; cursor:pointer; text-align:center; -webkit-tap-highlight-color:transparent; }
 .cookieActions button:active { background:#191a1c; border-color:#F04B32; color:#F04B32; }
 .cookieClose { position:absolute; right:8px; top:7px; padding:0 5px; min-width:30px; min-height:30px; border:0; background:none; color:#ddd; font:inherit; font-size:22px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .cookieBack { appearance:none; margin:14px 0 0; padding:0; border:0; background:none; color:#ddd; font:inherit; font-size:12px; cursor:pointer; }
@@ -37,7 +37,7 @@
 .cookieActions button:focus-visible, .cookieClose:focus-visible, .cookieBack:focus-visible, .cookieCategory summary:focus-visible, .privacySettingsLink:focus-visible { outline:none; color:#F04B32; text-decoration:underline; text-underline-offset:3px; }
 .cookieToggle:focus-visible { outline:none; }
 .cookieToggle:focus-visible::before { border-color:#fff; box-shadow:0 0 0 1px #fff; }
-@media(max-width:480px) { .cookieScroll { padding:24px 20px 18px; } .cookieActions { gap:8px; padding:16px 20px 20px; } .cookieActions button { font-size:12px; padding:10px 5px; } .cookieCategory summary { padding-left:12px; padding-right:110px; font-size:12px; } .cookieAlways { right:10px; font-size:11px; } .cookieCategoryText { padding:0 12px 14px; } }
+@media(max-width:480px) { .cookieScroll { padding:24px 20px 18px; } .cookieActions { grid-template-columns:1fr; gap:8px; padding:16px 20px 20px; } .cookieActions button { padding:10px 5px; } .cookieActions [data-cookie-reject] { order:1; } .cookieActions [data-cookie-accept] { order:2; } .cookieCategory summary { padding-left:12px; padding-right:110px; font-size:12px; } .cookieAlways { right:10px; font-size:11px; } .cookieCategoryText { padding:0 12px 14px; } }
 
 /* Equal white choices; leave Cookie settings and Save preferences unchanged. */
 .cookieActions button:is([data-cookie-accept], [data-cookie-reject]) { background:#fff; color:#000; border-color:#fff; }
