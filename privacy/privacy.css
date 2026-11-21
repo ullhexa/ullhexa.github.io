@@ -10,3 +10,5 @@ p { margin:10px 0; }
 li { margin:8px 0; }
 strong { font-weight:700; }
 @media(max-width:600px) { main { margin-top:24px; padding:0 20px; } }
+
+.privacyFooter { margin-top:24px; font-size:12px; color:#bcbcbc; }
