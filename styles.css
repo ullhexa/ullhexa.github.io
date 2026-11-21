@@ -1374,3 +1374,21 @@ html:has(.skinPreview[open]) { overflow: hidden; }
 .contactPrivacy a { color:inherit; text-underline-offset:3px; }
 .contactPrivacy { margin:8px 0 0; font-size:12px; line-height:1.6; color:#bcbcbc; }
 @media(hover:hover) and (pointer:fine) { .contactPrivacy a:hover { color:var(--ull-accent); } }
+
+.skinInstructionsLink {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.skinInstructionsLink:focus-visible { outline: none; text-decoration-thickness: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  .skinInstructionsLink:hover { text-decoration-thickness: 2px; }
+}
+#skinInstructions li + li { margin-top: 14px; }
+.skinFolderTree { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }

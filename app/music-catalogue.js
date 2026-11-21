@@ -19,8 +19,8 @@ export function renderMusicCatalogue(releases = musicReleases) {
     <div class="musicIntro">
       <h2 class="visuallyHidden">Music by Ull Hexa</h2>
       <p>Released music by Ull Hexa. For sync licensing, get in touch through the contact form.</p>
-      <p><strong>100% master and composition/publishing control.</strong><br>
-        Both rights are controlled by Ull Hexa, with no exclusive sync agreements.</p>
+      <p><strong>Master and composition/publishing rights controlled by Ull Hexa.</strong><br>
+        Contact me to discuss licensing and availability for your project.</p>
       <p>Composed, produced, mixed and mastered by Ull Hexa. Distributed through Symphonic.</p>
       <p class="musicContact"><a href="${syncEnquiryURL()}">Contact for sync <span aria-hidden="true">→</span></a></p>
     </div>
