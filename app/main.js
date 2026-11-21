@@ -1,7 +1,7 @@
 import { startBackground } from "./bg.js?v=20260404b";
 import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261113-gm-gallery";
 import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261120-touch-taps";
-import { renderSerumSkins, mountSerumSkins } from "./serum-skins.js?v=20261121-manual-install";
+import { renderSerumSkins, mountSerumSkins } from "./serum-skins.js?v=20261121-short-intro";
 import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261120-private-metadata";
 import { mountContactForm } from "./contact-form.js?v=20261110-synth";
 import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261120-phone-sized-news";
