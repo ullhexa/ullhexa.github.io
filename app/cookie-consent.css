@@ -13,7 +13,7 @@
 .cookieBanner a:focus-visible { color:#e7e7e9; }
 .cookieBanner .cookiePolicy, .cookieBanner .cookiePolicy:focus-visible { font-weight:700; color:#fff; text-decoration:none; }
 .cookieActions { flex:0 0 auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; padding:18px 28px 24px; border-top:1px solid #414245; }
-.cookieActions button { appearance:none; min-width:0; min-height:44px; padding:11px 10px; border:1px solid #737477; border-radius:3px; background:linear-gradient(#38393b,#252628); color:#fff; font:inherit; font-size:14px; font-weight:700; cursor:pointer; text-align:center; -webkit-tap-highlight-color:transparent; }
+.cookieActions button { appearance:none; min-width:0; min-height:44px; padding:11px 10px; border:1px solid #737477; border-radius:3px; background:linear-gradient(#38393b,#252628); color:#fff; font:inherit; font-size:15px; font-weight:700; cursor:pointer; text-align:center; -webkit-tap-highlight-color:transparent; }
 .cookieActions button:active { background:#191a1c; border-color:#F04B32; color:#e7e7e9; }
 .cookieClose { position:absolute; right:8px; top:7px; padding:0 5px; min-width:30px; min-height:30px; border:0; background:none; color:#ddd; font:inherit; font-size:22px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .cookieBack { appearance:none; margin:14px 0 0; padding:0; border:0; background:none; color:#ddd; font:inherit; font-size:12px; cursor:pointer; }

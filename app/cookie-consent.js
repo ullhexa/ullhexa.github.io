@@ -8,7 +8,7 @@ export function mountCookieConsent(doc) {
   const preference = cookiePreference(doc);
   const isPrivacyPage = /^\/privacy(?:\/(?:index\.html)?)?$/.test(doc.defaultView.location.pathname);
   const style = doc.createElement('link');
-  style.rel = 'stylesheet'; style.href = '/app/cookie-consent.css?v=20261121-contrast';
+  style.rel = 'stylesheet'; style.href = '/app/cookie-consent.css?v=20261121-buttons15';
   doc.head.append(style);
   const panel = doc.createElement('dialog');
   panel.className = 'cookieBanner';
