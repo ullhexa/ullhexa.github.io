@@ -1,4 +1,5 @@
-import { cookiePreference } from './cookie-preference.js?v=20261120-dialog';
+import {analyticsFor} from './analytics.js?v=20261122-analytics';
+import { cookiePreference } from './cookie-preference.js?v=20261122-analytics';
 import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
 const mounted = new WeakMap();
 
@@ -6,6 +7,7 @@ export function mountCookieConsent(doc) {
   if (mounted.has(doc)) return mounted.get(doc);
   if (doc.defaultView.top !== doc.defaultView.self) return;
   const preference = cookiePreference(doc);
+  analyticsFor(doc);
   const isPrivacyPage = /^\/privacy(?:\/(?:index\.html)?)?$/.test(doc.defaultView.location.pathname);
   const style = doc.createElement('link');
   style.rel = 'stylesheet'; style.href = '/app/cookie-consent.css?v=20261121-outside-footer';
@@ -18,11 +20,11 @@ export function mountCookieConsent(doc) {
     <h2 id="cookieTitle" tabindex="-1" autofocus>Privacy &amp; cookies</h2>
     <div data-cookie-intro>
       <div id="cookieSummary">
-        <p>We use cookies and similar technologies to keep the site working. With your permission, PayPal uses cookies, your IP address and browser details for payments, security and usage measurement. Change your choice anytime in Cookie settings. <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a></p>
+        <p>We use cookies and similar technologies to keep the site working. With your permission, we measure site and tool usage with PostHog, and PayPal uses cookies, your IP address and browser details for payments, security and usage measurement. Change your choice anytime in Cookie settings. <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a></p>
       </div>
     </div>
     <div data-cookie-settings-view hidden>
-      <p id="cookieSettingsSummary">Choose which optional content can load. Your choice is saved on this device for 180 days. Free downloads work either way. See our <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a> for details.</p>
+      <p id="cookieSettingsSummary">Choose which optional services can load. Your choice is saved on this device for 180 days. Free downloads work either way. See our <a class="cookiePolicy" href="/privacy/" target="_blank" rel="noopener">Privacy Policy</a> for details.</p>
       <button type="button" class="cookieBack" data-cookie-back>← Back</button>
       <div class="cookieCategories">
         <div class="cookieCategory">
@@ -41,12 +43,24 @@ export function mountCookieConsent(doc) {
             <div class="cookieCategoryText">
               <p>Loads PayPal’s contribution forms and payment controls on plugin download pages. PayPal handles payments and security, and its SDK reports loading, errors and interactions to PayPal. Requests include your IP address, browser/device details and technical identifiers.</p>
               <p>The SDK uses <code>__paypal_storage__</code> on this site for an identifier and session state. This local storage has no fixed expiry; the internal session renews after 20 minutes. PayPal also uses its own cookies. See <a href="/privacy/#paypal-storage" target="_blank" rel="noopener">storage details</a>.</p>
-              <p>Ull Hexa has no separate advertising or website analytics integration. PayPal’s wider policy also covers personalisation and advertising across its services. See its <a href="https://www.paypal.com/no/legalhub/paypal/privacy-full" target="_blank" rel="noopener noreferrer">privacy statement</a> and <a href="https://www.paypal.com/no/legalhub/paypal/cookie-full" target="_blank" rel="noopener noreferrer">cookie policy</a>.</p>
+              <p>PayPal’s wider policy also covers personalisation and advertising across its services. See its <a href="https://www.paypal.com/no/legalhub/paypal/privacy-full" target="_blank" rel="noopener noreferrer">privacy statement</a> and <a href="https://www.paypal.com/no/legalhub/paypal/cookie-full" target="_blank" rel="noopener noreferrer">cookie policy</a>.</p>
               <p>Turning this off leaves the forms unloaded. Free downloads and the separate link to PayPal still work.</p>
               <p>Saving this setting as off reloads pages where PayPal is running. This stops the embedded forms, but does not erase PayPal’s existing cookies or payment records. The 180-day period applies to your Ull Hexa choice, not PayPal’s cookies.</p>
             </div>
           </details>
           <button type="button" class="cookieToggle" role="switch" aria-checked="false" aria-label="Allow PayPal contribution forms" data-cookie-paypal><span aria-hidden="true"></span></button>
+        </div>
+        <div class="cookieCategory">
+          <details>
+            <summary>Website and tool analytics</summary>
+            <div class="cookieCategoryText">
+              <p>PostHog helps me see which pages and tools people use, where they arrive from, and where setup or downloads stop. This is separate from PayPal.</p>
+              <p>Records selected page visits, installer clicks, visualizer input outcomes and visible usage time, with browser/device type, referral domain and campaign tags. A random browser identifier links visits; it is not your name or email. No session recordings, automatic click capture, heatmaps, form contents, audio, MIDI notes or device names.</p>
+              <p>PostHog Cloud EU receives the requests and their IP address. IP location lookup is disabled. Analytics identifiers are stored in this browser until cleared or consent expires and you next visit. Events use PostHog’s free-plan one-year retention, with deletion in its scheduled cleanup. See <a href="/privacy/#analytics" target="_blank" rel="noopener">analytics details</a>.</p>
+              <p>Turning this off stops collection and removes our analytics identifiers from this browser. It does not delete earlier events. The site and free downloads work without analytics.</p>
+            </div>
+          </details>
+          <button type="button" class="cookieToggle" role="switch" aria-checked="false" aria-label="Allow website and tool analytics" data-cookie-analytics><span aria-hidden="true"></span></button>
         </div>
       </div>
     </div>
@@ -65,6 +79,7 @@ export function mountCookieConsent(doc) {
   doc.body.append(panel);
   const title = panel.querySelector('h2');
   const toggle = panel.querySelector('[data-cookie-paypal]');
+  const analyticsToggle = panel.querySelector('[data-cookie-analytics]');
   let returnFocus = null;
   const setDraft = value => toggle.setAttribute('aria-checked', value ? 'true' : 'false');
   const showView = view => {
@@ -90,6 +105,7 @@ export function mountCookieConsent(doc) {
     if (panel.open) { showView(view); return; }
     returnFocus = trigger || doc.activeElement;
     setDraft(preference.read()?.paypal === true);
+    analyticsToggle.setAttribute('aria-checked', preference.read()?.analytics === true ? 'true' : 'false');
     panel.querySelectorAll('details').forEach(detail => { detail.open = false; });
     panel.querySelector('[data-cookie-close]').setAttribute('aria-label', preference.read() ? 'Close cookie settings without saving' : 'Close without accepting optional cookies');
     showView(view);
@@ -97,7 +113,7 @@ export function mountCookieConsent(doc) {
     panel.showModal();
     title.focus({preventScroll:true});
   };
-  const decide = value => { close(); preference.choose(value); };
+  const decide = (paypal, analytics = paypal) => { close(); preference.choose(paypal, analytics); };
   // Closing is never acceptance. Remember necessary-only on first dismissal;
   // when settings are reopened, discard unsaved edits and keep the prior choice.
   const dismiss = () => { if (preference.read()) close(); else decide(false); };
@@ -107,7 +123,8 @@ export function mountCookieConsent(doc) {
   panel.querySelector('[data-cookie-customize]').addEventListener('click', () => showView('settings'));
   panel.querySelector('[data-cookie-back]').addEventListener('click', () => showView('intro'));
   toggle.addEventListener('click', () => setDraft(toggle.getAttribute('aria-checked') !== 'true'));
-  panel.querySelector('[data-cookie-save]').addEventListener('click', () => decide(toggle.getAttribute('aria-checked') === 'true'));
+  analyticsToggle.addEventListener('click', () => analyticsToggle.setAttribute('aria-checked', analyticsToggle.getAttribute('aria-checked') === 'true' ? 'false' : 'true'));
+  panel.querySelector('[data-cookie-save]').addEventListener('click', () => decide(toggle.getAttribute('aria-checked') === 'true', analyticsToggle.getAttribute('aria-checked') === 'true'));
   doc.addEventListener('click', event => {
     const trigger = event.target.closest?.('[data-cookie-settings]');
     if (trigger) { event.preventDefault(); open(trigger, 'settings'); }

@@ -1,3 +1,4 @@
+import {visualizerAnalytics} from './visualizer-analytics.js?v=20261122-analytics';
 import { ModeControls } from "./audio-controls.js?v=20260930";
 import { AudioInputSession, isSafari } from "./audio-input.js";
 import { BeatSession } from "./beat-session.js?v=groove-4";
@@ -2126,6 +2127,7 @@ function computeFeatures() {
   }
   const rms = Math.sqrt(sum / timeData.length);
   const rmsDet = Math.sqrt(sumDet / timeData.length);
+  if (rmsDet > 0.0001) visualizerAnalytics().activity(currentInputType === 'mic' ? 'mic' : 'shared_tab');
   const rmsDb = Math.max(-60, Math.min(0, 20 * Math.log10(rms + 1e-8)));
   const zcr = crossings / timeData.length;
 
@@ -3264,6 +3266,8 @@ function resetAudioReactiveState() {
 }
 
 function applyAudioSession(session) {
+  if (currentInputType !== 'none') visualizerAnalytics().stop(currentInputType === 'mic' ? 'mic' : 'shared_tab');
+  if (session) visualizerAnalytics().ready(session.type === 'mic' ? 'mic' : 'shared_tab');
   resetAudioReactiveState();
   void beatSession.attach(session);
   currentStream = session?.stream || null;
@@ -3283,10 +3287,13 @@ const audioSession = new AudioInputSession({ onChange: applyAudioSession, onPend
 function stopCurrentStream() { audioSession.stop(); }
 
 async function startInput(type, requestStream) {
+  const input = type === 'mic' ? 'mic' : 'shared_tab';
+  visualizerAnalytics().attempt(input);
   try {
     statusEl.textContent = `input: waiting for ${type === "mic" ? "microphone" : "tab audio"} permission`;
     await audioSession.start(type, requestStream);
   } catch (error) {
+    visualizerAnalytics().failed(input, error.name === 'NotAllowedError' ? 'permission_denied' : error.name === 'NoAudioError' ? 'no_audio' : 'unavailable');
     if (error.name === "NoAudioError") {
       statusEl.textContent = type === "speaker" ? "input: no shared audio" : "input: microphone ended";
       inputHelpEl.textContent = type === "speaker" ? "Choose a browser tab and enable Share tab audio." : "The microphone stopped before it connected. Click Mic to try again.";
@@ -3307,6 +3314,8 @@ function enableMic() {
 
 function enableSpeaker() {
   if (isSafari(navigator.userAgent)) {
+    visualizerAnalytics().attempt('shared_tab');
+    visualizerAnalytics().failed('shared_tab','unsupported');
     window.alert("Safari does not support sharing a browser tab's audio. Please open this page in Google Chrome on a computer to use Web Audio.\n\nYou can still use the Mic button in Safari.");
     return;
   }

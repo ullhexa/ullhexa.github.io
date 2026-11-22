@@ -1,4 +1,4 @@
-import { cookiePreference } from './cookie-preference.js?v=20261120-dialog';
+import { cookiePreference } from './cookie-preference.js?v=20261122-analytics';
 import { escapeHTML as html } from './plugin-catalogue.js?v=20261116-public-downloads';
 
 // Public SDK identifier supplied by the owner. Each product owns its own ticket.

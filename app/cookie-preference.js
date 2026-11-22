@@ -1,14 +1,14 @@
 // Only the visitor's choice, disclosure version and dates are retained locally.
 // No visitor identifier, backend consent profile or browsing history.
 export const CONSENT_KEY = 'ullhexa-cookie-choice';
-export const CONSENT_VERSION = '20261120-dialog';
+export const CONSENT_VERSION = '20261122-analytics';
 export const CONSENT_LIFETIME = 180 * 24 * 60 * 60 * 1000;
 const stores = new WeakMap();
 
 export function validChoice(raw, now = Date.now()) {
   try {
     const item = typeof raw === 'string' ? JSON.parse(raw) : raw;
-    return item && item.version === CONSENT_VERSION && typeof item.paypal === 'boolean' &&
+    return item && item.version === CONSENT_VERSION && typeof item.paypal === 'boolean' && typeof item.analytics === 'boolean' &&
       Number.isFinite(item.decidedAt) && item.decidedAt <= now &&
       item.expiresAt === item.decidedAt + CONSENT_LIFETIME && item.expiresAt > now ? item : null;
   } catch { return null; }
@@ -42,10 +42,10 @@ export function createCookiePreference(win, now = Date.now) {
   const store = {
     read,
     refresh: notify,
-    choose(paypal) {
-      if (typeof paypal !== 'boolean') throw new TypeError('An explicit choice is required');
+    choose(paypal, analytics = false) {
+      if (typeof paypal !== 'boolean' || typeof analytics !== 'boolean') throw new TypeError('An explicit choice is required');
       const decidedAt = now();
-      memory = { version:CONSENT_VERSION, paypal, decidedAt, expiresAt:decidedAt + CONSENT_LIFETIME };
+      memory = { version:CONSENT_VERSION, paypal, analytics, decidedAt, expiresAt:decidedAt + CONSENT_LIFETIME };
       try { win.localStorage.setItem(CONSENT_KEY, JSON.stringify(memory)); memoryOnly = false; }
       catch { memoryOnly = true; }
       // If storage is readable but refuses writes, use the explicit choice in

@@ -25,7 +25,7 @@ export function renderPluginDownload(plugin) {
   const icon = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5" /></svg>';
   const ready = isFreePlugin(plugin) && download.status === 'published';
   return `<div class="pluginDownloadBlock">
-    ${ready ? `<a class="softActionBtn pluginDownload" href="${html(download.url)}" aria-label="Download ${html(plugin.title)} ${html(plugin.version)} for macOS (${html(download.size)} PKG)">${icon}<span>Download for macOS</span></a>` : `<button class="softActionBtn pluginDownload" disabled type="button">${icon}<span>Download for macOS</span></button>`}
+    ${ready ? `<a class="softActionBtn pluginDownload" data-version="${html(plugin.version)}" href="${html(download.url)}" aria-label="Download ${html(plugin.title)} ${html(plugin.version)} for macOS (${html(download.size)} PKG)">${icon}<span>Download for macOS</span></a>` : `<button class="softActionBtn pluginDownload" disabled type="button">${icon}<span>Download for macOS</span></button>`}
     <p class="pluginDownloadMeta">Version ${html(plugin.version)} <span>·</span> ${html(download.size)} <span>·</span> ${html(plugin.formats)}</p>
     ${renderPluginTerms(plugin)}
   </div>`;

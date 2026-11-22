@@ -1,5 +1,6 @@
-import * as audio from './audio-visualizers.js?v=20261002-font';
-import * as midi from './midi-visualizers.js?v=20261110-midi-dismiss';
+import {visualizerAnalytics} from './visualizer-analytics.js?v=20261122-analytics';
+import * as audio from './audio-visualizers.js?v=20261122-analytics';
+import * as midi from './midi-visualizers.js?v=20261122-analytics';
 import { createVisualizerSession, selectionFromURL } from './visualizer-session.js?v=20261114-cube';
 import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
 
@@ -21,6 +22,7 @@ function closeMenus() {
 }
 
 function select(family, mode, remember = false) {
+  visualizerAnalytics().select(family,mode);
   if (!session.select(family, mode)) return;
   document.body.dataset.family = family;
   for (const menu of menus) {

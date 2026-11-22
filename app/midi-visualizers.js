@@ -1,3 +1,4 @@
+import {visualizerAnalytics} from './visualizer-analytics.js?v=20261122-analytics';
 const canvas = document.getElementById("midiCanvas");
 const ctx = canvas.getContext("2d");
 const midiSupportNotice = document.getElementById("midiSupportNotice");
@@ -2227,7 +2228,7 @@ let keyboardHoldLoopRunning = false;
 })();
 
 function emitSyntheticMidi(status, note, velocity) {
-  onMIDIMessage({ data: [status, note, velocity] });
+  onMIDIMessage({ data: [status, note, velocity], inputKind:'keyboard' });
 }
 
 function smootherStep(x) {
@@ -2332,6 +2333,7 @@ function onMIDIMessage(msg) {
   const noteKey = note;
   const now = performance.now() * 0.001;
 
+  if ((cmd === 0x90 || cmd === 0xA0) && data2 > 0) visualizerAnalytics().activity(msg.inputKind || 'midi');
   if (cmd === 0x90 && data2 > 0) {
     notes[noteKey] = { velocity: data2 };
     activeNotes[noteKey] = data2;
@@ -2463,15 +2465,21 @@ function onMIDINote(note, velocity) {
 
 let midiAccessRequested = false;
 function connectMidi() {
-  if (midiAccessRequested || typeof navigator.requestMIDIAccess !== 'function') return;
+  if (midiAccessRequested) return;
   midiAccessRequested = true;
+  visualizerAnalytics().attempt('midi');
+  if (typeof navigator.requestMIDIAccess !== 'function') {visualizerAnalytics().failed('midi','unsupported'); return;}
   navigator.requestMIDIAccess().then(midiAccess => {
+    visualizerAnalytics().ready('midi');
     const connectInputs = () => {
       for (const input of midiAccess.inputs.values()) input.onmidimessage = onMIDIMessage;
     };
     connectInputs();
     midiAccess.onstatechange = connectInputs;
-  }).catch(error => console.warn('MIDI input unavailable; keyboard input remains active.', error));
+  }).catch(error => {
+    visualizerAnalytics().failed('midi',error.name === 'NotAllowedError' ? 'permission_denied' : 'unavailable');
+    console.warn('MIDI input unavailable; keyboard input remains active.', error);
+  });
 }
 
 
@@ -2489,6 +2497,7 @@ canvas.addEventListener("touchend", e => {
 
 function handleTouchEvent(e) {
   if (!isActive) return;
+  visualizerAnalytics().activity('touch');
   e.preventDefault();
   for (let t of e.touches) {
     const note = Math.floor((t.clientX / canvas.width) * 12);
