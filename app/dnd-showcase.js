@@ -123,3 +123,6 @@ export function mountDndShowcase(root) {
     show(next);
   });
 }
+
+// Shared source for the small homepage previews.
+export { slides as dndSlides };

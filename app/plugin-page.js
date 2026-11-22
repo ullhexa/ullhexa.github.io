@@ -1,12 +1,12 @@
 import { mountPluginDocumentation } from './plugin-documentation-modal.js?v=20261120-touch-taps';
 import { mountGalleryZoom } from "./plugin-gallery-zoom.js?v=20261014-sticky-zoom";
 import { plugins } from "./plugins-data.js?v=20261120-private-metadata";
-import { escapeHTML as html } from "./plugin-catalogue.js?v=20261120-private-metadata";
+import { escapeHTML as html } from "./plugin-catalogue.js?v=20261122-product-pricing";
 import { startBackground } from "./bg.js?v=20260404b";
-import { createSiteNavigation } from "./site-navigation.js?v=20261121-plugins-direct";
+import { createSiteNavigation } from "./site-navigation.js?v=20261122-product-pricing";
 
 import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
-import { renderPluginTerms, renderCheckoutEntry, renderPluginDetails, renderPluginFooter } from "./plugin-download.js?v=20261121-outside-footer";
+import { renderPluginTerms, renderCheckoutEntry, renderPluginDetails, renderPluginFooter } from "./plugin-download.js?v=20261122-product-pricing";
 
 function renderGallery(plugin) {
   const first = plugin.images[0];

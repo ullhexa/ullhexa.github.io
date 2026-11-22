@@ -207,35 +207,112 @@ a.newsBadge { cursor: pointer; -webkit-user-select: none; user-select: none; }
 .newsStatus:empty { display: none; }
 
 /* Short welcome and direct routes to the work. The full biography lives on About. */
-.homeIntro { padding: 24px; }
-.homeWelcome { margin: 0; font-size: 24px; line-height: 1.4; text-align: center; }
+/* Supplied 2x display render. CSS slices preserve the ribbon and frame corners;
+   only quiet edge/surface regions stretch. One cached image, no layout polling.
+   The 1074 x 470 display starts at (400, 180) in the 2948 x 1300 source. */
+.homeIntro {
+  --panel-image: url('../assets/home-panel/homepage-display-2x-20261122.webp');
+  --panel-outset-x: 200px;
+  --panel-side-width: 215px;
+  position: relative;
+  isolation: isolate;
+  width: calc(100% - 104px);
+  max-width: calc(934px * 1.15);
+  margin-top: 36px;
+  padding: 16px 25px 25px;
+  border: 0;
+  border-radius: 0;
+}
+.homePanelArt {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: grid;
+  grid-template-rows: 38px minmax(0, 1fr) 16px;
+  pointer-events: none;
+  user-select: none;
+}
+.homePanelArt span,
+.homePanelHead::before,
+.homePanelHead::after {
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  border-width: 0;
+  border-style: solid;
+  border-color: transparent;
+}
+.homePanelArt > .homePanelHead { display: grid; grid-template-columns: minmax(0, 1fr) 160px minmax(0, 1fr); }
+.homePanelHead::before,
+.homePanelHead::after { content: ''; }
+.homePanelHead::before {
+  border-image: var(--panel-image) 0 1634 1044 430 fill /
+    0 0 0 var(--panel-side-width) /
+    90px 0 0 var(--panel-outset-x) stretch;
+}
+.homePanelRibbon {
+  border-image: var(--panel-image) 0 1314 1044 1314 fill /
+    0 0 0 0 / 90px 0 0 0 stretch;
+}
+.homePanelHead::after {
+  border-image: var(--panel-image) 0 430 1044 1634 fill /
+    0 var(--panel-side-width) 0 0 /
+    90px var(--panel-outset-x) 0 0 stretch;
+}
+.homePanelBody {
+  border-image: var(--panel-image) 256 430 212 430 fill /
+    0 var(--panel-side-width) 0 var(--panel-side-width) /
+    0 var(--panel-outset-x) 0 var(--panel-outset-x) stretch;
+}
+.homePanelFoot {
+  border-image: var(--panel-image) 1088 430 196 430 fill /
+    0 var(--panel-side-width) 98px var(--panel-side-width) /
+    0 var(--panel-outset-x) 90px var(--panel-outset-x) stretch;
+}
+@media (max-width: 1200px) {
+  .homeIntro {
+    --panel-outset-x: 80px;
+    --panel-side-width: 95px;
+    width: calc(100% - 32px);
+  }
+}
+.homeWelcome { display: grid; place-items: center; min-height: 70px; margin: 0; font-size: 24px; line-height: 1.4; text-align: center; }
 .homeMoreLinks {
   margin: 0;
-  gap: 12px;
+  gap: 20px;
   justify-items: center;
   text-align: center;
 }
 .homeMoreLinks .homeBrandRow,
 .homeMoreLinks .homeSocialIcons { justify-content: center; }
+.homeMoreLinks .homeSocialIcons { gap: 20px; }
+.homeMoreLinks .brandIconImg { height: 48px; }
+.homeMoreLinks .brandIconTidal { width: 72px; }
 .homeOverview {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px 30px;
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(28px, 4vw, 56px);
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 0;
 }
-.homeOverviewItem {
-  display: grid;
-  grid-template-columns: 116px minmax(0, 1fr);
-  gap: 16px;
-  align-items: center;
-  color: #fff;
+.homeOverviewCard { min-width: 0; }
+.homeOverviewImage {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 5 / 4;
+  isolation: isolate;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
-.homeOverviewImage { display: grid; align-items: center; height: 92px; }
-.homeOverviewImage img {
+.homeOverviewSlide {
   display: block;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -243,26 +320,48 @@ a.newsBadge { cursor: pointer; -webkit-user-select: none; user-select: none; }
   -webkit-user-select: none;
   user-select: none;
   -webkit-user-drag: none;
-  transition: filter 130ms ease-out;
+}
+.homeOverviewItem {
+  display: block;
+  margin-top: 20px;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .homeOverviewCopy { min-width: 0; }
-.homeOverviewCopy h2 { margin: 0 0 7px; font-size: 17px; line-height: 1.25; }
+.homeOverviewCopy h2 { margin: 0 0 9px; font-size: 18px; line-height: 1.25; }
 .homeOverviewCopy h2 span { display: inline-block; margin-left: 3px; color: var(--ull-accent); }
-.homeOverviewCopy p { margin: 0; font-size: 14px; line-height: 1.45; color: #c4c4c6; }
-.homeOverviewItem:focus-visible, .homeOverviewItem.isPressing { color: var(--ull-accent); }
+.homeOverviewCopy p { margin: 0; font-size: 14px; line-height: 1.5; color: #c4c4c6; }
+.homeOverviewItem:focus-visible, .homeOverviewItem.isPressing { color: var(--ull-accent); outline: none; }
+.homeOverviewImageLink:focus-visible { outline: none; opacity: .85; }
 @media (hover: hover) and (pointer: fine) {
-  .homeOverviewItem:hover { color: var(--ull-accent); }
-}
-.homeOverviewItem:focus-visible { outline: none; }
-.homeOverviewItem:focus-visible img { filter: brightness(1.12); }
-@media (hover: hover) and (pointer: fine) {
-  .homeOverviewItem:hover img { filter: brightness(1.12); }
+  .homeOverviewItem:hover,
+  .homeOverviewImageLink:hover + .homeOverviewItem { color: var(--ull-accent); }
 }
 .aboutBio .bio { margin-bottom: 0; }
+/* Phone layouts retain the original simple frame, not the desktop artwork. */
+@media (max-width: 700px), (pointer: coarse) and (max-height: 600px) {
+  .homeIntro {
+    --panel-image: none;
+    margin-top: 0;
+    width: 100%;
+    padding: 24px;
+    border: 1px solid #222;
+    border-radius: 16px;
+  }
+  .homePanelArt { display: none; }
+  .homeWelcome { display: block; min-height: 0; }
+  .homeOverview {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+  }
+}
 @media (max-width: 700px) {
   .homeIntro { padding: 20px 16px; }
-  .homeOverview { grid-template-columns: 1fr; gap: 20px; }
-  .homeOverviewItem { grid-template-columns: 112px minmax(0, 1fr); }
+  .homeOverview { grid-template-columns: 1fr; gap: 32px; }
+  .homeOverviewCard { width: 100%; max-width: 390px; margin-inline: auto; }
   .aboutBio .bio-text { text-align: left; }
 }
 

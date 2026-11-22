@@ -1,4 +1,4 @@
-import { escapeHTML as html } from './plugin-catalogue.js?v=20261116-public-downloads';
+import { escapeHTML as html, formatPluginPrice } from './plugin-catalogue.js?v=20261122-product-pricing';
 
 export const downloadPath = plugin => `${plugin.page}download/`;
 export const isFreePlugin = plugin => plugin.priceUSD === 0;
@@ -10,7 +10,7 @@ export function renderPluginTerms(plugin) {
 
 export function renderCheckoutEntry(plugin) {
   const free = isFreePlugin(plugin);
-  const price = free ? 'FREE' : `$${Number(plugin.priceUSD).toFixed(2)} USD`;
+  const price = formatPluginPrice(plugin, 'FREE');
   // Paid fulfilment is deliberately deferred. A price alone must never enable
   // a free route, and the general homepage support ticket is not a purchase.
   const url = free ? downloadPath(plugin) : null;

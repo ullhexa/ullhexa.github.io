@@ -4,9 +4,16 @@ export const escapeHTML = value => String(value).replace(/[&<>"']/g, character =
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[character]));
 
-export function renderPluginCatalogue() {
+export function formatPluginPrice(plugin, freeLabel = 'Free') {
+  if (plugin.priceUSD === 0) return freeLabel;
+  if (typeof plugin.priceUSD === 'number' && Number.isFinite(plugin.priceUSD) && plugin.priceUSD > 0)
+    return `$${plugin.priceUSD.toFixed(2)} USD`;
+  return 'Price pending';
+}
+
+export function renderPluginCatalogue(catalogue = plugins) {
   // New products are appended to the data; display them newest first in row order.
-  const newestFirst = [...plugins].reverse();
+  const newestFirst = [...catalogue].reverse();
   return `<div class="pluginCatalogue">
     ${newestFirst.map(plugin => {
       const first = plugin.images[plugin.badgeImageIndex ?? 0] || plugin.images[0];
@@ -17,7 +24,7 @@ export function renderPluginCatalogue() {
         <div class="pluginBadgeCopy">
           <h3><a href="${plugin.page}">${escapeHTML(plugin.title)}</a></h3>
           <p>${escapeHTML(plugin.summary)}</p>
-          <span class="pluginBadgeMeta">Free · ${escapeHTML(plugin.formats)}</span>
+          <span class="pluginBadgeMeta">${formatPluginPrice(plugin)} · ${escapeHTML(plugin.formats)}</span>
         </div>
       </article>`;
     }).join("")}

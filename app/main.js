@@ -1,11 +1,14 @@
 import { startBackground } from "./bg.js?v=20260404b";
 import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261113-gm-gallery";
-import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261121-plugins-direct";
-import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261120-private-metadata";
+import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261122-product-pricing";
+import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261122-product-pricing";
 import { mountContactForm } from "./contact-form.js?v=20261110-synth";
-import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261121-plugins-direct";
+import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261122-product-pricing";
 import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
 import { mountPreviewGate } from "./preview-gate.js?v=20261121-outside-footer";
+
+import { VISUALIZERS } from "./visualizers-data.js?v=20261121-carousel";
+import { renderHomeOverview, mountHomeOverview } from "./home-overview.js?v=20261122-product-pricing";
 
 const content = document.getElementById("content");
 const updateSiteNavigation = createSiteNavigation();
@@ -45,27 +48,7 @@ const SOCIAL_LINKS = [
   }
 ];
 
-const VISUALIZERS = [
-  {
-    family: "midi",
-    title: "MIDI",
-    modes: [
-      { mode: "squares", title: "City", image: "City.webp", description: "Build a neon skyline with every note. Colourful towers rise and glow with the intensity of your playing." },
-      { mode: "plane", title: "3D Plane", image: "3D_plane.webp", description: "Shape a floating wireframe with your notes. Pitch and velocity bend the surface into shifting geometric forms." },
-      { mode: "plasma", title: "Plasma Sphere", image: "Plasma_sphere.webp", description: "Send glowing tendrils through a sphere of light. Notes spark new connections, while sustained playing keeps them moving." },
-      { mode: "cube", title: "Cube", image: "Cube.webp", description: "Turn a familiar puzzle into a musical instrument. Notes twist rows, rotate the cube and pull its colours apart." }
-    ]
-  },
-  {
-    family: "audio",
-    title: "Audio",
-    modes: [
-      { mode: "stereo-osc", title: "Quantum string", image: "Quantum_string.webp", description: "Trace sound through luminous, folding curves. Bass and treble shape the motion as the music changes." },
-      { mode: "fractals", title: "Alien trees", image: "alien trees.webp", description: "Grow an otherworldly forest from sound. Branches, glowing fruit and drifting rain respond to the music." },
-      { mode: "cat", title: "Space cat", image: "Space_cat.webp", description: "A cosmic cat with a feel for the groove. It dances to the beat amid shifting colours and occasional alien encounters." }
-    ]
-  }
-];
+
 
 function logoLink({ href, img, alt, title, imageClass = "" }) {
   return `
@@ -121,21 +104,11 @@ function renderVisualizerBadges() {
 const pages = {
   home: () => `
     <section class="homeBio homeIntro" aria-label="Ull Hexa tools and software">
+      <div class="homePanelArt" aria-hidden="true"><span class="homePanelHead"><span class="homePanelRibbon"></span></span><span class="homePanelBody"></span><span class="homePanelFoot"></span></div>
       <div>
         <p class="homeWelcome">Audio plugins and browser tools for music and play.</p>
         <section class="homeOverview" aria-label="Explore the tools and software">
-          <a class="homeOverviewItem" href="#plugins">
-            <div class="homeOverviewImage"><img src="./assets/news/products/micronudge.webp" alt="Ullhexa MicroNudge plugin" width="320" height="218" loading="lazy" decoding="async" /></div>
-            <div class="homeOverviewCopy"><h2>Plugins <span aria-hidden="true">→</span></h2><p>Free audio plugins for notes, spatial audio, filtering and kick/bass alignment.</p></div>
-          </a>
-          <a class="homeOverviewItem" href="#visualizers">
-            <div class="homeOverviewImage"><img src="./assets/products/visualizers/Quantum_string.webp" alt="Quantum String audio visualizer" width="320" height="218" loading="lazy" decoding="async" /></div>
-            <div class="homeOverviewCopy"><h2>Visualizers <span aria-hidden="true">→</span></h2><p>Browser visuals that react to MIDI notes or incoming audio.</p></div>
-          </a>
-          <a class="homeOverviewItem" href="#dnd">
-            <div class="homeOverviewImage"><img src="./assets/news/products/gm-console.webp" alt="Ull Hexa GM Console with maps and character tokens" width="320" height="218" loading="lazy" decoding="async" /></div>
-            <div class="homeOverviewCopy"><h2>GM Console <span aria-hidden="true">→</span></h2><p>A browser-based Game Master console for Dungeons &amp; Dragons sessions.</p></div>
-          </a>
+          ${renderHomeOverview()}
         </section>
       </div>
     </section>
@@ -290,8 +263,9 @@ function render() {
   content.innerHTML = page();
   if (page === pages.home) {
     const unmountNews = mountHomeNews(content);
-    const unbindOverview = bindPressActions(content, { selector: ".homeOverviewItem" });
-    cleanupPage = () => { unmountNews(); unbindOverview(); };
+    const unmountOverview = mountHomeOverview(content);
+    const unbindOverview = bindPressActions(content, { selector: ".homeOverviewItem, .homeOverviewImageLink" });
+    cleanupPage = () => { unmountOverview(); unmountNews(); unbindOverview(); };
   }
   if (route === "music") {
     let cancelled = false;
