@@ -1,6 +1,6 @@
-import {cookiePreference} from './cookie-preference.js?v=20261122-analytics';
-import {EXCLUSION_KEY, PROJECT_TOKEN, pageContext, campaignContext, allowedProperties, filterEvent, sdkConfig} from './analytics-policy.js?v=20261122-analytics';
-import {loadPostHog} from './posthog-loader.js?v=20261122-analytics';
+import {cookiePreference} from './cookie-preference.js?v=20261122-analytics2';
+import {EXCLUSION_KEY, PROJECT_TOKEN, pageContext, campaignContext, allowedProperties, filterEvent, sdkConfig} from './analytics-policy.js?v=20261122-analytics2';
+import {loadPostHog} from './posthog-loader.js?v=20261122-analytics2';
 
 const mounts = new WeakMap();
 export function clearAnalyticsStorage(win) {

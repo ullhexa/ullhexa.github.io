@@ -1,6 +1,6 @@
-import {visualizerAnalytics} from './visualizer-analytics.js?v=20261122-analytics';
-import * as audio from './audio-visualizers.js?v=20261122-analytics';
-import * as midi from './midi-visualizers.js?v=20261122-analytics';
+import {visualizerAnalytics} from './visualizer-analytics.js?v=20261122-analytics2';
+import * as audio from './audio-visualizers.js?v=20261122-analytics2';
+import * as midi from './midi-visualizers.js?v=20261122-analytics2';
 import { createVisualizerSession, selectionFromURL } from './visualizer-session.js?v=20261114-cube';
 import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
 

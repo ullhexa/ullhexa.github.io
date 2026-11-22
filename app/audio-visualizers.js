@@ -1,4 +1,4 @@
-import {visualizerAnalytics} from './visualizer-analytics.js?v=20261122-analytics';
+import {visualizerAnalytics} from './visualizer-analytics.js?v=20261122-analytics2';
 import { ModeControls } from "./audio-controls.js?v=20260930";
 import { AudioInputSession, isSafari } from "./audio-input.js";
 import { BeatSession } from "./beat-session.js?v=groove-4";

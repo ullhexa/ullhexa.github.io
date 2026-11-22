@@ -1,5 +1,5 @@
-import {analyticsFor} from './analytics.js?v=20261122-analytics';
-import {SCENES} from './analytics-policy.js?v=20261122-analytics';
+import {analyticsFor} from './analytics.js?v=20261122-analytics2';
+import {SCENES} from './analytics-policy.js?v=20261122-analytics2';
 
 // No note values, amplitudes, audio buffers or hardware names enter this module.
 export function createVisualizerAnalytics(doc, analytics) {

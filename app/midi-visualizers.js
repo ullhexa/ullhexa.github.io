@@ -1,4 +1,4 @@
-import {visualizerAnalytics} from './visualizer-analytics.js?v=20261122-analytics';
+import {visualizerAnalytics} from './visualizer-analytics.js?v=20261122-analytics2';
 const canvas = document.getElementById("midiCanvas");
 const ctx = canvas.getContext("2d");
 const midiSupportNotice = document.getElementById("midiSupportNotice");

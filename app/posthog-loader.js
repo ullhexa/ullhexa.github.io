@@ -1,4 +1,4 @@
-import {PROJECT_TOKEN, API_HOST} from './analytics-policy.js?v=20261122-analytics';
+import {PROJECT_TOKEN, API_HOST} from './analytics-policy.js?v=20261122-analytics2';
 
 // The official asynchronous snippet's bootstrap, invoked only after consent.
 // The SDK owns browser/session IDs; our before_send allowlist owns event data.

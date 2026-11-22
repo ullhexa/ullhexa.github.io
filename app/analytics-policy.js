@@ -75,7 +75,9 @@ export function filterEvent(event, allowed) {
   const p = event.properties || {};
   const context = p.$current_url ? pageContext(p.$current_url) : null;
   if (!context) return null;
-  const clean = {...allowedProperties(p), ...context};
+  // The SDK derives its ingestion api_key from properties.token after before_send.
+  // Keep our public project token while discarding arbitrary supplied fields.
+  const clean = {...allowedProperties(p), ...context, token:PROJECT_TOKEN};
   for (const key of ['distinct_id','$device_id','$session_id','$window_id','$pageview_id','$prev_pageview_id']) {
     if (uuid(p[key])) clean[key] = p[key];
   }
