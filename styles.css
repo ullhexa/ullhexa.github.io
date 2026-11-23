@@ -570,12 +570,6 @@ a:visited {
   color: rgba(255, 255, 255, 0.78);
 }
 
-.contactGrid {
-  display: grid;
-  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
-  gap: 18px;
-}
-
 .toolsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -989,112 +983,37 @@ a:visited {
   color: rgba(255, 255, 255, 0.72);
 }
 
-.contactForm {
-  display: grid;
-  gap: 14px;
-}
-
-.contactFieldRow {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.contactField {
-  position: relative;
-  display: grid;
-  gap: 8px;
-  align-content: start;
-  padding-bottom: 14px;
-}
-.contactLimit {
-  position: absolute;
-  bottom: -2px;
-  right: 0;
-  font-size: 11px;
-  line-height: 14px;
-  color: var(--ull-accent);
-  text-align: right;
-}
-
-.contactField label {
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.contactField input,
-.contactField select,
-.contactField textarea {
-  width: 100%;
+.contactShell .contactIdentity {
   box-sizing: border-box;
-  padding: 13px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.28);
-  color: #fff;
-  font: inherit;
-  transition: border-color 0.14s ease, background 0.14s ease, box-shadow 0.14s ease;
+  width: 100%;
+  max-width: 540px;
+  margin-inline: auto;
 }
-
-.contactField textarea {
-  resize: vertical;
-  min-height: 160px;
-}
-
-.contactField input:focus,
-.contactField select:focus,
-.contactField textarea:focus {
-  outline: none;
-  border-color: rgba(255, 190, 138, 0.52);
-  background: rgba(0, 0, 0, 0.38);
-  box-shadow: 0 0 0 3px rgba(255, 164, 94, 0.12);
-}
-
-.contactActions {
+.contactEmailRow {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
-  padding-top: 4px;
+  margin-bottom: 18px;
 }
-
-.contactPrimaryBtn,
-.contactSecondaryBtn {
+.contactEmailText {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(14px, 2vw, 16px);
+  user-select: text;
+  -webkit-user-select: text;
+}
+.contactCopyButton, .contactEmailButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 46px;
-  padding: 0 16px;
-  border-radius: 0;
-  text-decoration: none;
-  cursor: pointer;
+  box-sizing: border-box;
+  min-height: 44px;
   font: inherit;
-  transition: background-color 120ms ease, border-color 120ms ease;
+  cursor: pointer;
 }
-
-.contactPrimaryBtn { font-weight: 700; }
-
-.contactSecondaryBtn {
-  border: 1px solid rgba(255,255,255,.12);
-  color: #fff;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-
-.contactPrimaryBtn:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-  transform: none;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .contactSecondaryBtn:hover {
-    transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 194, 145, 0.3);
-  }
-}
+.contactCopyButton { flex: 0 0 44px; width: 44px; padding: 0; }
+.contactEmailButton { position: relative; padding: 0 20px; margin-bottom: 10px; }
 
 .contactStatus {
   margin: 0;
@@ -1182,8 +1101,6 @@ a:visited {
     -webkit-backdrop-filter: none;
   }
 
-  .contactGrid,
-  .contactFieldRow,
   .pluginOnlyGrid,
   .releaseCard {
     grid-template-columns: 1fr;
@@ -1371,9 +1288,6 @@ html:has(.skinPreview[open]) { overflow: hidden; }
 /* Use the site feedback, without the browser’s blue/grey touch flash. */
 :where(a[href], button, summary, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) { -webkit-tap-highlight-color: transparent; }
 
-.contactPrivacy a { color:inherit; text-underline-offset:3px; }
-.contactPrivacy { margin:8px 0 0; font-size:12px; line-height:1.6; color:#bcbcbc; }
-@media(hover:hover) and (pointer:fine) { .contactPrivacy a:hover { color:var(--ull-accent); } }
 
 .skinInstructionsLink {
   appearance: none;

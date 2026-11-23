@@ -3,7 +3,6 @@
 .musicIntro p { margin: 0 0 10px; color: rgba(255,255,255,.76); }
 .musicIntro p:last-child { margin-bottom: 0; }
 .musicIntro strong { color: #eee; font-weight: 700; }
-.musicContact a, .musicSyncLink { color: var(--ull-accent); }
 .musicReleaseList { display: grid; gap: 28px; padding-top: 28px; }
 .musicRelease {
   display: grid; grid-template-columns: minmax(150px,220px) minmax(0,1fr);
@@ -21,7 +20,6 @@
 .musicMetadata dd { margin: 0; color: rgba(255,255,255,.9); }
 .musicLinks { display: flex; flex-wrap: wrap; gap: 6px 19px; margin-bottom: 10px; }
 .musicLinks a { color: #eee; }
-.musicSyncLink { display: inline-block; }
 .musicCatalogue a { text-decoration: none; overflow-wrap: anywhere; }
 .musicCatalogue a:focus-visible { color: var(--ull-accent); text-decoration: underline; text-underline-offset: 4px; }
 @media (hover: hover) and (pointer: fine) {

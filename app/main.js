@@ -2,7 +2,7 @@ import { startBackground } from "./bg.js?v=20260404b";
 import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261113-gm-gallery";
 import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261122-analytics";
 import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261122-product-pricing";
-import { mountContactForm } from "./contact-form.js?v=20261110-synth";
+import { renderContact, mountContact } from "./contact.js?v=20261123-email";
 import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261122-analytics";
 import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
 import { mountPreviewGate } from "./preview-gate.js?v=20261121-outside-footer";
@@ -12,13 +12,6 @@ import { renderHomeOverview, mountHomeOverview } from "./home-overview.js?v=2026
 
 const content = document.getElementById("content");
 const updateSiteNavigation = createSiteNavigation();
-
-const contactFormConfig = {
-  "ullhexa.music@gmail.com": {
-    label: "Ull Hexa Music",
-    accessKey: "c7605148-53c9-4fc9-9bcd-93ecac1b4a23"
-  }
-};
 
 const SOCIAL_LINKS = [
   {
@@ -146,9 +139,6 @@ const pages = {
         </p>
         <p>
           Ull Hexa is a new artist and brand, but is founded on plenty of experience in the music field.
-          With Ull Hexa, I want to bring my musical taste and style into SYNC work as well, particularly
-          for games. Feel free to <a href="#contact">contact me</a> if you have some interesting projects
-          in the works that you'd like music for.
         </p>
         <p>
           Over the years, I have also garnered a lot of technical abilities, a sense of acoustic quality,
@@ -181,59 +171,7 @@ const pages = {
 
   dnd: renderDndShowcase,
 
-  contact: () => `
-    <section class="contactShell">
-      <div class="contactGrid">
-        <div class="contactPanel contactIdentity">
-          <div class="contactIdentityGlow"></div>
-          <p class="contactRole">Ull Hexa</p>
-          <h3>Direct contact</h3>
-          <div class="contactChips">
-            <div class="contactChip">ullhexa.music@gmail.com</div>
-          </div>
-          <p class="contactNote">
-            For music, licensing, or other inquiries, send a message through the form or directly by email.
-          </p>
-        </div>
-
-        <div class="contactPanel">
-          <form id="contactForm" class="contactForm" novalidate>
-            <input id="contactRecipient" name="recipient" type="hidden" value="ullhexa.music@gmail.com" />
-
-            <div class="contactFieldRow">
-              <div class="contactField">
-                <label for="contactName">Your name</label>
-                <input id="contactName" name="name" type="text" autocomplete="name" maxlength="120" aria-describedby="contactNameLimit" placeholder="Your name" required />
-                <small class="contactLimit" id="contactNameLimit" aria-live="polite"></small>
-              </div>
-              <div class="contactField">
-                <label for="contactEmail">Your email</label>
-                <input id="contactEmail" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required />
-              </div>
-            </div>
-
-            <div class="contactField">
-              <label for="contactSubject">Subject</label>
-              <input id="contactSubject" name="subject" type="text" maxlength="180" aria-describedby="contactSubjectLimit" placeholder="Project, licensing, collaboration..." />
-              <small class="contactLimit" id="contactSubjectLimit" aria-live="polite"></small>
-            </div>
-
-            <div class="contactField">
-              <label for="contactMessage">Message</label>
-              <textarea id="contactMessage" name="message" rows="7" maxlength="5000" aria-describedby="contactMessageLimit" placeholder="Write a short message..." required></textarea>
-              <small class="contactLimit" id="contactMessageLimit" aria-live="polite"></small>
-            </div>
-
-            <div class="contactActions">
-              <button type="submit" id="contactSubmitBtn" class="contactPrimaryBtn simpleBoxButton">Send message</button>
-            </div>
-            <p class="contactPrivacy">Your message is sent through Web3Forms to my email inbox. <a href="/privacy/#contact" target="_blank" rel="noopener">How your information is handled</a>.</p>
-            <p id="contactStatus" class="contactStatus" role="status" aria-live="polite"></p>
-          </form>
-        </div>
-      </div>
-    </section>
-  `
+  contact: renderContact
 };
 
 function routeFromHash() {
@@ -272,7 +210,7 @@ function render() {
     let unbind = null;
     cleanupPage = () => { cancelled = true; unbind?.(); };
     // Keep the catalogue and its stories off the homepage's initial download.
-    import("./music-catalogue.js?v=20261121-licensing-copy").then(({ renderMusicCatalogue }) => {
+    import("./music-catalogue.js?v=20261123-email").then(({ renderMusicCatalogue }) => {
       if (cancelled) return;
       content.innerHTML = renderMusicCatalogue();
       unbind = bindPressActions(content, { selector: ".musicCatalogue a, .musicStory summary" });
@@ -282,13 +220,7 @@ function render() {
   }
   if (route === "dnd") mountDndShowcase(content);
 
-  if (route === "contact") {
-    const params = new URLSearchParams(location.hash.split("?").slice(1).join("?"));
-    const subject = content.querySelector("#contactSubject");
-    // Use the field value, never HTML, and retain the form's normal validation.
-    subject.value = (params.get("subject") || "").replace(/[\r\n]/g, " ").slice(0, subject.maxLength);
-    cleanupPage = mountContactForm(content, contactFormConfig["ullhexa.music@gmail.com"]);
-  }
+  if (route === "contact") cleanupPage = mountContact(content);
 
 }
 
