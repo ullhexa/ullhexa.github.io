@@ -1,6 +1,6 @@
 import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
 
-export const CONTACT_EMAIL = 'ullhexa.music@gmail.com';
+export const CONTACT_EMAIL = 'ullhexa@ik.me';
 
 export function renderContact() {
   return `<section class="contactShell" aria-label="Contact Ull Hexa">

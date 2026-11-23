@@ -1,5 +1,5 @@
 import { bindNewsTouchScrollOrder, newsScrollBoundary, bindPhoneNewsScroll, PHONE_NEWS_QUERY } from './news-touch-scroll.js?v=20261120-phone-sized-news';
-import { newsPage } from './news-latest.js?v=20261122-analytics';
+import { newsPage } from './news-latest.js?v=20261124-infomaniak';
 import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
 
 const escapeHTML = text => String(text).replace(/[&<>"']/g, character => ({

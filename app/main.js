@@ -1,9 +1,9 @@
 import { startBackground } from "./bg.js?v=20260404b";
 import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261113-gm-gallery";
-import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261122-analytics";
+import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261124-infomaniak";
 import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261122-product-pricing";
-import { renderContact, mountContact } from "./contact.js?v=20261123-email";
-import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261122-analytics";
+import { renderContact, mountContact } from "./contact.js?v=20261124-infomaniak";
+import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261124-infomaniak";
 import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
 import { mountPreviewGate } from "./preview-gate.js?v=20261121-outside-footer";
 
