@@ -1,9 +1,9 @@
 import { startBackground } from "./bg.js?v=20260404b";
 import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261113-gm-gallery";
-import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261124-bitcrush-curve";
+import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261124-bio-quote";
 import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261122-product-pricing";
 import { renderContact, mountContact } from "./contact.js?v=20261124-audio-extras";
-import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261124-bitcrush-curve";
+import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261124-bio-quote";
 import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
 import { mountPreviewGate } from "./preview-gate.js?v=20261121-outside-footer";
 
@@ -147,6 +147,11 @@ const pages = {
           started developing plugins that I would love to use in my own production. I craft tools
           that I deem unique, that serve a purpose, and that are worth the time and effort. If you like these tools too, even better!
         </p>
+        <blockquote class="bioQuote">
+          <p>“Life is about expressing your identity. Do whatever you like, be whoever you want to be,
+          simply enjoy being a creator of art. It’s also about skill, and that skill is the ability
+          to execute those things to their highest potential, without fear pulling you down. Start living.”</p>
+        </blockquote>
         <p>
           If you like what I do and enjoy using the plugins that I develop, please consider leaving
           a little tip in the link below:

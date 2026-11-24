@@ -543,6 +543,20 @@ a:visited {
   line-height: 1.5;
 }
 
+.bioQuote {
+  margin: 24px 0;
+  padding: 4px 0 4px 18px;
+  border-left: 2px solid var(--ull-accent);
+  color: #e4e4e4;
+  font-size: 17px;
+  font-style: italic;
+}
+
+.bio-text .bioQuote p {
+  margin: 0;
+  line-height: 1.65;
+}
+
 .contactShell {
   display: grid;
   gap: 20px;
