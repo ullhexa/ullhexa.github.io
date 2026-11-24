@@ -1,4 +1,4 @@
-import { createBitcrushTransition } from './home-bitcrush-transition.js?v=20261124-bitcrush';
+import { createBitcrushTransition } from './home-bitcrush-transition.js?v=20261124-bitcrush-overlap';
 import { overviewSlides } from './home-overview-data.js?v=20261121-carousel';
 
 const escape = value => String(value).replace(/[&<>"']/g, c => ({

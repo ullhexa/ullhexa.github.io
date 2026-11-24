@@ -3,10 +3,18 @@
 const clamp = value => Math.max(0, Math.min(1, value));
 const smooth = value => { const t = clamp(value); return t * t * (3 - 2 * t); };
 
-export function bitcrushFrame(progress) {
+export function bitcrushFrame(progress, duration = 3000) {
   const t = clamp(progress);
-  const crush = Math.sin(Math.PI * t) ** 1.4;
-  return { blockSize: 1 + 11 * crush, bits: Math.round(8 - 4 * crush), mix: smooth((t - 0.2) / 0.6) };
+  // Separate ramps overlap by 300 ms: rebuilding starts at 1350 ms while
+  // decomposition continues until 1650 ms in the normal 3-second transition.
+  // Linear resolution changes avoid the old shared curve's midpoint stall.
+  const phase = (1 + Math.min(300 / duration, 1)) / 2;
+  const crush = amount => ({ blockSize: 1 + 11 * amount, bits: Math.round(8 - 4 * amount) });
+  return {
+    outgoing: crush(clamp(t / phase)),
+    incoming: crush(clamp((1 - t) / phase)),
+    mix: smooth((t - 0.2) / 0.6)
+  };
 }
 
 export function quantizeColours(pixels, bits) {
@@ -93,14 +101,15 @@ export function createBitcrushTransition(frames, {
       if (progress >= 1) { finish(); return; }
       if (time - lastPaint >= 1000 / 30) {
         lastPaint = time;
-        const { blockSize, bits, mix } = bitcrushFrame(progress);
+        const { outgoing, incoming, mix } = bitcrushFrame(progress, duration);
         try {
           for (const scene of scenes) {
             const { previous, image, canvas, context, buffers, width, height } = scene;
             context.clearRect(0, 0, canvas.width, canvas.height);
-            context.imageSmoothingEnabled = blockSize < 1.5;
-            for (const [index, source, alpha] of [[0, previous, 1 - mix], [1, image, mix]]) {
+            for (const [index, source, alpha, state] of [[0, previous, 1 - mix, outgoing], [1, image, mix, incoming]]) {
               if (alpha <= 0) continue;
+              const { blockSize, bits } = state;
+              context.imageSmoothingEnabled = blockSize < 1.5;
               sampleImage(buffers[index], source, width, height, blockSize, bits);
               context.globalCompositeOperation = index ? 'lighter' : 'source-over';
               context.globalAlpha = alpha;
