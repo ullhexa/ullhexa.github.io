@@ -3,17 +3,16 @@
 const clamp = value => Math.max(0, Math.min(1, value));
 const smooth = value => { const t = clamp(value); return t * t * (3 - 2 * t); };
 
-export function bitcrushFrame(progress, duration = 3000) {
+export function bitcrushFrame(progress) {
   const t = clamp(progress);
-  // Separate ramps overlap by 300 ms: rebuilding starts at 1350 ms while
-  // decomposition continues until 1650 ms in the normal 3-second transition.
-  // Linear resolution changes avoid the old shared curve's midpoint stall.
-  const phase = (1 + Math.min(300 / duration, 1)) / 2;
-  const crush = amount => ({ blockSize: 1 + 11 * amount, bits: Math.round(8 - 4 * amount) });
+  // Cubic definition curves drop quickly, linger coarse, then accelerate back
+  // to full detail. Reconstruction (0.4–2 s) overlaps decomposition (0–1.6 s)
+  // by 1.2 s. The full-length crossfade keeps moving through the low-bit phase.
+  const definition = quality => ({ blockSize: 1 + 11 * (1 - quality), bits: Math.round(4 + 4 * quality) });
   return {
-    outgoing: crush(clamp(t / phase)),
-    incoming: crush(clamp((1 - t) / phase)),
-    mix: smooth((t - 0.2) / 0.6)
+    outgoing: definition(clamp(1 - t / 0.8) ** 3),
+    incoming: definition(clamp((t - 0.2) / 0.8) ** 3),
+    mix: smooth(t)
   };
 }
 
@@ -47,7 +46,7 @@ function sampleImage(buffer, image, width, height, blockSize, bits) {
 }
 
 export function createBitcrushTransition(frames, {
-  duration = 3000, elapsed = 0,
+  duration = 2000, elapsed = 0,
   now = () => performance.now(),
   requestFrame = callback => requestAnimationFrame(callback),
   cancelFrame = id => cancelAnimationFrame(id)
@@ -101,7 +100,7 @@ export function createBitcrushTransition(frames, {
       if (progress >= 1) { finish(); return; }
       if (time - lastPaint >= 1000 / 30) {
         lastPaint = time;
-        const { outgoing, incoming, mix } = bitcrushFrame(progress, duration);
+        const { outgoing, incoming, mix } = bitcrushFrame(progress);
         try {
           for (const scene of scenes) {
             const { previous, image, canvas, context, buffers, width, height } = scene;

@@ -1,4 +1,4 @@
-import { createBitcrushTransition } from './home-bitcrush-transition.js?v=20261124-bitcrush-overlap';
+import { createBitcrushTransition } from './home-bitcrush-transition.js?v=20261124-bitcrush-curve';
 import { overviewSlides } from './home-overview-data.js?v=20261121-carousel';
 
 const escape = value => String(value).replace(/[&<>"']/g, c => ({
@@ -13,7 +13,7 @@ const categories = [
 export const activeOverviewSlides = Object.fromEntries(categories.map(([key]) => [key, overviewSlides[key]]));
 
 export const OVERVIEW_INTERVAL = 30000;
-export const OVERVIEW_TRANSITION = 3000;
+export const OVERVIEW_TRANSITION = 2000;
 
 // Unix time gives every visitor the same schedule, independent of navigation.
 // No server, cookies, stored visitor state or hidden-page timer is required.
