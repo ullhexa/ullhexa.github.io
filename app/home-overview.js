@@ -6,9 +6,10 @@ const escape = value => String(value).replace(/[&<>"']/g, c => ({
 
 const categories = [
   ['plugins', 'Plugins', '#plugins', 'Audio plugins for various music production effects and workflows'],
-  ['visualizers', 'Visualizers', '#visualizers', 'Browser visuals that react to MIDI notes or incoming audio.'],
-  ['gm', 'GM Console', '#dnd', 'A browser-based Game Master console for Dungeons & Dragons sessions.']
+  ['visualizers', 'Visualizers', '#visualizers', 'Browser visuals that react to MIDI notes or incoming audio.']
 ];
+
+export const activeOverviewSlides = Object.fromEntries(categories.map(([key]) => [key, overviewSlides[key]]));
 
 export const OVERVIEW_INTERVAL = 30000;
 export const OVERVIEW_TRANSITION = 3000;
@@ -139,7 +140,7 @@ export function mountHomeOverview(root) {
     target.addEventListener(event, callback);
     removers.push(() => target.removeEventListener(event, callback));
   };
-  const sequence = createOverviewSequence(overviewSlides, {
+  const sequence = createOverviewSequence(activeOverviewSlides, {
     initialStep: Number(overview.querySelector('[data-overview-step]').dataset.overviewStep),
     load: decodeSlide,
     show(batch, { animate, elapsed, duration }) {

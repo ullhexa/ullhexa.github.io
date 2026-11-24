@@ -2,17 +2,25 @@ import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
 
 const navigationGroups = [
   {
-    key: "web",
+    key: "tools",
     categories: [
-      { key: "dnd", label: "GM Console" },
+      { key: "plugins", label: "Plugins" },
       { key: "visualizers", label: "Visualizers" }
+    ]
+  },
+  {
+    key: "extras",
+    categories: [
+      { key: "dnd", label: "GM Console" }
     ]
   }
 ];
 
 // Parent routes open their first category. Existing direct category links stay valid.
 export function resolveSiteRoute(route) {
-  if (route === "skins" || route === "tools") return "plugins"; // Preserve old catalogue links.
+  if (route === "skins") return "plugins"; // Preserve the held category link.
+  if (route === "contact") return "about"; // Preserve old support links.
+  if (route === "web") return "dnd"; // Preserve the former Web landing page.
   if (route === "sync") return "music"; // Preserve existing SYNC bookmarks.
   return navigationGroups.find(group => group.key === route)?.categories[0].key || route;
 }

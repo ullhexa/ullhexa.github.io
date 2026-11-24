@@ -1,4 +1,4 @@
-import {analyticsFor} from './analytics.js?v=20261122-analytics2';
+import {analyticsFor} from './analytics.js?v=20261124-audio-extras';
 import { cookiePreference } from './cookie-preference.js?v=20261122-analytics2';
 import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
 const mounted = new WeakMap();

@@ -7,7 +7,7 @@ export const SCENES = {
   midi: {plane:'plane', plasma:'plasma', rubik:'cube', cube:'cube', squares:'city'},
   audio: {'stereo-osc':'quantum-string', fractals:'alien-trees', cat:'space-cat'}
 };
-const sections = ['home','music','plugins','visualizers','dnd','about','contact','tools','skins','web'];
+const sections = ['home','music','plugins','visualizers','dnd','about','contact','tools','skins','web','extras'];
 const inputs = ['none','mic','shared_tab','midi','keyboard','touch'];
 const actions = new Set(['$pageview','$pageleave','page_visible','plugin_download_page_opened',
   'installer_download_clicked','gm_console_play_clicked','visualizer_opened',
@@ -21,7 +21,8 @@ export function pageContext(href) {
   if (url.pathname === '/' || url.pathname === '/index.html') {
     let section = url.hash.slice(1).split('?')[0];
     if (!sections.includes(section)) section = 'home';
-    if (section === 'web') section = 'dnd';
+    if (section === 'web' || section === 'extras') section = 'dnd';
+    if (section === 'contact') section = 'about';
     if (section === 'tools' || section === 'skins') section = 'plugins'; // held release
     return {page: section, $current_url:`https://ullhexa.com/#${section}`, $pathname:'/'};
   }

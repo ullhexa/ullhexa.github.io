@@ -44,7 +44,7 @@ export function renderPluginDetails(plugin) {
 }
 
 export function renderPluginFooter(plugin) {
-  const contactURL = "/#contact";
+  const contactURL = "/#about";
   return `<footer class="pluginFooter">Questions or bug reports: <a href="${html(contactURL)}">Contact <span aria-hidden="true">→</span></a></footer>`;
 }
 

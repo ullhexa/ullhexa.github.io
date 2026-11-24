@@ -983,43 +983,47 @@ a:visited {
   color: rgba(255, 255, 255, 0.72);
 }
 
-.contactShell .contactIdentity {
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 540px;
-  margin-inline: auto;
+.aboutContact {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.5;
 }
-.contactEmailRow {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 18px;
-}
+.contactLabel { margin: 0 0 4px; font-weight: 700; }
 .contactEmailText {
-  min-width: 0;
+  display: block;
   overflow-wrap: anywhere;
-  font-size: clamp(14px, 2vw, 16px);
   user-select: text;
   -webkit-user-select: text;
 }
-.contactCopyButton, .contactEmailButton {
-  display: inline-flex;
+.contactCopyButton {
+  display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
-  min-height: 44px;
-  font: inherit;
+  width: 44px;
+  height: 44px;
+  margin: 3px auto 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #fff;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
-.contactCopyButton { flex: 0 0 44px; width: 44px; padding: 0; }
-.contactEmailButton { position: relative; padding: 0 20px; margin-bottom: 10px; }
-
+.contactCopyButton:focus { outline: none; }
+.contactCopyButton:focus-visible,
+.contactCopyButton:active,
+.contactCopyButton.isPressing { color: #F04B32; }
+@media (hover: hover) and (pointer: fine) {
+  .contactCopyButton:hover { color: #F04B32; }
+}
 .contactStatus {
   margin: 0;
-  min-height: 1.4em;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.4;
   color: rgba(255, 255, 255, 0.72);
 }
 
@@ -1279,7 +1283,7 @@ html:has(.skinPreview[open]) { overflow: hidden; }
 /* Button focus must not add an outer selection ring. Keep existing button states. */
 :where(a[href], button, summary, [role="button"], [tabindex], input[type="button"], input[type="submit"], input[type="reset"]):focus { outline: none; }
 
-/* Six equal main-menu keycaps remain readable on narrow screens. */
+/* Five main-menu keycaps remain readable on narrow screens. */
 @media (max-width: 480px) {
   .siteNavigation .nav { width: calc(100% - 16px); gap: 4px; font-size: clamp(10px, 3vw, 14px); }
   .siteNavigation .nav a { padding-inline: 3px; }

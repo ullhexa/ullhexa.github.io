@@ -3,21 +3,16 @@ import { bindPressActions } from './press-action.js?v=20261120-touch-taps';
 export const CONTACT_EMAIL = 'ullhexa@ik.me';
 
 export function renderContact() {
-  return `<section class="contactShell" aria-label="Contact Ull Hexa">
-    <div class="contactPanel contactIdentity">
-      <div class="contactIdentityGlow" aria-hidden="true"></div>
-      <p class="contactRole">Ull Hexa</p>
-      <h3>Direct contact</h3>
-      <div class="contactEmailRow">
-        <span class="contactEmailText">${CONTACT_EMAIL}</span>
-        <button type="button" class="contactCopyButton simpleBoxButton" aria-label="Copy email address" title="Copy email address">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="1"/><path d="M15 5V3H3v13h2"/></svg>
-        </button>
-      </div>
-      <a class="contactEmailButton simpleBoxButton" href="mailto:${CONTACT_EMAIL}">Open email</a>
-      <p class="contactStatus" role="status" aria-live="polite"></p>
-    </div>
-  </section>`;
+  return `<div class="aboutContact" aria-label="Contact Ull Hexa">
+    <p class="contactLabel">Contact:</p>
+    <span class="contactEmailText">${CONTACT_EMAIL}</span>
+    <button type="button" class="contactCopyButton" aria-label="Copy email address" title="Copy email address">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <rect x="8" y="8" width="12" height="13" rx="1"/><path d="M15 5V3H3v13h2"/>
+      </svg>
+    </button>
+    <p class="contactStatus" role="status" aria-live="polite"></p>
+  </div>`;
 }
 
 export function mountContact(root, {
@@ -42,7 +37,7 @@ export function mountContact(root, {
     }
   };
   button.addEventListener('click', copy);
-  const unbind = bindActions(root, { selector: '.contactCopyButton, .contactEmailButton' });
+  const unbind = bindActions(root, { selector: '.contactCopyButton' });
   return () => {
     disposed = true;
     button.removeEventListener('click', copy);

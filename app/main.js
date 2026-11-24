@@ -1,14 +1,14 @@
 import { startBackground } from "./bg.js?v=20260404b";
 import { renderDndShowcase, mountDndShowcase } from "./dnd-showcase.js?v=20261113-gm-gallery";
-import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261124-infomaniak";
+import { createSiteNavigation, resolveSiteRoute } from "./site-navigation.js?v=20261124-audio-extras";
 import { renderPluginCatalogue } from "./plugin-catalogue.js?v=20261122-product-pricing";
-import { renderContact, mountContact } from "./contact.js?v=20261124-infomaniak";
-import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261124-infomaniak";
+import { renderContact, mountContact } from "./contact.js?v=20261124-audio-extras";
+import { renderHomeNews, mountHomeNews } from "./home-news.js?v=20261124-audio-extras";
 import { bindPressActions } from "./press-action.js?v=20261120-touch-taps";
 import { mountPreviewGate } from "./preview-gate.js?v=20261121-outside-footer";
 
 import { VISUALIZERS } from "./visualizers-data.js?v=20261121-carousel";
-import { renderHomeOverview, mountHomeOverview } from "./home-overview.js?v=20261122-product-pricing";
+import { renderHomeOverview, mountHomeOverview } from "./home-overview.js?v=20261124-audio-focus";
 
 const content = document.getElementById("content");
 const updateSiteNavigation = createSiteNavigation();
@@ -99,7 +99,7 @@ const pages = {
     <section class="homeBio homeIntro" aria-label="Ull Hexa tools and software">
       <div class="homePanelArt" aria-hidden="true"><span class="homePanelHead"><span class="homePanelRibbon"></span></span><span class="homePanelBody"></span><span class="homePanelFoot"></span></div>
       <div>
-        <p class="homeWelcome">Audio plugins and browser tools for music and play.</p>
+        <p class="homeWelcome">Audio tools for the nerds</p>
         <section class="homeOverview" aria-label="Explore the tools and software">
           ${renderHomeOverview()}
         </section>
@@ -123,6 +123,7 @@ const pages = {
     <div class="bio">
       <div class="bio-portrait">
         <img src="./assets/profile.png" alt="Profile photo" class="bio-img" />
+        ${renderContact()}
       </div>
 
       <div class="bio-text">
@@ -169,9 +170,7 @@ const pages = {
     renderVisualizerBadges()
   ),
 
-  dnd: renderDndShowcase,
-
-  contact: renderContact
+  dnd: renderDndShowcase
 };
 
 function routeFromHash() {
@@ -183,17 +182,17 @@ let cleanupPage = null;
 function render() {
   const route = routeFromHash();
   const holding = document.body.classList.contains("logoOnlyMode");
-  const contactOnly = holding && route === "contact";
+  const contactOnly = holding && route === "about";
   document.body.classList.toggle("contactOnlyMode", contactOnly);
   cleanupPage?.();
   cleanupPage = null;
-  // Allow the direct Contact link while the public homepage remains closed.
+  // Legacy holding mode exposes only contact details through About.
   // Other routes must not render or fetch the full site feed in holding mode.
   if (previewGate.isLocked() || (holding && !contactOnly)) {
     content.replaceChildren();
     return;
   }
-  const page = pages[route] || pages.home;
+  const page = contactOnly ? renderContact : pages[route] || pages.home;
   content.classList.toggle("homePage", page === pages.home);
   content.classList.toggle("categoryPage", updateSiteNavigation(route));
   content.classList.toggle("dndPage", route === "dnd");
@@ -220,7 +219,7 @@ function render() {
   }
   if (route === "dnd") mountDndShowcase(content);
 
-  if (route === "contact") cleanupPage = mountContact(content);
+  if (route === "about") cleanupPage = mountContact(content);
 
 }
 
