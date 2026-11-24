@@ -1,3 +1,4 @@
+import { createBitcrushTransition } from './home-bitcrush-transition.js?v=20261124-bitcrush';
 import { overviewSlides } from './home-overview-data.js?v=20261121-carousel';
 
 const escape = value => String(value).replace(/[&<>"']/g, c => ({
@@ -144,38 +145,25 @@ export function mountHomeOverview(root) {
     initialStep: Number(overview.querySelector('[data-overview-step]').dataset.overviewStep),
     load: decodeSlide,
     show(batch, { animate, elapsed, duration }) {
-      const previousImages = [];
-      const timing = { duration, easing: 'cubic-bezier(.4, 0, .2, 1)', fill: 'forwards' };
-      animations = [];
-      // Reduced motion still follows the shared lineup without moving images.
-      const slide = animate && !reduced.matches && typeof Element.prototype.animate === 'function';
-      const start = document.timeline.currentTime;
-      for (const { key, image } of batch) {
+      const frames = batch.map(({ key, image }) => {
         const stage = stages.get(key);
         image.className = 'homeOverviewSlide';
-        if (!slide) { stage.replaceChildren(image); continue; }
-        const previous = stage.lastElementChild;
-        previous.setAttribute('aria-hidden', 'true');
-        stage.replaceChildren(previous, image);
-        previousImages.push(previous);
-        const outgoing = previous.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-100%)' }], timing);
-        const incoming = image.animate([{ transform: 'translateX(100%)' }, { transform: 'translateX(0)' }], timing);
-        // Account for decode time so the transition ends on the shared schedule.
-        if (start !== null) { outgoing.startTime = start - elapsed; incoming.startTime = start - elapsed; }
-        else { outgoing.currentTime = elapsed; incoming.currentTime = elapsed; }
-        animations.push(outgoing, incoming);
+        return { stage, previous: stage.lastElementChild, image };
+      });
+      if (!animate || reduced.matches) {
+        frames.forEach(({ stage, image }) => stage.replaceChildren(image));
+        return;
       }
-      const active = animations;
-      return Promise.allSettled(active.map(animation => animation.finished)).then(() => {
-        previousImages.forEach(image => image.remove());
-        active.forEach(animation => animation.cancel());
-        if (animations === active) animations = [];
+      const transition = createBitcrushTransition(frames, { elapsed, duration });
+      animations = [transition];
+      return transition.finished.then(() => {
+        if (animations[0] === transition) animations = [];
       });
     }
   });
   const update = () => {
     sequence.setRunning(ready && visible && !document.hidden && !saveData);
-    if (document.hidden || reduced.matches) animations.forEach(animation => animation.finish());
+    if (!visible || document.hidden || reduced.matches) animations.forEach(animation => animation.finish());
   };
   const observer = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
     visible = entries[0].isIntersecting;
